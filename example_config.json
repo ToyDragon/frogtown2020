@@ -1,0 +1,19 @@
+{
+	"databaseurl": "TODO",
+	"adminId": "TODO",
+	"hostname": "local.frogtown.me",
+    "nohttps": false,
+    "network": {
+        "securePort": 8443,
+        "unsecurePort": 8080
+    },
+	"ttsDeckJsonDir": "TODO",
+	"ttsDraftJsonDir": "TODO",
+	"ttsPublicDeckJsonDir": "TODO",
+	"hqImagePublicDir": "TODO",
+    "imageDir": "TODO",
+    "sslOptions": {
+        "keyFile": "./secrets/privkey.pem",
+        "certFile": "./secrets/fullchain.pem"
+    }
+}

@@ -1,0 +1,71 @@
+.glyphicon-refresh{
+	-webkit-animation:spin 4s linear infinite;
+	-moz-animation:spin 4s linear infinite;
+	animation:spin 4s linear infinite;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+
+span.glyphicon.Red{color: red;}
+span.glyphicon.Blue{color: blue;}
+span.glyphicon.Green{color: green;}
+span.glyphicon.Black, span.caret.Black{color: black;}
+span.glyphicon.White{color: lightgrey;}
+span.glyphicon.TrueWhite, span.caret.TrueWhite{color: white;}
+
+.nodisp{
+	display: none !important;
+}
+
+.header{
+    background-color: #303b4c;
+    height: 64px;
+    padding-top: 16px;
+    padding-left: 8px;
+    flex-shrink: 0;
+}
+
+.header > a{
+    font-size: 24px;
+    margin: 16px;
+    color: #aaaaaa;
+}
+
+.header > a.active, .header > a:hover{
+    color: #ffffff;
+}
+
+.header > a:hover{
+    text-decoration: underline;
+}
+
+.btn-mydecks, .btn-mydecks:hover{
+    background-color: transparent;
+    color: #aaaaaa;
+    vertical-align: middle;
+    font-size: 24px;
+    padding:  0;
+}
+
+.btn-mydecks.active, .btn-mydecks.active:hover{
+    color: white;
+}
+
+.internshipBanner{
+    position: fixed;
+    bottom: -48px;
+    left: -130px;
+    height: 150px;
+    font-size: 24px;
+    background-color: darkred;
+    padding: 16px 100px;
+    border-top: 10px solid white;
+    transform: rotate(45deg);
+}
+
+.internshipBanner > a{
+    color: white;
+    text-decoration: none;
+}

@@ -1,0 +1,470 @@
+.cardDisplay.grid{
+    padding-top: 16px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.cardDisplay.grid > .group{
+    position: relative;
+}
+
+.cardDisplay.grid > .group > .groupSeperator{
+    display: inline-block;
+    font-size: 36px;
+    height: 51px;
+}
+
+.cardDisplay.grid > .group > .cardContainer{
+    margin: 16px;
+    position: relative;
+}
+
+.cardDisplay.grid > .group > .cardContainer > .card{
+    width: 223px;
+    height: 312px;
+    border-radius: 15px;
+    background-size: 100% 100%;
+    background-image: url("/CardBack.jpg");
+}
+
+.cardDisplay.grid > .group > .cardContainer > .card:not(:nth-of-type(1)){
+    margin-top: -275px;
+}
+
+.cardDisplay.grid > .group > .cardContainer > .card > .cardPlaceholder{
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-image: url("/CardBack.jpg");
+}
+
+.cardDisplay.grid .action {
+    visibility: hidden;
+}
+
+.cardDisplay.grid:not(.compact) .group:hover .action{
+    visibility: visible;
+}
+
+.cardDisplay.grid.compact .group .card:hover .action{
+    visibility: visible;
+}
+
+.cardDisplay.grid.compact .group .card.hover{
+    z-index: 1;
+}
+
+.cardDisplay.grid:not(.compact) .action:nth-last-child(1){
+    border-bottom-right-radius: 15px;
+}
+
+.cardDisplay.grid.compact .action:nth-last-child(1){
+    border-top-right-radius: 15px;
+}
+
+.cardDisplay.compact.list > .cardList{
+    width: 497px;
+}
+
+.cardDisplay.compact.list > .group > .cardList > .card:nth-child(1){
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cardDisplay.compact.list > .group > .cardList > .card:nth-last-child(1){
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.cardDisplay.compact.list .card > .title{
+    width: 149px;
+}
+
+.cardDisplay.compact.list .card > .cost{
+    width: 100px;
+}
+
+.cardDisplay.compact.list .card > .type{
+    width: 165px;
+}
+
+.cardDisplay.compact.list > .group{
+    width: 497px;
+}
+
+.cardDisplay.compact.list > .group > .cardList > .card:nth-child(1){
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cardDisplay.compact.list > .group > .cardList > .card:nth-last-child(1){
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.cardDisplay.compact.details > .group{
+    width: 497px;
+}
+
+.cardDisplay.compact.details .card > .preview{
+    width: 111px;
+    height: 156px;
+    border-radius: 7px;
+}
+
+.cardDisplay.compact.details .card > .details{
+    height: 156px;
+    width: 385px;
+}
+
+.cardDisplay.compact.details .card > .details > .titleLine > .title{
+    font-size: 16px;
+    width: 280px;
+}
+
+.cardDisplay.compact.details .card > .details > .typeAndStats > .powerToughness{
+    font-size: 14px;
+}
+
+.cardDisplay.compact.details .card > .details > .typeAndStats > .type{
+    font-size: 14px;
+    width: 300px;
+}
+
+.cardDisplay.compact.details .card > .details > .text{
+    font-size: 12px;
+    width: 386px;
+    max-height: 95px;
+}
+
+.cardDisplay.compact.details > .group > .cardList > .card:nth-child(1){
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cardDisplay.compact.details > .group > .cardList > .card:nth-last-child(1){
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.cardDisplay.list{
+    padding-top: 10px;
+}
+
+.cardDisplay.list > .group{
+    width: 747px;
+    color: #ffffff;
+    margin: auto;
+    padding-top: 10px;
+}
+
+.cardDisplay.list > .group > .groupSeperator{
+    width: 100%;
+    font-size: 36px;
+    height: 51px;
+    color: black;
+}
+
+.cardDisplay.list > .group > .cardList > .card:nth-child(1){
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cardDisplay.list > .group > .cardList > .card:nth-last-child(1){
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.cardDisplay.list .card{
+    position: relative;
+    overflow: hidden;
+}
+
+.cardDisplay.list .card > *{
+    vertical-align: top;
+}
+
+.cardDisplay.list .card > .set{
+    display: inline-block;
+    width: 42px;
+    height: 34px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cardDisplay.list .card > .title{
+    display: inline-block;
+    font-size: 16px;
+    white-space: nowrap;
+    width: 249px;
+    padding: 6px;
+}
+
+.cardDisplay.list .card > .cost{
+    display: inline-block;
+    font-size: 16px;
+    width: 100px;
+    white-space: nowrap;
+    text-align: right;
+    height: 34px;
+}
+
+.cardDisplay.list .card > .cost > div{
+    height: 34px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cardDisplay.list .card > .type{
+    display: inline-block;
+    font-size: 16px;
+    width: 315px;
+    padding: 6px;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardDisplay.list .card > .strengthToughness{
+    display: inline-block;
+    font-size: 16px;
+    width: 33px;
+    padding: 6px;
+}
+
+.cardDisplay.list .card.even {
+    background-color: #303b4c;
+}
+
+.cardDisplay.list .card.odd {
+    background-color: #4d5869;
+}
+
+.cardDisplay.list .action {
+    visibility: hidden;
+}
+
+.cardDisplay.list .card:hover .action{
+    visibility: visible;
+}
+
+.cardDisplay .action {
+    position: absolute;
+    height: 23px;
+    width: 23px;
+    background-color: #1e1e33;
+    background-size: 100% 100%;
+    opacity: 0.8;
+    font-size: 24px;
+    bottom: 0;
+    right: 0;
+}
+
+.cardDisplay.compact.grid .card {
+    position: relative;
+}
+
+.cardDisplay.compact.grid .action {
+    bottom: unset;
+    top: 0;
+}
+
+.cardDisplay.text > .text{
+    margin: 50px;
+    margin-bottom: 20px;
+    width: 300px;
+    height: 400px;
+}
+
+#sideboard.cardDisplay.text > .text{
+    height: 200px;
+}
+
+.cardDisplay .action:hover {
+    opacity: 1;
+}
+
+.cardDisplay .action.similar{
+    background-image: url("/Icons/misc card32.png");
+}
+
+.cardDisplay .action.mainboard, .cardDisplay .action.sideboard{
+    background-image: url("/Icons/transfer card32.png");
+}
+
+.cardDisplay .action.remove{
+    background-image: url("/Icons/remove card32.png");
+}
+
+.cardDisplay .action.add{
+    background-image: url("/Icons/add card32.png");
+}
+
+.cardDisplay .action:nth-last-child(2){
+    right: 23px;
+}
+
+.cardDisplay .action:nth-last-child(3){
+    right: 46px;
+}
+
+.cardDisplay .action:nth-last-child(4){
+    right: 69px;
+}
+
+.cardDisplay .action:nth-last-child(5){
+    right: 92px;
+}
+
+.cardDisplay.details{
+    padding-top: 10px;
+}
+
+.cardDisplay.details > .group{
+    width: 800px;
+    color: #ffffff;
+    margin: auto;
+    padding-top: 10px;
+}
+
+.cardDisplay.details > .group > .groupSeperator{
+    width: 100%;
+    font-size: 36px;
+    height: 51px;
+    color: black;
+}
+
+.cardDisplay.details > .group > .cardList > .card:nth-child(1){
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.cardDisplay.details > .group > .cardList > .card:nth-last-child(1){
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.cardDisplay.details .card > .preview{
+    display: inline-block;
+    width: 160px;
+    height: 225px;
+    border-radius: 7px;
+    background-size: 100% 100%;
+}
+
+.cardDisplay.details .card > .preview > .cardPlaceholder{
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-image: url("/CardBack.jpg");
+}
+
+.cardDisplay.details .card > .details{
+    display: inline-block;
+    vertical-align: top;
+    height: 225px;
+    width: 639px;
+    position: relative;
+}
+
+.cardDisplay.details .card > .details > .titleLine{
+    padding: 6px;
+}
+
+.cardDisplay.details .card > .details > .titleLine > .set{
+    display: inline-block;
+    width: 42px;
+    height: 34px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cardDisplay.details .card > .details > .titleLine > .title{
+    display: inline-block;
+    font-size: 19px;
+    width: 280px;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    padding: 6px;
+    padding-bottom: 0;
+    margin-top: -2px;
+    vertical-align: top;
+}
+
+.cardDisplay.details .card > .details > .titleLine > .cost{
+    display: inline-block;
+    position: absolute;
+    right: 10px;
+    top: 14px;
+}
+
+.cardDisplay.details .card > .details > .typeAndStats{
+    padding-left: 12px;
+    position: relative;
+    top: -16px;
+    margin-bottom: -16px;
+}
+
+.cardDisplay.details .card > .details > .typeAndStats > .powerToughness{
+    display: inline-block;
+    font-size: 14px;
+    width: 36px;
+    padding: 6px;
+}
+
+.cardDisplay.details .card > .details > .typeAndStats > .type{
+    display: inline-block;
+    font-size: 14px;
+    width: 300px;
+    padding: 6px;
+    vertical-align: top;
+}
+
+.cardDisplay.details .card > .details > .text{
+    font-size: 16px;
+    padding-left: 6px;
+    max-height: 161px;
+    overflow: auto;
+}
+
+.cardDisplay.details .card > .details > .text .textLine{
+    margin: 0;
+}
+
+.cardDisplay.details .card > .details > .text .icon{
+    margin-bottom: -4px;
+}
+
+.cardDisplay.details .card.even {
+    background-color: #303b4c;
+}
+
+.cardDisplay.details .card.odd {
+    background-color: #4d5869;
+}
+
+.hoverCard{
+    position: fixed;
+    margin: 16px;
+    width: 223px;
+    height: 312px;
+    border-radius: 15px;
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+svg.set.common{
+    fill: black;
+}
+
+svg.set.uncommon{
+    fill: #a8b0b6;
+}
+svg.set.rare{
+    fill: #dfcc80;
+}
+svg.set.mythic{
+    fill: #e24d23;
+}
