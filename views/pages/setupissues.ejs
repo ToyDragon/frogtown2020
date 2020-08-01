@@ -1,0 +1,12 @@
+<%- include("../partials/page_header") %>
+<div class="centeredContent">
+  <div class="infoSection">
+    <div class="heading"><span class="title">Server Setup Issues</span></div>
+    <div class="infoSectionBody">The following issues are preventing the server from running correctly:</div>
+    <% for (var issue of issues){ %>
+      <div class="subheading"><span class="title"><%= issue.title %></span></div>
+      <div class="infoSectionBody"><%= issue.description %></div>
+    <% } %>
+  </div>
+</div>
+<%- include("../partials/page_footer") %>

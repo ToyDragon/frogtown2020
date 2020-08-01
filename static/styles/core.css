@@ -1,7 +1,7 @@
 .glyphicon-refresh{
-	-webkit-animation:spin 4s linear infinite;
-	-moz-animation:spin 4s linear infinite;
-	animation:spin 4s linear infinite;
+-webkit-animation:spin 4s linear infinite;
+-moz-animation:spin 4s linear infinite;
+animation:spin 4s linear infinite;
 }
 @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
 @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
@@ -15,57 +15,106 @@ span.glyphicon.Black, span.caret.Black{color: black;}
 span.glyphicon.White{color: lightgrey;}
 span.glyphicon.TrueWhite, span.caret.TrueWhite{color: white;}
 
+.issue > h2{
+font-size: 18px;
+}
+
 .nodisp{
-	display: none !important;
+display: none !important;
 }
 
 .header{
-    background-color: #303b4c;
-    height: 64px;
-    padding-top: 16px;
-    padding-left: 8px;
-    flex-shrink: 0;
+  background-color: #303b4c;
+  height: 64px;
+  padding-top: 16px;
+  padding-left: 8px;
+  flex-shrink: 0;
 }
 
 .header > a{
-    font-size: 24px;
-    margin: 16px;
-    color: #aaaaaa;
+  font-size: 24px;
+  margin: 16px;
+  color: #aaaaaa;
 }
 
 .header > a.active, .header > a:hover{
-    color: #ffffff;
+  color: #ffffff;
 }
 
 .header > a:hover{
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .btn-mydecks, .btn-mydecks:hover{
-    background-color: transparent;
-    color: #aaaaaa;
-    vertical-align: middle;
-    font-size: 24px;
-    padding:  0;
+  background-color: transparent;
+  color: #aaaaaa;
+  vertical-align: middle;
+  font-size: 24px;
+  padding:  0;
 }
 
 .btn-mydecks.active, .btn-mydecks.active:hover{
-    color: white;
+  color: white;
 }
 
 .internshipBanner{
-    position: fixed;
-    bottom: -48px;
-    left: -130px;
-    height: 150px;
-    font-size: 24px;
-    background-color: darkred;
-    padding: 16px 100px;
-    border-top: 10px solid white;
-    transform: rotate(45deg);
+  position: fixed;
+  bottom: -48px;
+  left: -130px;
+  height: 150px;
+  font-size: 24px;
+  background-color: darkred;
+  padding: 16px 100px;
+  border-top: 10px solid white;
+  transform: rotate(45deg);
 }
 
 .internshipBanner > a{
-    color: white;
-    text-decoration: none;
+  color: white;
+  text-decoration: none;
+}
+
+.centeredContent{
+  width: 800px;
+  margin: auto;
+  height: 100%;
+}
+
+.infoSection{
+  position: relative;
+  top: 30px;
+  background-color: white;
+  border: 1px solid gray;
+  font-size: 16px;
+  margin-bottom: 50px;
+}
+
+.infoSection > .heading{
+  margin-top: 20px;
+  background-color: lightgray;
+  padding: 10px 0 5px 0;
+}
+
+.infoSection > .heading > .title{
+  font-size: 24px;
+  padding: 0 0 0 30px;
+}
+
+.infoSection > .subheading{
+  background-color: lightcoral;
+  padding: 5px 0 5px 0;
+}
+
+.infoSection > .subheading > .title{
+  font-size: 14px;
+  padding: 0 0 0 12px;
+}
+
+.infoSection > .infoSectionBody{
+  padding: 10px 50px;
+}
+
+.hint{
+  font-size: 12px;
+  color: darkgray;
 }

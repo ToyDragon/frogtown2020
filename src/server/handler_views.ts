@@ -1,5 +1,5 @@
 import * as express from "express";
-import Config from "./config";
+import Services from "./services";
 import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 
@@ -34,13 +34,13 @@ export function retrieveAllData(
 
 /**
  * Creates route handler to serve views
- * @param {Config} config
+ * @param {Services} services
  * @return {express.Router}
  */
-export default function ViewHandler(config: Config): express.Router {
+export default function ViewHandler(services: Services): express.Router {
   const router = express.Router();
-  const allPages = GetAllPages(config);
-  const viewDir = __dirname + "/views/";
+  const allPages = GetAllPages(services);
+  const viewDir = __dirname + "/../views/";
 
   // Statically serve shared resoureces
   router.use(express.static(viewDir + "shared/"));

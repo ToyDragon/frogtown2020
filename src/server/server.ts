@@ -8,10 +8,13 @@ import cookieParser from "cookie-parser";
 import commandLineArgs from "command-line-args";
 
 import Config from "./config";
+import Services from "./services";
 import LoadConfigFromFile from "./config_loader";
+import S3StoragePortal from "./storage_portal_s3";
 import ErrorHandler from "./handler_error";
 import NotFoundHandler from "./handler_not_found";
 import HTTPSRedirectionHandler from "./handler_https_redirection";
+import SetupRequiredHandler from "./handler_setup";
 import ViewHandler from "./handler_views";
 import * as Logs from "./log";
 
@@ -51,10 +54,15 @@ function HandleServerError(error: Error) {
 // Load config
 LoadConfigFromFile(options["config"]).then((config: Config) => {
   Logs.logInfo("Loaded config.");
+  const services: Services = {
+    config: config,
+    storagePortal: new S3StoragePortal(config),
+  };
 
   // Handlers
   app.use(ErrorHandler); // Trigger on unhandled errors
-  app.use(ViewHandler(config));
+  app.use(SetupRequiredHandler(services));
+  app.use(ViewHandler(services));
   app.use(NotFoundHandler); // Trigger on unrecognized path
 
   // Server options

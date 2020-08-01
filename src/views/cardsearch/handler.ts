@@ -1,7 +1,11 @@
 import * as express from "express";
-import Config from "../../config";
+import Services from "../../server/services";
 
-export default function Handler(_config: Config): express.Router {
+/**
+ * Router that handles page specific request.
+ * @param {Services} _services
+ */
+export default function Handler(_services: Services): express.Router {
   const router = express.Router();
   return router;
 }

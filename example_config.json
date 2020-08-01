@@ -15,5 +15,13 @@
     "sslOptions": {
         "keyFile": "./secrets/privkey.pem",
         "certFile": "./secrets/fullchain.pem"
+    },
+    "storage": {
+        "awsAccessKeyIdFile": "./secrets/awsAccessKey.txt",
+        "awsSecretAccessKeyFile": "./secrets/awsSecretAccessKey.txt",
+        "awsS3FullQualityImageBucket": "frogtown.apricot.images.source",
+        "awsS3HighQualityImageBucket": "frogtown.apricot.images.compressed.hq",
+        "awsS3CompressedImageBucket": "frogtown.apricot.images.compressed.lq",
+        "awsS3DataMapBucket": "frogtown.apricot.data"
     }
 }

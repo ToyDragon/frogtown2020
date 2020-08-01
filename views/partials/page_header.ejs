@@ -1,6 +1,8 @@
 <html>
 	<head>
-		<link type="text/css" rel="stylesheet" href="<%= route %>/styles.css">
+		<% if (typeof(route) !== "undefined") { %>
+			<link type="text/css" rel="stylesheet" href="<%= route %>/styles.css">
+		<% } %>
 		<%- include("./core_head") -%>
 		<link type="text/css" rel="stylesheet" href="/renderers.css">
 	</head>
