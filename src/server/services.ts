@@ -1,5 +1,6 @@
 import StoragePortal from "./storage_portal";
 import Config from "./config";
+import DatabaseManager from "./database/db_manager";
 
 /**
  * Global services configured for the server. These are passed around in a
@@ -7,5 +8,6 @@ import Config from "./config";
  */
 export default interface Services {
   storagePortal: StoragePortal;
+  dbManager: DatabaseManager;
   config: Config;
 }

@@ -1,5 +1,6 @@
 import SetupIssue from "./setupissue";
 import Services from "../services";
+import { logInfo } from "../log";
 
 // eslint-disable-next-line prettier/prettier
 export default async function CheckForStorageIssue(services: Services): Promise<SetupIssue[]> {
@@ -33,6 +34,10 @@ export default async function CheckForStorageIssue(services: Services): Promise<
           "and that the permissions on the bucket allow you to upload.",
       });
     }
+  }
+
+  if (issues.length === 0) {
+    logInfo("Successfully checked storage setup.");
   }
 
   return issues;

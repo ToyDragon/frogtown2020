@@ -1,5 +1,4 @@
 export default class Config {
-  public databaseurl = "";
   public adminId = "";
   public hostname = "";
   public ttsDeckJsonDir = "";
@@ -23,5 +22,10 @@ export default class Config {
     awsS3HighQualityImageBucket: "",
     awsS3CompressedImageBucket: "",
     awsS3DataMapBucket: "",
+  };
+  public database = {
+    host: "",
+    user: "",
+    passwordFile: "",
   };
 }

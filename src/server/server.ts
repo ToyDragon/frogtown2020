@@ -17,6 +17,7 @@ import HTTPSRedirectionHandler from "./handler_https_redirection";
 import SetupRequiredHandler from "./handler_setup";
 import ViewHandler from "./handler_views";
 import * as Logs from "./log";
+import DatabaseManager from "./database/db_manager";
 
 // Setup command line params
 const options = commandLineArgs([
@@ -56,6 +57,7 @@ LoadConfigFromFile(options["config"]).then((config: Config) => {
   Logs.logInfo("Loaded config.");
   const services: Services = {
     config: config,
+    dbManager: new DatabaseManager(config),
     storagePortal: new S3StoragePortal(config),
   };
 

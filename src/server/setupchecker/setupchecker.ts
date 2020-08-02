@@ -1,7 +1,8 @@
 import SetupIssue from "./setupissue";
 import Services from "../services";
 
-import CheckForStorageIssue from "./storagechecker";
+import CheckForStorageIssue from "./checker_storage";
+import CheckForDBIssue from "./checker_db";
 
 /**
  * Primary entry point for checking issues during server startup.
@@ -12,5 +13,6 @@ import CheckForStorageIssue from "./storagechecker";
 export default async function CheckSetup(services: Services): Promise<SetupIssue[]> {
   let issues: SetupIssue[] = [];
   issues = issues.concat(await CheckForStorageIssue(services));
+  issues = issues.concat(await CheckForDBIssue(services));
   return issues;
 }

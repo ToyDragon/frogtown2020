@@ -1,5 +1,4 @@
 {
-	"databaseurl": "TODO",
 	"adminId": "TODO",
 	"hostname": "local.frogtown.me",
     "nohttps": false,
@@ -23,5 +22,10 @@
         "awsS3HighQualityImageBucket": "frogtown.apricot.images.compressed.hq",
         "awsS3CompressedImageBucket": "frogtown.apricot.images.compressed.lq",
         "awsS3DataMapBucket": "frogtown.apricot.data"
+    },
+    "database": {
+        "host": "35.222.178.187",
+        "user": "root",
+        "passwordFile": "./secrets/sqlpassword.txt"
     }
 }

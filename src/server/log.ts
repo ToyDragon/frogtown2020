@@ -3,6 +3,7 @@ export enum Level {
   WARNING = 2,
   ERROR = 1,
   CRITICAL = 0,
+  NONE = -1,
 }
 
 let currentLogLevel = Level.INFO;
