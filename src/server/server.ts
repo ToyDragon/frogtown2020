@@ -53,7 +53,7 @@ function HandleServerError(error: Error) {
 }
 
 // Load config
-LoadConfigFromFile(options["config"]).then((config: Config) => {
+LoadConfigFromFile(options["config"]).then(async (config: Config) => {
   Logs.logInfo("Loaded config.");
   const services: Services = {
     config: config,
@@ -75,6 +75,9 @@ LoadConfigFromFile(options["config"]).then((config: Config) => {
       cert: fs.readFileSync(config.sslOptions.certFile),
     };
   }
+
+  // Initialize the database
+  await services.dbManager.ensureTablesExist(config);
 
   // Listen for traffic
   if (config.nohttps) {
