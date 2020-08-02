@@ -77,7 +77,7 @@ LoadConfigFromFile(options["config"]).then(async (config: Config) => {
   }
 
   // Initialize the database
-  await services.dbManager.ensureTablesExist(config);
+  await services.dbManager.ensureDatabaseAndTablesExist(config);
 
   // Listen for traffic
   if (config.nohttps) {
