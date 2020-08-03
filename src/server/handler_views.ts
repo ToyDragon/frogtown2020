@@ -2,6 +2,7 @@ import * as express from "express";
 import Services from "./services";
 import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
+import SharedHandler from "../views/shared/server/handler";
 
 export function retrieveAllData(
   req: express.Request,
@@ -43,9 +44,10 @@ export default function ViewHandler(services: Services): express.Router {
   const viewDir = __dirname + "/../views/";
 
   // Statically serve shared resoureces
-  router.use(express.static(viewDir + "shared/"));
+  router.use(express.static(viewDir + "shared/client/"));
   router.use(express.static("./static/"));
   router.use(express.static("./static/styles/"));
+  router.use(SharedHandler(services));
 
   // Each view has routes that needs to be set up
   for (const view of allPages) {
@@ -71,18 +73,9 @@ export default function ViewHandler(services: Services): express.Router {
       });
     }
 
-    router.use(
-      "/" + view.routes[0] + "/behavior.js",
-      express.static(viewDir + view.view + "/behavior.js")
-    );
-    router.use(
-      "/" + view.routes[0] + "/behavior.js.map",
-      express.static(viewDir + view.view + "/behavior.js.map")
-    );
-    router.use(
-      "/" + view.routes[0] + "/behavior.ts",
-      express.static(viewDir + view.view + "/behavior.ts")
-    );
+    // This doesn't match the source files, webpack will compile
+    // the behavior.ts file and it's dependencies into this bundle file.
+    router.use("/" + view.routes[0], express.static(viewDir + view.view + "/"));
     router.use(
       "/" + view.routes[0] + "/styles.css",
       express.static("./static/styles/" + view.view + "_styles.css")

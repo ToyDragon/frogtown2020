@@ -1,5 +1,6 @@
 import StoragePortal from "./storage_portal";
-import * as AWS from "aws-sdk";
+// eslint-disable-next-line node/no-unpublished-import
+import * as AWS from "../../node_modules/aws-sdk/index";
 import * as fs from "fs";
 import Config from "./config";
 import * as utils from "../shared/utils";

@@ -25,7 +25,7 @@ export default class DatabaseManager {
   /**
    * Helper method to promise-ize connection.query. We can't use poolconnection
    * here because this is not from a pool.
-   * @param {mywql.Connection} con
+   * @param {mysql.Connection} con
    * @param {string} query
    */
   private performQuery(
@@ -59,7 +59,7 @@ export default class DatabaseManager {
     let cmd = `
       SELECT SCHEMA_NAME
         FROM INFORMATION_SCHEMA.SCHEMATA
-      WHERE SCHEMA_NAME = 'frogtown'
+      WHERE SCHEMA_NAME = 'frogtown';
     `;
     let result = await this.performQuery(connection, cmd);
     if (result.err) {
@@ -105,10 +105,9 @@ export default class DatabaseManager {
     // Create the tables if they don't already exist
     const cmd = `
       CREATE TABLE IF NOT EXISTS user_keys(
-        unique_key INT NOT NULL AUTO_INCREMENT,
         private_id VARCHAR(64) NOT NULL,
         public_id VARCHAR(24) NOT NULL,
-        PRIMARY KEY(unique_key),
+        PRIMARY KEY(private_id),
         INDEX(private_id),
         INDEX(public_id)
       ) ENGINE=InnoDB;
