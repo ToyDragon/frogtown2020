@@ -1,0 +1,178 @@
+<div class="filterBox" data-filtertype="name" data-idmapname="IDToName">
+  <div class="input-group">
+      <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span> Name</div>
+      <input type="text" class="form-control" id="inputName" disabled>
+  </div>
+</div>
+<div class="filterBox" data-filtertype="text" data-idmapname="IDToText">
+  <div class="input-group">
+      <div class="input-group-addon"><span class="glyphicon glyphicon-tag"></span> Text</div>
+      <input type="text" class="form-control" disabled>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filterclass="dropdownExclusive" data-filtertype="rarity" data-datamapname="RarityToID" data-idmapname="IDToRarity">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Rarity <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu raritySelection">
+          <li data-display="Common" data-value="common" data-active="false"><a href="#">Common <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-display="Uncommon" data-value="uncommon" data-active="false"><a href="#">Uncommon <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-display="Rare" data-value="rare" data-active="false"><a href="#">Rare <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-display="Mythic Rare" data-value="mythic" data-active="false"><a href="#">Mythic Rare <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<div class="filterBox nodisp" data-filtertype="set" data-datamapname="SetCodeToID" data-idmapname="IDToSetCode" data-dynamicoptions="true">
+  <div class="input-group">
+      <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span> Set</div>
+      <datalist id="setDataList"></datalist>
+      <input type="text" list="setDataList" class="form-control">
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="color" data-filterclass="dropdownMany" data-datamapname="ColorToID" data-idmapname="IDToColor">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Colors <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu colorSelection">
+          <li data-value="W" data-display="White" data-active="false" title="White"><a href="#"><span class="glyphicon glyphicon-tint White"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="U" data-display="Blue" data-active="false" title="Blue"><a href="#"><span class="glyphicon glyphicon-tint Blue"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="B" data-display="Black" data-active="false" title="Black"><a href="#"><span class="glyphicon glyphicon-tint Black"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="R" data-display="Red" data-active="false" title="Red"><a href="#"><span class="glyphicon glyphicon-tint Red"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="G" data-display="Green" data-active="false" title="Green"><a href="#"><span class="glyphicon glyphicon-tint Green"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="C" data-display="Colorless" data-active="false" title="Colorless"><a href="#"><span class="glyphicon glyphicon-ban-circle"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li role="separator" class="divider"></li>
+          <li data-value="And" data-active="false" data-control="true"><a href="#">All Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="Or" data-active="true" data-control="true"><a href="#">Any Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="NoOthers" data-active="false" data-control="true"><a href="#">No Others <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="coloridentity" data-filterclass="dropdownMany" data-datamapname="ColorIdentityToID" data-idmapname="IDToColorIdentity">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Color Identity <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu colorIdentitySelection">
+          <li data-value="W" data-display="White" data-active="false" title="White"><a href="#"><span class="glyphicon glyphicon-tint White"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="U" data-display="Blue" data-active="false" title="Blue"><a href="#"><span class="glyphicon glyphicon-tint Blue"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="B" data-display="Black" data-active="false" title="Black"><a href="#"><span class="glyphicon glyphicon-tint Black"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="R" data-display="Red" data-active="false" title="Red"><a href="#"><span class="glyphicon glyphicon-tint Red"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="G" data-display="Green" data-active="false" title="Green"><a href="#"><span class="glyphicon glyphicon-tint Green"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="C" data-display="Colorless" data-active="false" title="Colorless"><a href="#"><span class="glyphicon glyphicon-ban-circle"></span> <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li role="separator" class="divider"></li>
+          <li data-value="And" data-active="false" data-control="true"><a href="#">All Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="Or" data-active="true" data-control="true"><a href="#">Any Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="NoOthers" data-active="false" data-control="true"><a href="#">No Others <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="supertype" data-filterclass="dropdownExclusive" data-datamapname="SupertypeToID" data-idmapname="IDToSupertype" data-dynamicoptions="true">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Supertype <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu supertypeSelection"></ul>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="type" data-filterclass="dropdownMany" data-datamapname="TypeToID" data-idmapname="IDToType" data-dynamicoptions="true" data-excludeoptions="Scariest,You,Eaturecray,instant">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Type <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu typeSelection">
+          <li role="separator" class="divider"></li>
+          <li data-value="And" data-active="false" data-control="true"><a href="#">All Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="Or" data-active="true" data-control="true"><a href="#">Any Selected <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<div class="filterBox nodisp" data-filtertype="subtype" data-datamapname="SubtypeToID" data-idmapname="IDToSubtype" data-dynamicoptions="true">
+  <div class="input-group">
+      <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span> Subtype</div>
+      <datalist id="subTypeDataList"></datalist>
+      <input type="text" list="subTypeDataList" class="form-control" placeholder="Subtype">
+  </div>
+</div>
+<div class="filterBox filterBoxLarge nodisp" data-datamapname="PowerToID" data-idmapname="IDToPower" data-filtertype="power">
+  <div class="btn-group">
+      <div class="input-group">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-fire" title="Power"></span> Power</span>
+          <input type="number" class="form-control short min" placeholder="min" min="0">
+          <span class="input-group-addon">to</span>
+          <input type="number" class="form-control short max" placeholder="max" min="0">
+      </div>
+  </div>
+</div>
+<div class="filterBox filterBoxLarge nodisp" data-datamapname="ToughnessToID" data-idmapname="IDToToughness" data-filtertype="toughness">
+  <div class="btn-group">
+      <div class="input-group">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-heart-empty" title="Toughness"></span> Toughness</span>
+          <input type="number" class="form-control short min" placeholder="min" min="0">
+          <span class="input-group-addon">to</span>
+          <input type="number" class="form-control short max" placeholder="max" min="0">
+      </div>
+  </div>
+</div>
+<div class="filterBox nodisp" data-datamapname="CMCToID" data-idmapname="IDToCMC" data-filtertype="cmc">
+  <div class="btn-group">
+      <div class="input-group">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-usd" title="CMC"></span> CMC</span>
+          <input type="number" class="form-control short min" placeholder="min" min="0">
+          <span class="input-group-addon">to</span>
+          <input type="number" class="form-control short max" placeholder="max" min="0">
+      </div>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="legality" data-datamapname="LegalFormatToID" data-idmapname="IDToLegalFormat" data-filterclass="dropdownExclusive">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Legality <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu legalitySelection">
+          <li data-value="commander" data-display="Commander" data-active="false"><a href="#">Commander <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="standard" data-display="Standard" data-active="false"><a href="#">Standard <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="modern" data-display="Modern" data-active="false"><a href="#">Modern <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="legacy" data-display="Legacy" data-active="false"><a href="#">Legacy <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="vintage" data-display="Vintage" data-active="false"><a href="#">Vintage <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="pauper" data-display="Pauper" data-active="false"><a href="#">Pauper <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<div class="filterBox filterDropdown nodisp" data-filtertype="misc" data-filterclass="dropdownMany">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Misc <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu miscSelection">
+          <li data-value="Show Duplicates" data-active="false" title="Include different printings of cards with the same name"><a href="#">Show Duplicates <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-value="Sort By Release" data-active="false" title="Sort first by release date instead of by name"><a href="#">Sort by Release <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div>
+<!--div class="filterBox filterDropdown nodisp" data-filtertype="export" data-filterclass="dropdownExclusive">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Export Features <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu exportSelection">
+          <li data-value="HQ Export" data-active="false"><a href="#"><span>HQ Export</span> <span class="glyphicon glyphicon-ok"></span></a></li>
+      </ul>
+  </div>
+</div -->
+<div id="filterSelection" class="filterBox filterDropdown">
+  <div class="btn-group">
+      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-filter TrueWhite"></span> Filters <span class="caret TrueWhite"></span></button>
+      <ul class="dropdown-menu">
+          <li data-filtertype="text" data-active="true"><a href="#">Text <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="rarity" data-active="false"><a href="#">Rarity <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="set" data-active="false"><a href="#">Set <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="color" data-active="false"><a href="#">Color <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="coloridentity" data-active="false"><a href="#">Color Identity <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="supertype" data-active="false"><a href="#">Supertype <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="type" data-active="false"><a href="#">Type <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="subtype" data-active="false"><a href="#">Subtype <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="power" data-active="false"><a href="#">Power <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="toughness" data-active="false"><a href="#">Toughness <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="cmc" data-active="false"><a href="#">CMC <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="legality" data-active="false"><a href="#">Legality <span class="glyphicon glyphicon-ok"></span></a></li>
+          <li data-filtertype="misc" data-active="false"><a href="#">Misc <span class="glyphicon glyphicon-ok"></span></a></li>
+          <!--li data-filtertype="export" data-active="false"><a href="#">Export Features <span class="glyphicon glyphicon-ok"></span></a></li-->
+          <li role="separator" class="divider"></li>
+          <li data-filtertype="clearall" data-control="true"><a href="#">Clear Filters</a></li>
+          <li data-filtertype="showall" data-control="true"><a href="#">Show All</a></li>
+      </ul>
+  </div>
+</div>
+<div id="CardDisplayDropdown" class="filterBox filterDropdown" data-filtertype="carddisplay" data-filterclass="dropdownExclusive">
+  <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Card Display <span class="caret black"></span><div class="dropdownValue"></div></button>
+      <ul class="dropdown-menu carddisplay">
+      </ul>
+  </div>
+</div>

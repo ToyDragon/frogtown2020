@@ -101,20 +101,41 @@ display: none !important;
 }
 
 .infoSection > .subheading{
-  background-color: lightcoral;
   padding: 5px 0 5px 0;
 }
 
+.infoSection > .subheading{
+  background-color: teal;
+  color: white;
+}
+
+.infoSection > .subheading.error{
+  background-color: lightcoral;
+  color: #400000;
+}
+
 .infoSection > .subheading > .title{
-  font-size: 14px;
+  font-size: 18px;
   padding: 0 0 0 12px;
 }
 
 .infoSection > .infoSectionBody{
   padding: 10px 50px;
+  line-height: 28px;
 }
 
 .hint{
   font-size: 12px;
   color: darkgray;
+}
+
+.inlinedata{
+  border-radius: 15px;
+  padding: 4px;
+  background-color: darkslateblue;
+  color: white;
+}
+
+button[disabled] {
+  cursor: not-allowed;
 }

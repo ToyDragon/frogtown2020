@@ -1,9 +1,12 @@
 import StoragePortal from "./storage_portal";
 // eslint-disable-next-line node/no-unpublished-import
-import * as AWS from "../../node_modules/aws-sdk/index";
+//import * as AWS from "../../node_modules/aws-sdk/index";
+import * as AWS from "aws-sdk";
 import * as fs from "fs";
+import * as stream from "stream";
 import Config from "./config";
 import * as utils from "../shared/utils";
+import { logInfo, logError } from "./log";
 
 export default class S3StoragePortal implements StoragePortal {
   private s3: AWS.S3;
@@ -65,6 +68,29 @@ export default class S3StoragePortal implements StoragePortal {
     });
 
     return success;
+  }
+
+  public uploadStreamToBucket(
+    bucket: string,
+    objectKey: string
+  ): stream.PassThrough {
+    const passthrough = new stream.PassThrough();
+    const uploadRequest = {
+      Bucket: bucket,
+      Key: objectKey,
+      ACL: "public-read",
+      Body: passthrough,
+    };
+    this.s3.upload(
+      uploadRequest,
+      (err: Error, data: AWS.S3.ManagedUpload.SendData) => {
+        logInfo("Streaming upload complete. " + data);
+        if (err) {
+          logError(err);
+        }
+      }
+    );
+    return passthrough;
   }
 
   /**

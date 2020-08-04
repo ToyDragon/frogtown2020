@@ -6,6 +6,12 @@ import { DatabaseConnection } from "./db_connection";
 import { logCritical, logInfo, logError } from "../log";
 import { DatabaseActionResult } from "./db_action_result";
 
+export interface DataFileRow {
+  name: string;
+  update_time: string;
+  change_time: string;
+}
+
 export default class DatabaseManager {
   private connectionPool: mysql.Pool;
 
@@ -102,8 +108,8 @@ export default class DatabaseManager {
       return;
     }
 
-    // Create the tables if they don't already exist
-    const cmd = `
+    // user_keys table
+    let cmd = `
       CREATE TABLE IF NOT EXISTS user_keys(
         private_id VARCHAR(64) NOT NULL,
         public_id VARCHAR(24) NOT NULL,
@@ -114,7 +120,25 @@ export default class DatabaseManager {
     `;
 
     // Perform creation and check for errors.
-    const result = await connection.query(cmd, []);
+    let result = await connection.query(cmd, []);
+    if (result.err) {
+      logCritical("Error while ensuring required database tables exist.");
+      logCritical(result.err);
+      return;
+    }
+
+    // data_files table
+    cmd = `
+      CREATE TABLE IF NOT EXISTS data_files(
+        name VARCHAR(64) NOT NULL,
+        update_time DATETIME NOT NULL,
+        change_time DATETIME NOT NULL,
+        PRIMARY KEY (name)
+      ) ENGINE=InnoDB;
+    `;
+
+    // Perform creation and check for errors.
+    result = await connection.query(cmd, []);
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);

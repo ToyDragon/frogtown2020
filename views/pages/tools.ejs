@@ -1,0 +1,72 @@
+<%- include("../partials/page_header") %>
+<div class="centeredContent">
+  <div class="infoSection">
+    <div class="heading"><span class="title">Tools</span></div>
+    <div class="infoSectionBody">Use the tools on this page to update the card database.</div>
+
+    <div class="subheading"><span class="title">Data Maps</span></div>
+    <div class="infoSectionBody">
+      <div id="divAllCardsInfo"></div>
+      <div>
+        <button id="btnUpdateAllCardsFile">Update All Cards File</button>
+      </div>
+      <div>
+        <div id="divUpdateAllCardsProgress"></div>
+      </div>
+      <div></div>
+      <div id="divDataMapsInfo"></div>
+      <div>
+        <button id="btnUpdateDataMaps">Update All Data Maps</button>
+      </div>
+      <div>
+        <div id="divUpdateDataMapsProgress"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+<div class="section" data-title="Data Maps">
+    <button id="btnBuildMaps">Build Maps</button>
+</div>
+<div class="section" data-title="Set Icons">
+    <button id="btnUpdateSetIcons">Update Set Icons</button>
+</div>
+<div class="section" data-title="All-Cards Data File">
+    <button id="btnUpdateAllCards">Update All Cards File</button>
+</div>
+<div class="section" data-title="Conversions">
+    <button id="btnRunConversion" class="nodisp">Run Next Conversion</button>
+</div>
+<div class="section" data-title="Image Deletion">
+    <div class="section" data-title="Output" data-nocollapse="true">
+        <div>To update card images do the following:</div>
+        <ol>
+            <li>Update the all cards file, and rebuild the data maps. (this makes sure scryfall URLs are up to date)</li>
+            <li>List the missing images if handling a new set</li>
+            <li>Update images for the cards/sets</li>
+        </ol>
+    </div>
+    <div id="divUploadStats"></div>
+    <button id="btnImageUploadStats">List missing uploads</button>
+    <div class="section" data-title="By ID" data-nocollapse="true">
+        <textarea id="taCardIDsToDelete"></textarea>
+    </div>
+    <div class="section" data-title="By Set" data-nocollapse="true">
+        <textarea id="taSetsToDelete"></textarea>
+    </div>
+    <div>
+        <button id="btnUpdateImagesS3">Update Images S3</button>
+    </div>
+    <div>
+        <button id="btnUpdateImages">Update Images Scryfall</button>
+    </div>
+    <div>
+        <button id="btnIncreaseVersion">Increase Image Version</button>
+    </div>
+</div>
+<div class="section" data-title="Output" data-nocollapse="true">
+    <div id="output"></div>
+</div>
+-->
+<%- include("../partials/page_footer") %>

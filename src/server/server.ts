@@ -18,6 +18,7 @@ import SetupRequiredHandler from "./handler_setup";
 import ViewHandler from "./handler_views";
 import * as Logs from "./log";
 import DatabaseManager from "./database/db_manager";
+import ScryfallManager from "./scryfall_manager";
 
 // Setup command line params
 const options = commandLineArgs([
@@ -44,7 +45,6 @@ app.set("view engine", "ejs");
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Helper function to log server initialization errors
 function HandleServerError(error: Error) {
@@ -59,6 +59,7 @@ LoadConfigFromFile(options["config"]).then(async (config: Config) => {
     config: config,
     dbManager: new DatabaseManager(config),
     storagePortal: new S3StoragePortal(config),
+    scryfallManager: new ScryfallManager(),
   };
 
   // Handlers

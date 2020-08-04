@@ -2,6 +2,7 @@ import express from "express";
 
 import Services from "./services";
 import CardSearchRouteHandler from "../views/cardsearch/handler";
+import ToolsRouteHandler from "../views/tools/handler";
 
 /**
  * Data required for a page to be displayed, and to be available in the header nav bar.
@@ -42,6 +43,14 @@ export function GetAllPages(services: Services): PageData[] {
         "tool, in browser playtesting, and exporting to play in Tabletop " +
         "Simulator. Creating decks for Magic has never been easier!",
       routeHandler: CardSearchRouteHandler(services),
+    },
+    {
+      routes: ["tools"],
+      view: "tools",
+      title: "Tools",
+      hidden: true,
+      description: "",
+      routeHandler: ToolsRouteHandler(services),
     },
   ];
 }

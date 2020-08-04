@@ -4,6 +4,11 @@ import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 import SharedHandler from "../views/shared/server/handler";
 
+/**
+ * Helper function to gather data required for a page to render
+ * @param {express.Request} req
+ * @param {IncludedData[]} includedData
+ */
 export function retrieveAllData(
   req: express.Request,
   includedData: IncludedData[]
@@ -67,10 +72,16 @@ export default function ViewHandler(services: Services): express.Router {
       });
     };
 
+    // The main way the page is accessed
     for (const route of view.routes) {
       router.get("/" + route + ".html", (req, res) => {
         renderCallback(req, res);
       });
+    }
+
+    // One lucky page also gets to be accessed from /
+    if (view.index) {
+      router.get("/", renderCallback);
     }
 
     // This doesn't match the source files, webpack will compile
@@ -81,10 +92,7 @@ export default function ViewHandler(services: Services): express.Router {
       express.static("./static/styles/" + view.view + "_styles.css")
     );
 
-    if (view.index) {
-      router.get("/", renderCallback);
-    }
-
+    // Add handler for page specific requests
     if (view.routeHandler) {
       router.use("/" + view.routes[0], view.routeHandler);
     }

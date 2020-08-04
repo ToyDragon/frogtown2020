@@ -1,5 +1,6 @@
 import { setCookie, getCookie } from "./cookies";
 import { NewUserResponse } from "../server/types";
+import { post } from "./request";
 
 declare let includedData: { errorOccurred: boolean };
 
@@ -26,9 +27,14 @@ export default class AuthSession {
       this.user.privateId === "" ||
       includedData.errorOccurred
     ) {
-      const response = (await (
-        await fetch("/authentication/newuser")
-      ).json()) as NewUserResponse;
+      const response = await post<unknown, NewUserResponse>(
+        "/authentication/newuser",
+        null
+      );
+      if (!response) {
+        console.error("Unable to create a user :(");
+        return;
+      }
       this.user = new User(response.publicId, response.privateId);
       setCookie("publicId", response.publicId);
       setCookie("privateId", response.privateId);

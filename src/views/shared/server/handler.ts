@@ -12,13 +12,9 @@ import { NewUserResponse } from "./types";
 export default function handler(services: Services): express.Router {
   const router = express.Router();
 
-  addEndpoint<NewUserResponse>(
-    router,
-    "/authentication/newuser",
-    async (_request) => {
-      return await createNewUser(services);
-    }
-  );
+  addEndpoint<NewUserResponse>(router, "/authentication/newuser", async () => {
+    return await createNewUser(services);
+  });
 
   return router;
 }

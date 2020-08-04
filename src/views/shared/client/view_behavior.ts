@@ -14,5 +14,5 @@ export default class ViewBehavior {
     });
   }
 
-  public ready(): void {}
+  public async ready(): Promise<void> {}
 }

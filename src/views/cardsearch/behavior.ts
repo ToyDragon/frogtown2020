@@ -1,7 +1,7 @@
 import ViewBehavior from "../shared/client/view_behavior";
 
 class CardSearchBehavior extends ViewBehavior {
-  ready(): void {
+  public async ready(): Promise<void> {
     console.log("TODO");
   }
 }
