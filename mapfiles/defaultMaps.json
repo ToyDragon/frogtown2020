@@ -1,0 +1,222 @@
+{
+  "filter": [
+      {
+          "key": "lang",
+          "operator": "equals",
+          "value": "en"
+      },
+      {
+          "key": "layout",
+          "operator": "notcontains",
+          "value": "token"
+      },
+      {
+          "key": "layout",
+          "operator": "notequals",
+          "value": "planar"
+      },
+      {
+          "key": "layout",
+          "operator": "notequals",
+          "value": "scheme"
+      },
+      {
+          "key": "layout",
+          "operator": "notequals",
+          "value": "vanguard"
+      },
+      {
+          "key": "type_line",
+          "operator": "notcontains",
+          "value": "Card"
+      }
+  ],
+  "maps": [
+      {
+          "name": "SetCodeToSetName",
+          "duplicates": false,
+          "key": "set",
+          "value": "set_name"
+      },
+      {
+          "name": "IDToName",
+          "duplicates": false,
+          "key": "id",
+          "value": "name"
+      },
+      {
+          "name": "NameToID",
+          "duplicates": true,
+          "key": "name",
+          "value": "id"
+      },
+      {
+          "name": "CMCToID",
+          "duplicates": true,
+          "key": "cmc",
+          "value": "id"
+      },
+      {
+          "name": "IDToCMC",
+          "duplicates": false,
+          "key": "id",
+          "value": "cmc"
+      },
+      {
+          "name": "SetCodeToID",
+          "duplicates": true,
+          "key": "set",
+          "value": "id"
+      },
+      {
+          "name": "IDToSetCode",
+          "duplicates": false,
+          "key": "id",
+          "value": "set"
+      },
+      {
+          "name":"SetCodeToRelease",
+          "duplicates": false,
+          "key": "set",
+          "value": "released_at"
+      },
+      {
+          "name": "IDToToughness",
+          "duplicates": false,
+          "key": "id",
+          "value": "toughness"
+      },
+      {
+          "name": "ToughnessToID",
+          "duplicates": true,
+          "key": "toughness",
+          "value": "id"
+      },
+      {
+          "name": "IDToPower",
+          "duplicates": false,
+          "key": "id",
+          "value": "power"
+      },
+      {
+          "name": "PowerToID",
+          "duplicates": true,
+          "key": "power",
+          "value": "id"
+      },
+      {
+          "name": "IDToRarity",
+          "duplicates": false,
+          "key": "id",
+          "value": "rarity"
+      },
+      {
+          "name": "RarityToID",
+          "duplicates": true,
+          "key": "rarity",
+          "value": "id"
+      },
+      {
+          "name": "IDToColorIdentity",
+          "duplicates": true,
+          "key": "id",
+          "value": "color_identity.orcolorless"
+      },
+      {
+          "name": "ColorIdentityToID",
+          "duplicates": true,
+          "key": "color_identity.orcolorless",
+          "value": "id"
+      },
+      {
+          "name": "IDToColor",
+          "duplicates": true,
+          "key": "id",
+          "value": "colors.orcolorless"
+      },
+      {
+          "name": "ColorToID",
+          "duplicates": true,
+          "key": "colors.orcolorless",
+          "value": "id"
+      },
+      {
+          "name": "IDToSubtype",
+          "duplicates": true,
+          "key": "id",
+          "value": "type_line.parseSubTypes"
+      },
+      {
+          "name": "SubtypeToID",
+          "duplicates": true,
+          "key": "type_line.parseSubTypes",
+          "value": "id"
+      },
+      {
+          "name": "IDToSupertype",
+          "duplicates": true,
+          "key": "id",
+          "value": "type_line.parseSuperTypes"
+      },
+      {
+          "name": "SupertypeToID",
+          "duplicates": true,
+          "key": "type_line.parseSuperTypes",
+          "value": "id"
+      },
+      {
+          "name": "IDToType",
+          "duplicates": true,
+          "key": "id",
+          "value": "type_line.parseTypes"
+      },
+      {
+          "name": "TypeToID",
+          "duplicates": true,
+          "key": "type_line.parseTypes",
+          "value": "id"
+      },
+      {
+          "name": "IDToLegalFormat",
+          "duplicates": true,
+          "key": "id",
+          "value": "legalities.islegal"
+      },
+      {
+          "name": "LegalFormatToID",
+          "duplicates": true,
+          "key": "legalities.islegal",
+          "value": "id"
+      },
+      {
+          "name": "IDToText",
+          "duplicates": false,
+          "key": "id",
+          "value": "oracle_text"
+      },
+      {
+          "name": "IDToCollectorsNumber",
+          "duplicates": false,
+          "key": "id",
+          "value": "collector_number"
+      },
+      {
+          "name": "IDToCost",
+          "duplicates": false,
+          "key": "id",
+          "value": "mana_cost"
+      },
+      {
+          "name": "IDToLargeImageURI",
+          "duplicates": false,
+          "key": "id",
+          "value": "image_uris.large"
+      },
+      {
+          "name": "IDToTokenStrings",
+          "duplicates": true,
+          "key": "id",
+          "value": "oracle_text.parseTokens"
+      }
+  ]
+}

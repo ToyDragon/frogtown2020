@@ -30,3 +30,9 @@ test("Identifies multiple missing parameters", () => {
   delete fakeConfig.adminId;
   expect(GetMissingConfigProperties(fakeConfig)).toHaveLength(2);
 });
+
+test("Identifies multiple missing array", () => {
+  const fakeConfig = new Config();
+  delete fakeConfig.mapFiles;
+  expect(GetMissingConfigProperties(fakeConfig)).toHaveLength(1);
+});

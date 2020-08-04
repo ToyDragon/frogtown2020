@@ -15,7 +15,9 @@ export default class Config {
     securePort: 0,
     unsecurePort: 0,
   };
+  public mapFiles: string[] = [];
   public storage = {
+    externalRoot: "",
     awsAccessKeyIdFile: "",
     awsSecretAccessKeyFile: "",
     awsS3FullQualityImageBucket: "",

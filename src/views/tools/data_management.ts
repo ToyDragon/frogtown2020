@@ -1,9 +1,13 @@
 import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
 import { DataFileRow } from "../../server/database/db_manager";
-import { logInfo } from "../../server/log";
+import { logInfo, logError } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
 import * as https from "https";
+import {
+  constructAllMaps,
+  getConstructionProgress,
+} from "./mapconstruction/construct_all_maps";
 
 const allDataKey = "AllData.json";
 
@@ -28,7 +32,9 @@ export async function getDataInfo(
     allCardsNextChangeDate: "",
     allCardsUpdateDate: "",
     dataMapsUpdateDate: "",
+    dataMapsChangeDate: "",
     allCardsUpdateInProgress: downloadInProgress,
+    dataMapsUpdateInProgress: getConstructionProgress() !== null,
   };
 
   const bulkdataResponse = await services.scryfallManager.request<
@@ -45,15 +51,24 @@ export async function getDataInfo(
   const connection = await services.dbManager.getConnection();
   if (connection) {
     const allDataRows = await connection.query<DataFileRow[]>(
-      "SELECT * FROM data_files WHERE name=?;",
-      ["all_files"]
+      "SELECT * FROM data_files;",
+      []
     );
-    if (allDataRows.value && allDataRows.value.length === 1) {
-      result.allCardsChangeDate = allDataRows.value[0].change_time + " UTC";
-      result.allCardsUpdateDate = allDataRows.value[0].update_time + " UTC";
+    logError("Result: " + JSON.stringify(allDataRows));
+    if (allDataRows.value) {
+      for (const row of allDataRows.value) {
+        if (row.name === "all_cards") {
+          result.allCardsChangeDate = row.change_time + " UTC";
+          result.allCardsUpdateDate = row.update_time + " UTC";
+        }
+        if (row.name === "map_files") {
+          result.dataMapsChangeDate = row.change_time + " UTC";
+          result.dataMapsUpdateDate = row.update_time + " UTC";
+        }
+      }
     }
+    connection.release();
   }
-
   return result;
 }
 
@@ -64,6 +79,42 @@ export async function getAllCardsFileProgress(
     return 1.0;
   }
   return downloadCurBytes / downloadMaxBytes;
+}
+
+export function getMapConstructionProgress(): number | null {
+  return getConstructionProgress();
+}
+
+export async function startConstructingDataMaps(
+  services: Services
+): Promise<void> {
+  const connection = await services.dbManager.getConnection();
+  if (!connection) {
+    return;
+  }
+  const allDataRows = await connection.query<DataFileRow[]>(
+    "SELECT * FROM data_files WHERE name=?;",
+    ["all_cards"]
+  );
+
+  if (allDataRows.value && allDataRows.value.length === 1) {
+    const change_time = allDataRows.value[0].change_time;
+    const performed = await constructAllMaps(services);
+    if (performed) {
+      if (connection) {
+        const insertResult = await connection.query(
+          "REPLACE INTO data_files (name, update_time, change_time) VALUES (?, ?, ?);",
+          [
+            "map_files",
+            dateToMySQL(new Date()),
+            dateToMySQL(new Date(change_time)),
+          ]
+        );
+        logInfo("Insert result: " + JSON.stringify(insertResult));
+      }
+    }
+  }
+  connection?.release();
 }
 
 export async function startDownloadNewAllCardsFile(
@@ -116,12 +167,13 @@ export async function startDownloadNewAllCardsFile(
         const insertResult = await connection.query(
           "REPLACE INTO data_files (name, update_time, change_time) VALUES (?, ?, ?);",
           [
-            "all_files",
+            "all_cards",
             dateToMySQL(new Date()),
             dateToMySQL(new Date(data_changed)),
           ]
         );
         logInfo("Insert result: " + JSON.stringify(insertResult));
+        connection.release();
       }
     });
   });

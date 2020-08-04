@@ -2,7 +2,11 @@ import * as express from "express";
 import Services from "../../server/services";
 import { addEndpoint } from "../../shared/utils";
 import * as DataManagement from "./data_management";
-import { DataInfoResponse, ProgressResponse } from "./types";
+import {
+  DataInfoResponse,
+  ProgressResponse,
+  OptionalProgressResponse,
+} from "./types";
 
 /**
  * Router that handles requests available outside of the context
@@ -25,6 +29,20 @@ export default function handler(services: Services): express.Router {
       progress: await DataManagement.getAllCardsFileProgress(services),
     };
   });
+
+  addEndpoint<void>(router, "/start_construct_all_data_maps", async () => {
+    await DataManagement.startConstructingDataMaps(services);
+  });
+
+  addEndpoint<OptionalProgressResponse>(
+    router,
+    "/data_maps_progress",
+    async () => {
+      return {
+        progress: DataManagement.getMapConstructionProgress(),
+      };
+    }
+  );
 
   return router;
 }

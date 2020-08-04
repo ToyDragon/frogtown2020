@@ -16,7 +16,10 @@ export function GetMissingConfigProperties(config: Config): string[] {
     if (typeof recordConfig[field] === "undefined") {
       missingProperties.push(field);
     } else {
-      if (typeof fakeConfig[field] === "object") {
+      if (
+        typeof fakeConfig[field] === "object" &&
+        !Array.isArray(fakeConfig[field])
+      ) {
         const fakeRecChild = (fakeConfig[field] as unknown) as Rec;
         for (const subfield in fakeRecChild) {
           const realRecChild = (recordConfig[field] as unknown) as Rec;

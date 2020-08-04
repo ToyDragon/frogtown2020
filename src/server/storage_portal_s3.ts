@@ -70,6 +70,29 @@ export default class S3StoragePortal implements StoragePortal {
     return success;
   }
 
+  public async uploadStringToBucket(
+    bucket: string,
+    objectKey: string,
+    data: string
+  ): Promise<boolean> {
+    // Set up request
+    const putObjectRequest = {
+      Bucket: bucket,
+      Key: objectKey,
+      Body: data,
+      ACL: "public-read",
+    };
+
+    // Attempt upload
+    const success = await new Promise<boolean>((resolve) => {
+      this.s3.putObject(putObjectRequest, (err, _data) => {
+        resolve(!err);
+      });
+    });
+
+    return success;
+  }
+
   public uploadStreamToBucket(
     bucket: string,
     objectKey: string

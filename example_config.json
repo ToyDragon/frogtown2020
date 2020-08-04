@@ -11,11 +11,17 @@
 	"ttsPublicDeckJsonDir": "TODO",
 	"hqImagePublicDir": "TODO",
     "imageDir": "TODO",
+    "mapFiles": [
+        "./mapfiles/defaultMaps.json",
+        "./mapfiles/tokenMaps.json",
+        "./mapfiles/twofacedCards.json"
+    ],
     "sslOptions": {
         "keyFile": "./secrets/privkey.pem",
         "certFile": "./secrets/fullchain.pem"
     },
     "storage": {
+        "externalRoot": "https://s3-us-west-2.amazonaws.com",
         "awsAccessKeyIdFile": "./secrets/awsAccessKey.txt",
         "awsSecretAccessKeyFile": "./secrets/awsSecretAccessKey.txt",
         "awsS3FullQualityImageBucket": "frogtown.apricot.images.source",
