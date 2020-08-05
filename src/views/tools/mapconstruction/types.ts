@@ -82,15 +82,21 @@ export type ScryfallLegalStatus =
   | "restricted"
   | "banned";
 
+export type OptionalScryfallLegalStatus =
+  | "legal"
+  | "not_legal"
+  | "restricted"
+  | "banned";
+
 export interface ScryfallLegalities {
-  [format: string]: ScryfallLegalStatus;
+  [format: string]: ScryfallLegalStatus | undefined;
   standard: ScryfallLegalStatus;
   modern: ScryfallLegalStatus;
   legacy: ScryfallLegalStatus;
   vintage: ScryfallLegalStatus;
   commander: ScryfallLegalStatus;
   future: ScryfallLegalStatus;
-  frontier: ScryfallLegalStatus;
+  frontier?: ScryfallLegalStatus;
   pauper: ScryfallLegalStatus;
   penny: ScryfallLegalStatus;
   duel: ScryfallLegalStatus;
@@ -286,7 +292,7 @@ export type ScryfallFrame = "1993" | "1997" | "2003" | "2015" | "future";
 export type ScryfallRarity = "common" | "uncommon" | "rare" | "mythic";
 
 export interface ScryfallRelatedURIs {
-  gatherer: string;
+  gatherer?: string;
   tcgplayer_decks: string;
   edhrec: string;
   mtgtop8: string;
@@ -327,7 +333,7 @@ export interface ScryfallFullCard {
    */
   tcgplayer_id?: number;
 
-  multiverse_ids?: string[];
+  multiverse_ids?: number[];
 
   /**
    * Name as it appears on the card, in Pascale Case
