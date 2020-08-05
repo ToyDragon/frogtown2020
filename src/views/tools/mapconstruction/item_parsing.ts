@@ -38,8 +38,11 @@ export default function getItem(
         .map((x) => {
           return x.id;
         });
-    } else if (modifier === "orcolorless" && value.length === 0) {
-      return [MTGCostType.Colorless];
+    } else if (modifier === "orcolorless") {
+      if (value.length === 0 || typeof value[0] === "undefined") {
+        return [MTGCostType.Colorless];
+      }
+      return value;
     } else if (value && modifier) {
       const allModifiers = prop.split(".");
       for (let i = 1; i < allModifiers.length; i++) {
