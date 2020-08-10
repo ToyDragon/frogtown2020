@@ -2,7 +2,7 @@ import { randomString } from "../../../shared/utils";
 import Services from "../../../server/services";
 import ConnectionContainer from "../../../server/database/db_connection_container";
 import { logError, logCritical, logInfo } from "../../../server/log";
-import { NewUserResponse } from "./types";
+import { NewUserResponse } from "../handler_types";
 
 export async function getPublicKeyFromPrivateKey(
   private_id: string,

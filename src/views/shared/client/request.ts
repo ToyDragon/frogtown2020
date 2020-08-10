@@ -7,12 +7,17 @@ export async function request<R, T>(
   body: R,
   method: string
 ): Promise<T | null> {
-  const result = await fetch(route, {
+  const options: RequestInit = {
     method: method,
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
-  });
-  return ((await result.json()) as unknown) as T | null;
+  };
+  if (method === "GET") {
+    delete options.body;
+  }
+  const result = await fetch(route, options);
+  const data = ((await result.json()) as unknown) as T | null;
+  return data;
 }

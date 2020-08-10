@@ -1,5 +1,5 @@
 import * as stream from "stream";
-import { ScryfallFullCard } from "./types";
+import { ScryfallFullCard } from "../../shared/scryfall_types";
 import { logError } from "../../../server/log";
 import MapFile, { MapFilterOperator } from "./map_file";
 import getItem from "./item_parsing";

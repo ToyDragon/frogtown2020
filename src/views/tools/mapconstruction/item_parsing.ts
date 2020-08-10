@@ -4,7 +4,7 @@ import {
   ScryfallComponent,
   MTGCostType,
   MTGCardSuperType,
-} from "./types";
+} from "../../shared/scryfall_types";
 
 // Lol good luck understanding or maintaining these regexes.
 // eslint-disable-next-line max-len

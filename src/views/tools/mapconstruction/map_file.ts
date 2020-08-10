@@ -1,4 +1,4 @@
-import { ScryfallFullCard } from "./types";
+import { ScryfallFullCard } from "../../shared/scryfall_types";
 import * as FileUtils from "../../../shared/file_utils";
 import { logError } from "../../../server/log";
 

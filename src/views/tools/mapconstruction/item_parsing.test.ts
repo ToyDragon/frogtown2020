@@ -1,5 +1,5 @@
 import getItem from "./item_parsing";
-import { ScryfallFullCard } from "./types";
+import { ScryfallFullCard } from "../../shared/scryfall_types";
 
 /* eslint-disable */
 /* disable prettier/prettier */

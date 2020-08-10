@@ -1,5 +1,5 @@
 import { setCookie, getCookie } from "./cookies";
-import { NewUserResponse } from "../server/types";
+import { NewUserResponse } from "../handler_types";
 import { post } from "./request";
 
 declare let includedData: { errorOccurred: boolean };
