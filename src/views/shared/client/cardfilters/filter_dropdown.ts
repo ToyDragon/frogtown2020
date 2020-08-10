@@ -60,23 +60,24 @@ export class FilterDropdown extends BaseFilter {
 
   private setupDropdownExclusive(alreadySetup: boolean): void {
     const menu = this.container.find("ul.dropdown-menu");
-    menu.find("> li").on("click", () => {
-      if ($(this).attr("disabled")) {
+    menu.find("> li").on("click", (e) => {
+      if ($(e.delegateTarget).attr("disabled")) {
         return;
       }
       if (!alreadySetup) {
-        $(this).attr(
+        $(e.delegateTarget).attr(
           "data-active",
-          "" + ($(this).attr("data-active") === "false")
+          "" + ($(e.delegateTarget).attr("data-active") === "false")
         );
-        if ($(this).attr("data-active") === "true") {
+        if ($(e.delegateTarget).attr("data-active") === "true") {
           const display =
-            $(this).attr("data-display") || $(this).attr("data-value");
+            $(e.delegateTarget).attr("data-display") ||
+            $(e.delegateTarget).attr("data-value");
           this.valueDisplay.text(display || "");
           menu
             .find(
               "> li:not([data-value=" +
-                $(this).attr("data-value")!.replace(/ /g, "\\ ") +
+                $(e.delegateTarget).attr("data-value")!.replace(/ /g, "\\ ") +
                 "])"
             )
             .attr("data-active", "false");
@@ -91,33 +92,33 @@ export class FilterDropdown extends BaseFilter {
   private setupDropdownMany(alreadySetup: boolean): void {
     const menu = this.container.find("ul.dropdown-menu");
     const isMiscOptions = menu.hasClass("miscSelection");
-    menu.find("> li").on("click", () => {
-      if ($(this).attr("disabled")) {
+    menu.find("> li").on("click", (e) => {
+      if ($(e.delegateTarget).attr("disabled")) {
         return;
       }
       if (!alreadySetup) {
-        $(this).attr(
+        $(e.delegateTarget).attr(
           "data-active",
-          "" + ($(this).attr("data-active") === "false")
+          "" + ($(e.delegateTarget).attr("data-active") === "false")
         );
-        if ($(this).attr("data-active") === "false") {
-          if ($(this).attr("data-value") === "And") {
+        if ($(e.delegateTarget).attr("data-active") === "false") {
+          if ($(e.delegateTarget).attr("data-value") === "And") {
             this.requireAll = false;
             menu.find("> li[data-value=Or]").attr("data-active", "true");
-          } else if ($(this).attr("data-value") === "Or") {
+          } else if ($(e.delegateTarget).attr("data-value") === "Or") {
             this.requireAll = true;
             menu.find("> li[data-value=And]").attr("data-active", "true");
-          } else if ($(this).attr("data-value") === "NoOthers") {
+          } else if ($(e.delegateTarget).attr("data-value") === "NoOthers") {
             this.noOthers = false;
           }
         } else {
-          if ($(this).attr("data-value") === "And") {
+          if ($(e.delegateTarget).attr("data-value") === "And") {
             this.requireAll = true;
             menu.find("> li[data-value=Or]").attr("data-active", "false");
-          } else if ($(this).attr("data-value") === "Or") {
+          } else if ($(e.delegateTarget).attr("data-value") === "Or") {
             this.requireAll = false;
             menu.find("> li[data-value=And]").attr("data-active", "false");
-          } else if ($(this).attr("data-value") === "NoOthers") {
+          } else if ($(e.delegateTarget).attr("data-value") === "NoOthers") {
             this.noOthers = true;
           }
         }
