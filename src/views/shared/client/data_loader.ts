@@ -55,6 +55,7 @@ export const MapsIDToX: (keyof MapData)[] = [
   "TokenIDToName",
   "IDToCollectorsNumber",
   "IDToCost",
+  "IDToLargeImageURI",
 ];
 
 export class MapData {
@@ -94,6 +95,7 @@ export class MapData {
 
   public IDToCollectorsNumber: CardIDMap<string> = {};
   public IDToCost: CardIDMap<string> = {};
+  public IDToLargeImageURI: CardIDMap<string> = {};
 }
 
 export class DataLoader {

@@ -22,4 +22,8 @@ export default class PooledConnectionMock implements PooledConnection {
   }
 
   public release(): void {}
+
+  public on(_ev: string, _callback: unknown): PooledConnection {
+    return this;
+  }
 }

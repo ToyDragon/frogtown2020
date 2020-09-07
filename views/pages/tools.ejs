@@ -6,7 +6,17 @@
 
     <div class="subheading"><span class="title">Data Maps</span></div>
     <div class="infoSectionBody">
-      <div id="divAllCardsInfo"></div>
+      <div id="divAllCardsInfo">
+        <!-- This element is generated dynamically, this is stub content while the real content loads -->
+        <span>
+          AllCards file updated
+          <span class="inlinedata">....................................</span>,
+          with last change made
+          <span class="inlinedata">....................................</span>.
+          New file available with change made
+          <span class="inlinedata">....................................</span>
+        </span>
+      </div>
       <div>
         <button id="btnUpdateAllCardsFile">Update All Cards File</button>
       </div>
@@ -14,7 +24,17 @@
         <div id="divUpdateAllCardsProgress"></div>
       </div>
       <div></div>
-      <div id="divDataMapsInfo"></div>
+      <div id="divDataMapsInfo">
+        <!-- This element is generated dynamically, this is stub content while the real content loads -->
+        <span>
+          Data maps updated
+          <span class="inlinedata">....................................</span>,
+          with last change made
+          <span class="inlinedata">....................................</span>.
+          New file available with change made
+          <span class="inlinedata">....................................</span>
+        </span>
+      </div>
       <div>
         <button id="btnUpdateDataMaps">Update All Data Maps</button>
       </div>
@@ -22,51 +42,31 @@
         <div id="divUpdateDataMapsProgress"></div>
       </div>
     </div>
+
+    <div class="subheading"><span class="title">Card Images</span></div>
+    <div class="infoSectionBody">
+      <div id="divCardImageInfo">
+        <!-- This element is generated dynamically, this is stub content while the real content loads -->
+        <span>
+          Card images last updated 
+          <span class="inlinedata">....................................</span>,
+          with 
+          <span class="inlinedata">x Missing</span>,
+          <span class="inlinedata">x With No Image</span>,
+          <span class="inlinedata">x Low Quality</span>, and 
+          <span class="inlinedata">x High Quality</span>. There are
+          <span class="inlinedata">x HQ available</span> cards, and
+          <span class="inlinedata">x LQ available</span> cards.
+        </span>
+      </div>
+      <div>
+        <button id="btnDownloadSomeCards">Download 1,000 Cards</button>
+      </div>
+      <div>
+        <div id="divUpdateImagesProgress"></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!--
-<div class="section" data-title="Data Maps">
-    <button id="btnBuildMaps">Build Maps</button>
-</div>
-<div class="section" data-title="Set Icons">
-    <button id="btnUpdateSetIcons">Update Set Icons</button>
-</div>
-<div class="section" data-title="All-Cards Data File">
-    <button id="btnUpdateAllCards">Update All Cards File</button>
-</div>
-<div class="section" data-title="Conversions">
-    <button id="btnRunConversion" class="nodisp">Run Next Conversion</button>
-</div>
-<div class="section" data-title="Image Deletion">
-    <div class="section" data-title="Output" data-nocollapse="true">
-        <div>To update card images do the following:</div>
-        <ol>
-            <li>Update the all cards file, and rebuild the data maps. (this makes sure scryfall URLs are up to date)</li>
-            <li>List the missing images if handling a new set</li>
-            <li>Update images for the cards/sets</li>
-        </ol>
-    </div>
-    <div id="divUploadStats"></div>
-    <button id="btnImageUploadStats">List missing uploads</button>
-    <div class="section" data-title="By ID" data-nocollapse="true">
-        <textarea id="taCardIDsToDelete"></textarea>
-    </div>
-    <div class="section" data-title="By Set" data-nocollapse="true">
-        <textarea id="taSetsToDelete"></textarea>
-    </div>
-    <div>
-        <button id="btnUpdateImagesS3">Update Images S3</button>
-    </div>
-    <div>
-        <button id="btnUpdateImages">Update Images Scryfall</button>
-    </div>
-    <div>
-        <button id="btnIncreaseVersion">Increase Image Version</button>
-    </div>
-</div>
-<div class="section" data-title="Output" data-nocollapse="true">
-    <div id="output"></div>
-</div>
--->
 <%- include("../partials/page_footer") %>

@@ -78,6 +78,8 @@ export async function getAllCardsFileProgress(
   if (!downloadInProgress) {
     return 1.0;
   }
+
+  // TODO this shouldn't rely on static data, or we should restrict the tools page to always use the same server somehow.
   return downloadCurBytes / downloadMaxBytes;
 }
 
@@ -120,7 +122,7 @@ export async function startConstructingDataMaps(
 export async function startDownloadNewAllCardsFile(
   services: Services
 ): Promise<void> {
-  // TODO lock the data_files table while doing this.
+  // TODO: lock the data_files table while doing this.
   if (downloadInProgress) {
     return;
   }
@@ -136,6 +138,7 @@ export async function startDownloadNewAllCardsFile(
       if (group.type === "all_cards") {
         data_changed = group.updated_at;
         data_url = group.download_uri;
+
         // Expect a compression ratio of 1 : 6.3. This is not ideal, but I don't know how to get either:
         // 1. The uncompressed size of request
         // 2. The compressed size of the incoming data

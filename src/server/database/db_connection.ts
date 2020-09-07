@@ -11,6 +11,10 @@ export class DatabaseConnection {
     this.rawConnection = rawConnection;
     this.transactionOpen = false;
     this.connectionOpen = true;
+
+    this.rawConnection.on("error", (err) => {
+      logError("SQL Error: " + err);
+    });
   }
 
   public beginTransaction(): Promise<DatabaseActionResult<void>> {

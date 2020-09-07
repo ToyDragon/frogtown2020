@@ -134,6 +134,7 @@ display: none !important;
   padding: 4px;
   background-color: darkslateblue;
   color: white;
+  white-space: nowrap;
 }
 
 button[disabled] {

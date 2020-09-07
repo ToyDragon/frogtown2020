@@ -1,5 +1,7 @@
 import * as express from "express";
 import { logInfo } from "../server/log";
+import Config from "../server/config";
+import * as https from "https";
 
 /**
  * Any shared helper functions whose usefullness isn't restricted to a single area.
@@ -67,4 +69,49 @@ export function wait(duration: number): Promise<void> {
  */
 export function dateToMySQL(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
+export function httpsGet<T>(path: string): Promise<T> {
+  return new Promise((resolve) => {
+    https.get(path, (msg) => {
+      let data = "";
+      msg.on("data", (chunk) => {
+        data += chunk;
+      });
+      msg.on("close", () => {
+        resolve(JSON.parse(data) as T);
+      });
+    });
+  });
+}
+
+export async function getAllCardIDs(config: Config): Promise<string[]> {
+  const result: string[] = [];
+  const commonRoot =
+    config.storage.externalRoot + "/" + config.storage.awsS3DataMapBucket + "/";
+  const allImgMaps = [
+    await httpsGet<Record<string, string>>(
+      commonRoot + "IDToLargeImageURI.json"
+    ),
+    await httpsGet<Record<string, string>>(
+      commonRoot + "BackIDToLargeImageURI.json"
+    ),
+    await httpsGet<Record<string, string>>(
+      commonRoot + "TokenIDToLargeImageURI.json"
+    ),
+  ];
+  for (const map of allImgMaps) {
+    for (const id in map) {
+      result.push(id);
+    }
+  }
+  return result;
+}
+
+export function stringArrayToRecord(data: string[]): Record<string, boolean> {
+  const result: Record<string, boolean> = {};
+  for (const ele of data) {
+    result[ele] = true;
+  }
+  return result;
 }

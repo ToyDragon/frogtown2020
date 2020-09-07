@@ -12,6 +12,12 @@ export interface DataFileRow {
   change_time: string;
 }
 
+export interface CardImageRow {
+  card_id: string;
+  update_time: string;
+  quality: number;
+}
+
 export default class DatabaseManager {
   private connectionPool: mysql.Pool;
 
@@ -136,6 +142,64 @@ export default class DatabaseManager {
         PRIMARY KEY (name)
       ) ENGINE=InnoDB;
     `;
+
+    // Perform creation and check for errors.
+    result = await connection.query(cmd, []);
+    if (result.err) {
+      logCritical("Error while ensuring required database tables exist.");
+      logCritical(result.err);
+      return;
+    }
+
+    // deck_keys table
+    cmd = `
+      CREATE TABLE IF NOT EXISTS deck_keys(
+        id VARCHAR(24) NOT NULL,
+        owner_id VARCHAR(24) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        PRIMARY KEY (id)
+      ) ENGINE=InnoDB;
+    `;
+
+    // Perform creation and check for errors.
+    result = await connection.query(cmd, []);
+    if (result.err) {
+      logCritical("Error while ensuring required database tables exist.");
+      logCritical(result.err);
+      return;
+    }
+
+    // deck_cards table
+    cmd = `
+      CREATE TABLE IF NOT EXISTS deck_cards(
+        id VARCHAR(24) NOT NULL,
+        card_id VARCHAR(36) NOT NULL,
+        count SMALLINT NOT NULL,
+        PRIMARY KEY (id, card_id)
+      ) ENGINE=InnoDB;
+    `;
+
+    // Perform creation and check for errors.
+    result = await connection.query(cmd, []);
+    if (result.err) {
+      logCritical("Error while ensuring required database tables exist.");
+      logCritical(result.err);
+      return;
+    }
+
+    // card_images table
+    cmd = `
+      CREATE TABLE IF NOT EXISTS card_images(
+        card_id VARCHAR(36) NOT NULL,
+        update_time DATETIME NOT NULL,
+        quality TINYINT NOT NULL,
+        PRIMARY KEY (card_id)
+      ) ENGINE=InnoDB;
+    `;
+    //Quality-
+    //  0- No image
+    //  1- LQ
+    //  2- HQ
 
     // Perform creation and check for errors.
     result = await connection.query(cmd, []);

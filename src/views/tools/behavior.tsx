@@ -5,11 +5,16 @@ import {
   DataInfoResponse,
   ProgressResponse,
   OptionalProgressResponse,
+  CardImageInfoResponse,
+  CardImageUpdateProgressResponse,
+  ImageInfo,
 } from "./types";
 import { post } from "../shared/client/request";
 import { wait } from "../../shared/utils";
 
 class ToolsBehavior extends ViewBehavior {
+  public cardIdsToDownloadImagesFor: string[] | null = null;
+
   public async updateDisplay(): Promise<void> {
     const result = await post<unknown, DataInfoResponse>(
       "/tools/get_data_info",
@@ -18,6 +23,81 @@ class ToolsBehavior extends ViewBehavior {
 
     this.updateAllCardsFromDataInfo(result);
     this.updateDataMapsFromDataInfo(result);
+    this.updateCardImageInfo();
+  }
+
+  private async updateCardImageInfo(): Promise<void> {
+    const ele = document.querySelector("#divCardImageInfo");
+    const result = await post<unknown, CardImageInfoResponse>(
+      "/tools/get_card_image_info",
+      {}
+    );
+    if (result && ele) {
+      this.cardIdsToDownloadImagesFor = result.cardsNotHQWithHQAvailable.slice(
+        0,
+        1000
+      );
+      if (
+        this.cardIdsToDownloadImagesFor.length < 1000 &&
+        result.cardsMissingWithLQAvailable
+      ) {
+        const lqCards = result.cardsMissingWithLQAvailable.slice(
+          0,
+          1000 - this.cardIdsToDownloadImagesFor.length
+        );
+        for (const cardId of lqCards) {
+          this.cardIdsToDownloadImagesFor.push(cardId);
+        }
+      }
+      console.log("Cards to update: ");
+      console.log(this.cardIdsToDownloadImagesFor);
+      const btnDownloadSomeCards = document.querySelector(
+        "#btnDownloadSomeCards"
+      );
+      if (btnDownloadSomeCards) {
+        if (this.cardIdsToDownloadImagesFor.length === 0) {
+          btnDownloadSomeCards.setAttribute("disabled", "true");
+        } else {
+          btnDownloadSomeCards.removeAttribute("disabled");
+        }
+      }
+      ReactDom.render(
+        <span>
+          Card images last updated{" "}
+          <span className="inlinedata">
+            {result.lastUpdateDate
+              ? new Date(result.lastUpdateDate).toLocaleString()
+              : "never"}
+          </span>
+          , with{" "}
+          <span className="inlinedata">
+            {result.countByType[ImageInfo.MISSING]} Missing
+          </span>
+          ,{" "}
+          <span className="inlinedata">
+            {result.countByType[ImageInfo.NONE]} With No Image
+          </span>
+          ,{" "}
+          <span className="inlinedata">
+            {result.countByType[ImageInfo.LQ]} Low Quality
+          </span>
+          , and{" "}
+          <span className="inlinedata">
+            {result.countByType[ImageInfo.HQ]} High Quality
+          </span>
+          . There are{" "}
+          <span className="inlinedata">
+            {result.cardsNotHQWithHQAvailable.length} HQ available
+          </span>{" "}
+          cards, and{" "}
+          <span className="inlinedata">
+            {result.cardsMissingWithLQAvailable.length} LQ available
+          </span>{" "}
+          cards .
+        </span>,
+        ele
+      );
+    }
   }
 
   private async updateAllCardsFromDataInfo(
@@ -203,6 +283,46 @@ class ToolsBehavior extends ViewBehavior {
         post("/tools/start_construct_all_data_maps", {});
         btnUpdateDataMaps.setAttribute("disabled", "true");
         this.updateAllCardsProgress();
+      });
+    }
+
+    const btnDownloadSomeCards = document.querySelector(
+      "#btnDownloadSomeCards"
+    );
+    if (btnDownloadSomeCards) {
+      btnDownloadSomeCards.setAttribute("disabled", "true");
+      btnDownloadSomeCards.addEventListener("click", () => {
+        post("/tools/start_image_update", {
+          allMissingCards: false,
+          cardIds: this.cardIdsToDownloadImagesFor,
+        });
+        btnDownloadSomeCards.setAttribute("disabled", "true");
+        this.updateAllCardsProgress();
+        const updateInterval = setInterval(() => {
+          post<unknown, CardImageUpdateProgressResponse>(
+            "/tools/get_image_update_progress",
+            {}
+          ).then((progress) => {
+            if (progress) {
+              const divUpdateImagesProgress = document.querySelector(
+                "#divUpdateImagesProgress"
+              );
+              if (divUpdateImagesProgress) {
+                ReactDom.render(
+                  <span>
+                    Progress:{" "}
+                    <span className="inlinedata">
+                      {progress.position + "/" + progress.max}
+                    </span>
+                  </span>,
+                  divUpdateImagesProgress
+                );
+              }
+            } else {
+              clearInterval(updateInterval);
+            }
+          });
+        }, 3000);
       });
     }
   }

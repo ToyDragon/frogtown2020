@@ -1,11 +1,15 @@
 import * as express from "express";
 import Services from "../../server/services";
-import { addEndpoint } from "../../shared/utils";
+import { addEndpoint, addEndpointWithParams } from "../../shared/utils";
 import * as DataManagement from "./data_management";
+import * as ImageManagement from "./image_management";
 import {
   DataInfoResponse,
   ProgressResponse,
   OptionalProgressResponse,
+  CardImageInfoResponse,
+  CardImageUpdateStartRequest,
+  CardImageUpdateProgressResponse,
 } from "./types";
 
 /**
@@ -41,6 +45,30 @@ export default function handler(services: Services): express.Router {
       return {
         progress: DataManagement.getMapConstructionProgress(),
       };
+    }
+  );
+
+  addEndpoint<CardImageInfoResponse>(
+    router,
+    "/get_card_image_info",
+    async () => {
+      return await ImageManagement.getAllImageInfos(services);
+    }
+  );
+
+  addEndpointWithParams<CardImageUpdateStartRequest, void>(
+    router,
+    "/start_image_update",
+    async (request) => {
+      return await ImageManagement.startUpdatingImages(services, request);
+    }
+  );
+
+  addEndpoint<CardImageUpdateProgressResponse>(
+    router,
+    "/get_image_update_progress",
+    async () => {
+      return await ImageManagement.getImageUpdateProgress();
     }
   );
 

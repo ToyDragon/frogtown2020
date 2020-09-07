@@ -18,6 +18,12 @@ export async function request<R, T>(
     delete options.body;
   }
   const result = await fetch(route, options);
-  const data = ((await result.json()) as unknown) as T | null;
-  return data;
+  try {
+    const data = ((await result.json()) as unknown) as T | null;
+    return data;
+  } catch (e) {
+    console.log("Unable to parse JSON");
+    console.log(route);
+    return null;
+  }
 }
