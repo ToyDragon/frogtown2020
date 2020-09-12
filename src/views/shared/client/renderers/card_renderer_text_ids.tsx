@@ -16,10 +16,10 @@ export class CardRendererTextIDs extends CardRendererText {
 
     const allCardIDs: { [id: string]: boolean } = {};
     if (!cardIds || cardIds.length === 0) {
-      this.cardList.addClass("nodisp");
+      this.cardList.classList.add("nodisp");
       return;
     }
-    this.cardList.removeClass("nodisp");
+    this.cardList.classList.remove("nodisp");
     for (const cardId of cardIds) {
       allCardIDs[cardId] = true;
     }
@@ -27,7 +27,7 @@ export class CardRendererTextIDs extends CardRendererText {
       text += cardId + "\n";
     }
 
-    this.cardList.text(text);
+    this.cardList.innerHTML = text;
   }
 
   public UpdateDisplayedCards(): void {}

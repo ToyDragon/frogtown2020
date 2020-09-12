@@ -29,6 +29,7 @@
     "mysql": "^2.18.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "roughjs": "^4.3.1",
     "typescript": "^3.9.7"
   },
   "devDependencies": {

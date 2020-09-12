@@ -9,7 +9,7 @@ import { CardRendererText } from "../shared/client/renderers/card_renderer_text"
 import { CardRendererTextIDs } from "../shared/client/renderers/card_renderer_text_ids";
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
 
-class CardSearchViewBehavior extends ViewBehavior {
+class CardSearchViewBehavior extends ViewBehavior<unknown> {
   private cardSearchUtil: CardSearchBehavior | null = null;
 
   public async ready(): Promise<void> {
@@ -18,8 +18,10 @@ class CardSearchViewBehavior extends ViewBehavior {
     const onCardAction = (action: string, cardId: string) => {
       this.onCardAction(action, cardId);
     };
-    const cardArea = $("#cardArea");
-    const scrollingParent = $("#cardSearch");
+    const cardArea = document.querySelector("#cardArea") as HTMLElement;
+    const scrollingParent = document.querySelector(
+      "#cardSearch"
+    ) as HTMLElement;
     const allRenderers: BaseCardRenderer[] = [
       new CardRendererGrid(
         this.dl,

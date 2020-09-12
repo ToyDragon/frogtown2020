@@ -16,8 +16,8 @@ export class CardRendererDetails extends BaseCardRenderer {
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -45,16 +45,16 @@ export class CardRendererDetails extends BaseCardRenderer {
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("details");
+    this.cardArea.classList.add("details");
   }
 
   public Cleanup(): void {
-    this.cardArea.removeClass("details");
-    this.cardArea.empty();
+    this.cardArea.classList.remove("details");
+    this.cardArea.innerHTML = "";
   }
 
   public ChangeCardSet(cardIds: string[], miscOptions: MiscOptions): void {
-    this.cardArea.empty();
+    this.cardArea.innerHTML = "";
     this.groups = this.ParseGroups(cardIds, miscOptions);
     const showDuplicates = !!miscOptions["Show Duplicates"];
     const stackDuplicates = !!miscOptions["Stack Duplicates"];
@@ -71,19 +71,19 @@ export class CardRendererDetails extends BaseCardRenderer {
     actions: ActionList
   ): void {
     const nameToTitleDiv: { [name: string]: JQuery<HTMLElement> } = {};
-    // eslint-disable-next-line prettier/prettier
-    const groupDiv = $("<div class=\"group\"></div>");
+    const groupDiv = document.createElement("div");
+    groupDiv.classList.add("group");
     if (group.title) {
-      // eslint-disable-next-line prettier/prettier
-      const groupSeperator = $("<div class=\"groupSeperator\"></div>");
-      groupSeperator.text(group.title);
+      const groupSeperator = document.createElement("div");
+      groupSeperator.classList.add("groupSeperator");
+      groupSeperator.innerHTML = group.title;
       groupDiv.append(groupSeperator);
     }
     group.cardDivs = [];
     const usedNames: { [name: string]: boolean } = {};
     let count = 0;
-    // eslint-disable-next-line prettier/prettier
-    const cardList = $("<div class=\"cardList\"></div>");
+    const cardList = document.createElement("div");
+    cardList.classList.add("cardList");
     groupDiv.append(cardList);
     const idToName = this.dl.getMapData("IDToName");
     if (!group.cardIds || !idToName) {
@@ -108,15 +108,15 @@ export class CardRendererDetails extends BaseCardRenderer {
       if (count > 200) {
         break;
       }
-      // eslint-disable-next-line prettier/prettier
-      const cardDiv = $("<div class=\"card\"></div>");
-      // eslint-disable-next-line prettier/prettier
-      const previewDiv = $("<div class=\"preview\"></div>");
-      previewDiv.attr("data-id", cardId);
+      const cardDiv = document.createElement("div");
+      cardDiv.classList.add("card");
+      const previewDiv = document.createElement("div");
+      previewDiv.classList.add("preview");
+      previewDiv.setAttribute("data-id", cardId);
       cardDiv.append(previewDiv);
       group.cardDivs.push(previewDiv);
-      // eslint-disable-next-line prettier/prettier
-      const detailsDiv = $("<div class=\"details\"></div>");
+      const detailsDiv = document.createElement("div");
+      detailsDiv.classList.add("details");
 
       const idToSetCode = this.dl.getMapData("IDToSetCode");
       const idToRarity = this.dl.getMapData("IDToRarity");
@@ -216,7 +216,7 @@ export class CardRendererDetails extends BaseCardRenderer {
           ></div>
           {actionDetails.map((deet) => deet.element)}
         </React.Fragment>,
-        detailsDiv[0]
+        detailsDiv
       );
       cardDiv.append(detailsDiv);
 
@@ -227,10 +227,10 @@ export class CardRendererDetails extends BaseCardRenderer {
       this.SetupActions(actionDetails, cardId);
 
       if (setCode && setReference.current) {
-        this.putSetSVG($(setReference.current), setCode);
+        this.putSetSVG(setReference.current, setCode);
       }
 
-      cardDiv.addClass(count % 2 === 0 ? "even" : "odd");
+      cardDiv.classList.add(count % 2 === 0 ? "even" : "odd");
       cardList.append(cardDiv);
     }
     this.cardArea.append(groupDiv);
@@ -240,12 +240,12 @@ export class CardRendererDetails extends BaseCardRenderer {
     if (this.groups.length === 0 || this.groups[0].cardDivs.length === 0) {
       return;
     }
-    const parentHeight = this.scrollingParent.innerHeight() || 0;
-    const cardHeight = this.groups[0].cardDivs[0].outerHeight() || 0;
+    const parentHeight = this.scrollingParent.clientHeight || 0;
+    const cardHeight = this.groups[0].cardDivs[0].clientHeight || 0;
 
     groupLoop: for (const group of this.groups) {
       for (const cardDiv of group.cardDivs) {
-        const y = cardDiv.position().top;
+        const y = cardDiv.offsetTop;
         if (y < -cardHeight) {
           continue;
         }
@@ -253,9 +253,9 @@ export class CardRendererDetails extends BaseCardRenderer {
           break groupLoop;
         }
         Utils.LoadCardImageIntoElement(
-          cardDiv.attr("data-id") || "",
+          cardDiv.getAttribute("data-id") || "",
           this.dl.dataDetails!,
-          cardDiv[0]
+          cardDiv
         );
       }
     }

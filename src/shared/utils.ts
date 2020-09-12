@@ -1,5 +1,4 @@
 import * as express from "express";
-import { logInfo } from "../server/log";
 import Config from "../server/config";
 import * as https from "https";
 
@@ -7,10 +6,7 @@ import * as https from "https";
  * Any shared helper functions whose usefullness isn't restricted to a single area.
  */
 
-/**
- * Generate a string containing random uppercase letters and numbers of the specified length.
- * @param {number} length
- */
+// Generate a string containing random uppercase letters and numbers of the specified length.
 export function randomString(length: number): string {
   const candidateChars = "abcdefghikjlmnopqrstuvwxyz0123456789";
   let result = "";
@@ -20,41 +16,123 @@ export function randomString(length: number): string {
   return result;
 }
 
-/**
- * Helper that makes it easy to enforce response types.
- * @param {Services} router
- * @param {string} route
- */
+// Generate a random string that can be used as a name.
+export function randomName(): string {
+  const adjectives = [
+    "Fast",
+    "Quick",
+    "Hard",
+    "Big",
+    "Strong",
+    "Weak",
+    "Right",
+    "Wrong",
+    "Green",
+    "Blue",
+    "White",
+    "Black",
+    "Red",
+    "Colorless",
+    "Multicolored",
+    "Round",
+    "Figety",
+    "Smart",
+    "Focused",
+    "Lightweight",
+    "Heavyweight",
+    "Relishing",
+    "Ethereal",
+    "Awesome",
+    "Lenghty",
+    "Moderate",
+    "Searchable",
+    "Thoughtful",
+    "Realistic",
+    "Willowed",
+    "Scrying",
+    "Falling",
+  ];
+  const nouns = [
+    "Cats",
+    "Dogs",
+    "Farters",
+    "Deck",
+    "Duck",
+    "Frog",
+    "Combo",
+    "Slowplay",
+    "World",
+    "Planet",
+    "Bus",
+    "Rain",
+    "Hail",
+    "Lightning",
+    "Creature",
+    "Spell",
+    "Midrange",
+    "Exile",
+    "Path",
+    "Life",
+    "Bois",
+    "Position",
+    "Shot",
+    "Fall",
+    "Summer",
+    "Spring",
+    "Winter",
+    "Boat",
+    "Smasher",
+    "Billows",
+    "Wrench",
+    "Tuck",
+  ];
+  return (
+    adjectives.splice(Math.floor(Math.random() * adjectives.length), 1)[0] +
+    " " +
+    adjectives.splice(Math.floor(Math.random() * adjectives.length), 1)[0] +
+    " " +
+    nouns[Math.floor(Math.random() * nouns.length)]
+  );
+}
+
+export interface UserDetails {
+  publicId: string | null;
+  privateId: string | null;
+}
+
+// Helper that makes it easy to enforce response types.
 export function addEndpoint<T>(
   router: express.Router,
   route: string,
-  cb: () => Promise<T | null>
+  cb: (user: UserDetails) => Promise<T | null>
 ): void {
-  router.post(route, async (_request, response) => {
-    response.end(JSON.stringify(await cb()));
+  router.post(route, async (request, response) => {
+    const userDetails: UserDetails = {
+      publicId: request.cookies["publicId"] || null,
+      privateId: request.cookies["privateId"] || null,
+    };
+    response.end(JSON.stringify(await cb(userDetails)));
   });
 }
 
-/**
- * Helper that makes it easy to enforce response types.
- * @param {Services} router
- * @param {string} route
- */
+// Helper that makes it easy to enforce response types.
 export function addEndpointWithParams<R, T>(
   router: express.Router,
   route: string,
-  cb: (params: R) => Promise<T | null>
+  cb: (user: UserDetails, params: R) => Promise<T | null>
 ): void {
   router.post(route, async (request, response) => {
-    logInfo("Recieved body: " + JSON.stringify(request.body));
-    response.end(JSON.stringify(await cb((request.body as unknown) as R)));
+    const userDetails: UserDetails = {
+      publicId: request.cookies["publicId"] || null,
+      privateId: request.cookies["privateId"] || null,
+    };
+    response.end(
+      JSON.stringify(await cb(userDetails, (request.body as unknown) as R))
+    );
   });
 }
 
-/**
- * Returns a promise that resolves after a certain number of milliseconds
- * @param {number} duration
- */
+// Returns a promise that resolves after a certain number of milliseconds
 export function wait(duration: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -63,10 +141,7 @@ export function wait(duration: number): Promise<void> {
   });
 }
 
-/**
- * Turns a date into the format expected by MySQL
- * @param {Date} date
- */
+// Turns a date into the format expected by MySQL
 export function dateToMySQL(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }

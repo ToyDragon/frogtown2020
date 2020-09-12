@@ -6,12 +6,12 @@ import { DataLoader } from "../data_loader";
 import { Group, ActionHandler, ActionList } from "./base_card_renderer";
 
 export class CardRendererCompactGrid extends CardRendererGrid {
-  private hoveredCard: JQuery | null = null;
+  private hoveredCard: HTMLElement | null = null;
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -23,12 +23,12 @@ export class CardRendererCompactGrid extends CardRendererGrid {
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("compact");
+    this.cardArea.classList.add("compact");
     super.Initialize();
   }
 
   public Cleanup(): void {
-    this.cardArea.removeClass("compact");
+    this.cardArea.classList.remove("compact");
     super.Cleanup();
   }
 
@@ -62,7 +62,7 @@ export class CardRendererCompactGrid extends CardRendererGrid {
       }
       if (currentStack) {
         const cardDiv = this.RenderCard(cardId, actions);
-        group.cardDivs.push($(cardDiv));
+        group.cardDivs.push(cardDiv);
         currentStack.append(cardDiv);
         if (currentStack.children().length === 8) {
           currentStack = null;
@@ -74,8 +74,8 @@ export class CardRendererCompactGrid extends CardRendererGrid {
         break;
       }
 
-      // eslint-disable-next-line prettier/prettier
-      const groupDiv = $("<div class=\"group\"></div>");
+      const groupDiv = document.createElement("div");
+      groupDiv.classList.add("group");
 
       let groupText = "";
       if (firstGroup) {
@@ -91,11 +91,11 @@ export class CardRendererCompactGrid extends CardRendererGrid {
           ) : null}
           <div className="cardContainer" ref={containerRef}></div>
         </React.Fragment>,
-        groupDiv[0]
+        groupDiv
       );
 
       const cardDiv = this.RenderCard(cardId, actions);
-      group.cardDivs.push($(cardDiv));
+      group.cardDivs.push(cardDiv);
       currentStack = $(containerRef.current!);
       currentStack.append(cardDiv);
 
@@ -103,18 +103,19 @@ export class CardRendererCompactGrid extends CardRendererGrid {
     }
   }
 
-  private RenderCard(cardId: string, actions: ActionList): JQuery {
+  private RenderCard(cardId: string, actions: ActionList): HTMLDivElement {
     const actionDetails = this.GetActionDetails(actions);
-    // eslint-disable-next-line prettier/prettier
-    const card = $("<div class=\"card\"></div>");
+    const card = document.createElement("div");
+    card.classList.add("card");
     ReactDom.render(
       actionDetails.map((deet) => deet.element),
-      card[0]
+      card
     );
-    card.attr("data-id", cardId);
+    card.setAttribute("data-id", cardId);
     this.SetupActions(actionDetails, cardId);
 
-    card.on("mouseenter mousemove", (e: JQueryEventObject) => {
+    //TODO add mousemove?
+    card.addEventListener("mouseenter", (e) => {
       if (e.offsetY <= 40) {
         this.UpdateHoveredCard(card);
       } else {
@@ -122,23 +123,23 @@ export class CardRendererCompactGrid extends CardRendererGrid {
       }
     });
 
-    card.on("mouseleave", () => {
+    card.addEventListener("mouseleave", () => {
       this.UpdateHoveredCard(null);
     });
 
     return card;
   }
 
-  private UpdateHoveredCard(cardRef: JQuery | null): void {
+  private UpdateHoveredCard(cardRef: HTMLElement | null): void {
     if (this.hoveredCard === cardRef) {
       return;
     }
     if (this.hoveredCard) {
-      this.hoveredCard.removeClass("hover");
+      this.hoveredCard.classList.remove("hover");
     }
     this.hoveredCard = cardRef;
     if (this.hoveredCard) {
-      this.hoveredCard.addClass("hover");
+      this.hoveredCard.classList.add("hover");
     }
   }
 }

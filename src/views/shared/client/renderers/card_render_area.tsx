@@ -15,9 +15,8 @@ import { BaseFilter } from "../cardfilters/base_filter";
 import { setCookie, getCookie } from "../cookies";
 
 export class CardRenderArea {
-  private cardSearchUtil: CardSearchBehavior;
+  private cardSearchUtil: CardSearchBehavior | null;
   private availableRenderers: BaseCardRenderer[];
-  private activeRenderer: BaseCardRenderer;
   private deckDisplayGroupers!: FilterDropdownDataMap;
   private deckDisplayDropdown!: FilterDisplayOptions;
   private activeGrouper!: keyof MapData | "";
@@ -29,13 +28,15 @@ export class CardRenderArea {
 
   private cardList!: string[];
 
+  public activeRenderer: BaseCardRenderer;
+
   public constructor(
     dl: DataLoader,
     availableRenderers: BaseCardRenderer[],
     grouperKey: string,
     displayKey: string,
     defaultOptions: MiscOptions,
-    cardSearchUtil: CardSearchBehavior,
+    cardSearchUtil: CardSearchBehavior | null,
     identifier: string
   ) {
     this.cardSearchUtil = cardSearchUtil;

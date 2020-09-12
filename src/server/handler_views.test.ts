@@ -1,6 +1,7 @@
 import express from "express";
 import { retrieveAllData } from "./handler_views";
 import { IncludedData } from "./view_data";
+import Services from "./services";
 
 const simpleExampleStringData: IncludedData = {
   var: "A",
@@ -31,14 +32,16 @@ const delayedExampleData: IncludedData = {
 };
 
 test("Gathers nothing", (done) => {
-  retrieveAllData({} as express.Request, []).then((gatheredData) => {
-    expect(Object.keys(gatheredData).length).toBe(0);
-    done();
-  });
+  retrieveAllData({} as Services, {} as express.Request, []).then(
+    (gatheredData) => {
+      expect(Object.keys(gatheredData).length).toBe(0);
+      done();
+    }
+  );
 });
 
 test("Gathers simple data", (done) => {
-  retrieveAllData({} as express.Request, [
+  retrieveAllData({} as Services, {} as express.Request, [
     simpleExampleStringData,
     simpleExampleNumberData,
   ]).then((gatheredData) => {
@@ -50,11 +53,11 @@ test("Gathers simple data", (done) => {
 });
 
 test("Gathers async data", (done) => {
-  retrieveAllData({} as express.Request, [delayedExampleData]).then(
-    (gatheredData) => {
-      expect(Object.keys(gatheredData).length).toBe(1);
-      expect(gatheredData[delayedExampleData.var]).toBe("Data C");
-      done();
-    }
-  );
+  retrieveAllData({} as Services, {} as express.Request, [
+    delayedExampleData,
+  ]).then((gatheredData) => {
+    expect(Object.keys(gatheredData).length).toBe(1);
+    expect(gatheredData[delayedExampleData.var]).toBe("Data C");
+    done();
+  });
 });

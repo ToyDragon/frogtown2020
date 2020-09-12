@@ -1,0 +1,68 @@
+<%- include("../partials/page_header") %>
+<div id="root">
+  <div id="cardSearch">
+    <div id="filterArea">
+      <%- include("../partials/all_filters") -%>
+    </div>
+    <div id="cardArea" class="cardDisplay"></div>
+    <div id="searchWidget" class=""><svg id="searchSVG"></svg></div>
+  </div>
+  <div id="deckArea">
+    <div id="deckDetails">
+      <div id="DeckActions" class="filterBox filterDropdown">
+        <div class="dropdown">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Actions <span class="caret black"></span></button>
+          <ul class="dropdown-menu">  
+            <!-- <li><a href="#" title="Play a sample hand with no opponent">Goldfish</a></li> -->
+            <li><a href="#" id="actionChangeName" title="Change Name">Change Name</a></li>
+            <li id="liTTSExport"><a href="#" id="actionExportTTS" title="Export to a file that can be loaded into Tabletop Simulator">Export to Tabletop Simulator</a></li>
+            <li><a href="#" id="actionBulkImport" title="Import a list of cards by name">Bulk Import</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#" id="actionDelete" title="Permanently delete this deck">Delete</a></li>
+            <li><a href="#" id="actionClone" title="Create a copy of this deck">Clone</a></li>
+            <li><a href="#" id="actionViewOtherDecks" title="See other decks made by this user">Other Decks</a></li>
+          </ul>
+        </div>
+      </div>
+      <div id="DeckDisplayDropdown" class="filterBox filterDropdown" data-filtertype="deckdisplay" data-filterclass="dropdownExclusive">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Deck Display <span class="caret black"></span><div class="dropdownValue"></div></button>
+          <ul class="dropdown-menu"></ul>
+        </div>
+      </div>
+      <div id="DeckDisplayGroupers" class="filterBox filterDropdown" data-filtertype="deckgroupers" data-filterclass="dropdownExclusive">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Grouper <span class="caret black"></span><div class="dropdownValue"></div></button>
+          <ul class="dropdown-menu">
+            <li data-value="IDToColor" data-display="Color" data-active="false"><a href="#">Color <span class="glyphicon glyphicon-ok"></span></a></li>
+            <li data-value="IDToType" data-display="Type" data-active="false"><a href="#">Type <span class="glyphicon glyphicon-ok"></span></a></li>
+            <li data-value="IDToCMC" data-display="CMC" data-active="false"><a href="#">CMC <span class="glyphicon glyphicon-ok"></span></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="boardTitle mainboard">Mainboard - <span id="mainNameDisplay" class="deckName"></span><input type="text" id="nameEntry" class="nodisp"/><div id="divNameErr" class="error nodisp">Invalid Name</div></div>
+    <div id="mainboard" class="cardDisplay"></div>
+    <div class="boardTitle sideboard nodisp">Sideboard</div>
+    <div id="sideboard" class="cardDisplay"></div>
+    <div id="deleteOverlay" class="overlaybackdrop nodisp">
+      <div class="popup">
+        <h1>Are you sure?</h1>
+        <button type="button" class="btn btn-info" id="btnCloseDeletePopup">Go Back</button>
+        <button type="button" class="btn btn-default" id="btnConfirmDelete">Delete</button>
+      </div>
+    </div>
+    <div id="importOverlay" class="overlaybackdrop nodisp">
+      <div class="popup">
+        <h1>Card Names</h1>
+        <textarea id="bulkInputArea" class="bulkInputArea"></textarea>
+        <h2 class="error" id="bulkInputErr"></h2>
+        <div class="actions">
+          <button type="button" class="btn btn-default" id="btnCloseImportPopup">Go Back</button>
+          <button type="button" class="btn btn-info" id="btnConfirmImport">Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include("../partials/page_footer") %>

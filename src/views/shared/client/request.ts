@@ -2,6 +2,10 @@ export async function post<R, T>(route: string, body: R): Promise<T | null> {
   return await request<R, T>(route, body, "POST");
 }
 
+export async function get<T>(route: string): Promise<T | null> {
+  return await request<unknown, T>(route, "", "GET");
+}
+
 export async function request<R, T>(
   route: string,
   body: R,

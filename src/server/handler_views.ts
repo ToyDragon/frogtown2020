@@ -3,6 +3,7 @@ import Services from "./services";
 import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 import SharedHandler from "../views/shared/server/handler";
+import { DeckKeyRow } from "./database/db_manager";
 
 /**
  * Helper function to gather data required for a page to render
@@ -10,6 +11,7 @@ import SharedHandler from "../views/shared/server/handler";
  * @param {IncludedData[]} includedData
  */
 export function retrieveAllData(
+  services: Services,
   req: express.Request,
   includedData: IncludedData[]
 ): Promise<Record<string, unknown>> {
@@ -21,7 +23,7 @@ export function retrieveAllData(
         resolve(data);
       } else {
         includedData[currentItem]
-          .retriever(req)
+          .retriever(services, req)
           .then((value) => {
             data[includedData[currentItem].var] = value;
             currentItem++;
@@ -52,6 +54,7 @@ export default function ViewHandler(services: Services): express.Router {
   router.use(express.static(viewDir + "shared/client/"));
   router.use(express.static("./static/"));
   router.use(express.static("./static/styles/"));
+  router.use("/Icons", express.static("./static/icons/"));
   router.use(SharedHandler(services));
 
   // Each view has routes that needs to be set up
@@ -62,7 +65,33 @@ export default function ViewHandler(services: Services): express.Router {
     const renderCallback = (req: express.Request, res: express.Response) => {
       logInfo("Handling request for page " + view.title);
       const data = view.includedData || [];
-      retrieveAllData(req, data).then((includedData) => {
+      data.push({
+        var: "decks",
+        retriever: async (services, _req) => {
+          const decks: { id: string; name: string }[] = [];
+          const connection = await services.dbManager.getConnection();
+          if (!connection) {
+            return decks;
+          }
+
+          const deckRows = await connection.query<DeckKeyRow[]>(
+            "SELECT * FROM deck_keys WHERE owner_id=?;",
+            [req.cookies["publicId"]]
+          );
+          if (deckRows?.value && deckRows?.value.length > 0) {
+            for (const deckRow of deckRows.value) {
+              decks.push({
+                id: deckRow.id,
+                name: deckRow.name,
+              });
+            }
+          }
+
+          connection.release();
+          return decks;
+        },
+      });
+      retrieveAllData(services, req, data).then((includedData) => {
         res.render("pages/" + view.view, {
           view: view,
           allViews: allPages,

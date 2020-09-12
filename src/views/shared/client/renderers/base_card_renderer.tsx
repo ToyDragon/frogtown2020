@@ -5,8 +5,8 @@ import * as React from "react";
 export class Group {
   public title = "";
   public cardIds: string[] = [];
-  public cardDivs: JQuery[] = [];
-  public groupDiv: JQuery = $();
+  public cardDivs: HTMLElement[] = [];
+  public groupDiv: HTMLElement = document.createElement("div");
 
   private GetSortableData(
     dl: DataLoader
@@ -81,19 +81,21 @@ export interface ActionDetail {
 }
 
 export abstract class BaseCardRenderer {
-  protected cardArea: JQuery;
-  protected scrollingParent: JQuery;
+  protected cardArea: HTMLElement;
+  protected scrollingParent: HTMLElement;
   protected dl: DataLoader;
   protected actionHandler: ActionHandler;
 
-  private pendingSetSVGs: { [setCode: string]: JQuery<SVGSVGElement>[] } = {};
+  private pendingSetSVGs: {
+    [setCode: string]: SVGSVGElement[];
+  } = {};
   private svgBySet: { [setCode: string]: string } = {};
   private allowEdit: boolean;
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -302,9 +304,9 @@ export abstract class BaseCardRenderer {
     return [];
   }
 
-  protected putSetSVG(svg: JQuery<SVGSVGElement>, setCode: string): void {
+  protected putSetSVG(svg: SVGSVGElement, setCode: string): void {
     if (this.svgBySet[setCode]) {
-      svg.html(this.svgBySet[setCode]);
+      svg.innerHTML = this.svgBySet[setCode];
     } else {
       if (this.pendingSetSVGs[setCode]) {
         this.pendingSetSVGs[setCode].push(svg);
@@ -316,7 +318,7 @@ export abstract class BaseCardRenderer {
             .serializeToString(data.documentElement)
             .replace(/ fill="[^"]+"/, "");
           for (const ele of this.pendingSetSVGs[setCode]) {
-            ele.html(svgString);
+            ele.innerHTML = svgString;
           }
           this.svgBySet[setCode] = svgString;
         });

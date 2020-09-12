@@ -1,0 +1,204 @@
+body{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#root{
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+#deckArea{
+  width: 550px;
+  flex-grow: 1;
+  overflow-y: scroll;
+  background-color: #cdd6e4;
+}
+
+#deckDetails{
+  position: fixed;
+  left: 572px;
+  top: 81px;
+  z-index: 1;
+}
+
+#cardSearch{
+  width: 550px;
+  flex-grow: 0;
+  height: 100%;
+  overflow-y: scroll;
+  background-color: #cdd6e4;
+}
+
+#cardArea{
+  margin-top: 100px;
+}
+
+.boardTitle.mainboard{
+  margin-top: 60px;
+}
+
+.boardTitle{
+  margin-left: 48px;
+  font-size: 44px;
+}
+
+#filterArea{
+  padding: 16px;
+  padding-bottom: 0;
+  padding-right: 0;
+  position: fixed;
+  width: 535px;
+  z-index: 1;
+}
+
+.icon{ width: 15px; height: 15px; display: inline-block; }
+.tap{ background-image: url("/Icons/Tap.jpg"); }
+.manaWU{ background-image: url("/Icons/ManaWU.jpg"); }
+.manaWB{ background-image: url("/Icons/ManaWB.jpg"); }
+.manaUR{ background-image: url("/Icons/ManaUR.jpg"); }
+.manaUB{ background-image: url("/Icons/ManaUB.jpg"); }
+.manaBR{ background-image: url("/Icons/ManaBR.jpg"); }
+.manaBG{ background-image: url("/Icons/ManaBG.jpg"); }
+.manaRW{ background-image: url("/Icons/ManaRW.jpg"); }
+.manaRG{ background-image: url("/Icons/ManaRG.jpg"); }
+.manaGW{ background-image: url("/Icons/ManaGW.jpg"); }
+.manaX{ background-image: url("/Icons/ManaX.jpg"); }
+.manaY{ background-image: url("/Icons/ManaY.jpg"); }
+.manaZ{ background-image: url("/Icons/ManaZ.jpg"); }
+.manaC{ background-image: url("/Icons/ManaC.jpg"); }
+.mana2W{ background-image: url("/Icons/Mana2W.jpg"); }
+.mana2U{ background-image: url("/Icons/Mana2U.jpg"); }
+.mana2B{ background-image: url("/Icons/Mana2B.jpg"); }
+.mana2R{ background-image: url("/Icons/Mana2R.jpg"); }
+.mana2G{ background-image: url("/Icons/Mana2G.jpg"); }
+.manaW{ background-image: url("/Icons/ManaW.jpg"); }
+.manaU{ background-image: url("/Icons/ManaU.jpg"); }
+.manaB{ background-image: url("/Icons/ManaB.jpg"); }
+.manaR{ background-image: url("/Icons/ManaR.jpg"); }
+.manaG{ background-image: url("/Icons/ManaG.jpg"); }
+.manaWP{ background-image: url("/Icons/ManaWP.jpg"); }
+.manaUP{ background-image: url("/Icons/ManaUP.jpg"); }
+.manaBP{ background-image: url("/Icons/ManaBP.jpg"); }
+.manaRP{ background-image: url("/Icons/ManaRP.jpg"); }
+.manaGP{ background-image: url("/Icons/ManaGP.jpg"); }
+.mana0{ background-image: url("/Icons/Mana0.jpg"); }
+.mana1{ background-image: url("/Icons/Mana1.jpg"); }
+.mana2{ background-image: url("/Icons/Mana2.jpg"); }
+.mana3{ background-image: url("/Icons/Mana3.jpg"); }
+.mana4{ background-image: url("/Icons/Mana4.jpg"); }
+.mana5{ background-image: url("/Icons/Mana5.jpg"); }
+.mana6{ background-image: url("/Icons/Mana6.jpg"); }
+.mana7{ background-image: url("/Icons/Mana7.jpg"); }
+.mana8{ background-image: url("/Icons/Mana8.jpg"); }
+.mana9{ background-image: url("/Icons/Mana9.jpg"); }
+.mana10{ background-image: url("/Icons/Mana10.jpg"); }
+.mana11{ background-image: url("/Icons/Mana11.jpg"); }
+.mana12{ background-image: url("/Icons/Mana12.jpg"); }
+.mana13{ background-image: url("/Icons/Mana13.jpg"); }
+.mana14{ background-image: url("/Icons/Mana14.jpg"); }
+.mana15{ background-image: url("/Icons/Mana15.jpg"); }
+.mana16{ background-image: url("/Icons/Mana16.jpg"); }
+.mana1000000{ background-image: url("/Icons/Mana1000000.jpg"); }
+
+.filterBox{
+  display: inline-block;
+  width: 250px;
+  vertical-align: top;
+  margin-bottom:12px;
+  font-size: 16px;
+}
+
+.filterBoxSmall{
+  width: 196px;
+}
+
+.filterBoxLarge{
+  width: 300px;
+}
+
+.filterDropdown{
+  width: unset;
+}
+
+.dropdownValue{
+  font-size: 10px;
+  text-align: left;
+}
+
+li[data-active=false] > a > span.glyphicon.glyphicon-ok {
+  display: none;
+}
+
+.dropdown-menu > li[disabled] > a{
+  background-color: lightgray;
+  cursor: wait;
+}
+
+.dropdown-menu > li[disabled] > a:hover{
+  background-color: lightgray;
+  cursor: wait;
+}
+
+.error{
+  display: inline-block;
+  color: red;
+  margin-left: 30px;
+}
+
+.overlaybackdrop{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: #00000077;
+  top: 0;
+}
+
+.popup{
+  padding: 1px;
+  padding-left: 20px;
+  width: 300px;
+  min-height: 115px;
+  margin-left: 200px;
+  margin-top: 200px;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.popup > button:nth-child(3){
+  margin-left: 110px;
+}
+
+#importOverlay > .popup{
+  width: 600px;
+  min-height: 445px;
+}
+
+#bulkInputErr{
+  margin-bottom: 20px;
+  width: 519px;
+}
+
+#bulkInputErr:after{
+  content: ".";
+  color: white;
+}
+
+#bulkInputArea{
+  width: 560px;
+  height: 275px;
+}
+#importOverlay > .popup > .actions{
+  z-index: 1;
+  position: relative;
+  float: right;
+  padding: 22px;
+  margin-top: -60px;
+}
+
+#searchWidget, #searchSVG{
+  width: 100%;
+  height: 440px;
+}

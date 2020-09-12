@@ -12,7 +12,7 @@ import {
 import { post } from "../shared/client/request";
 import { wait } from "../../shared/utils";
 
-class ToolsBehavior extends ViewBehavior {
+class ToolsBehavior extends ViewBehavior<unknown> {
   public cardIdsToDownloadImagesFor: string[] | null = null;
 
   public async updateDisplay(): Promise<void> {

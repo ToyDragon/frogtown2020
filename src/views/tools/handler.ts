@@ -20,28 +20,44 @@ import {
 export default function handler(services: Services): express.Router {
   const router = express.Router();
 
-  addEndpoint<DataInfoResponse>(router, "/get_data_info", async () => {
-    return await DataManagement.getDataInfo(services);
-  });
+  addEndpoint<DataInfoResponse>(
+    router,
+    "/get_data_info",
+    async (_userDetails) => {
+      return await DataManagement.getDataInfo(services);
+    }
+  );
 
-  addEndpoint<void>(router, "/start_download_all_cards_file", async () => {
-    await DataManagement.startDownloadNewAllCardsFile(services);
-  });
+  addEndpoint<void>(
+    router,
+    "/start_download_all_cards_file",
+    async (_userDetails) => {
+      await DataManagement.startDownloadNewAllCardsFile(services);
+    }
+  );
 
-  addEndpoint<ProgressResponse>(router, "/all_cards_progress", async () => {
-    return {
-      progress: await DataManagement.getAllCardsFileProgress(services),
-    };
-  });
+  addEndpoint<ProgressResponse>(
+    router,
+    "/all_cards_progress",
+    async (_userDetails) => {
+      return {
+        progress: await DataManagement.getAllCardsFileProgress(services),
+      };
+    }
+  );
 
-  addEndpoint<void>(router, "/start_construct_all_data_maps", async () => {
-    await DataManagement.startConstructingDataMaps(services);
-  });
+  addEndpoint<void>(
+    router,
+    "/start_construct_all_data_maps",
+    async (_userDetails) => {
+      await DataManagement.startConstructingDataMaps(services);
+    }
+  );
 
   addEndpoint<OptionalProgressResponse>(
     router,
     "/data_maps_progress",
-    async () => {
+    async (_userDetails) => {
       return {
         progress: DataManagement.getMapConstructionProgress(),
       };
@@ -51,7 +67,7 @@ export default function handler(services: Services): express.Router {
   addEndpoint<CardImageInfoResponse>(
     router,
     "/get_card_image_info",
-    async () => {
+    async (_userDetails) => {
       return await ImageManagement.getAllImageInfos(services);
     }
   );
@@ -59,7 +75,7 @@ export default function handler(services: Services): express.Router {
   addEndpointWithParams<CardImageUpdateStartRequest, void>(
     router,
     "/start_image_update",
-    async (request) => {
+    async (_userDetails, request) => {
       return await ImageManagement.startUpdatingImages(services, request);
     }
   );
@@ -67,7 +83,7 @@ export default function handler(services: Services): express.Router {
   addEndpoint<CardImageUpdateProgressResponse>(
     router,
     "/get_image_update_progress",
-    async () => {
+    async (_userDetails) => {
       return await ImageManagement.getImageUpdateProgress();
     }
   );

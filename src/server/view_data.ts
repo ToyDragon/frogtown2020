@@ -2,6 +2,9 @@ import express from "express";
 
 import Services from "./services";
 import CardSearchRouteHandler from "../views/cardsearch/handler";
+import DeckViewerRouteHandler, {
+  DeckViewerIncludedData,
+} from "../views/deckviewer/handler";
 import ToolsRouteHandler from "../views/tools/handler";
 
 /**
@@ -24,7 +27,7 @@ export class PageData {
  */
 export interface IncludedData {
   var: string;
-  retriever: (req: express.Request) => Promise<unknown>;
+  retriever: (services: Services, req: express.Request) => Promise<unknown>;
 }
 
 /**
@@ -43,6 +46,18 @@ export function GetAllPages(services: Services): PageData[] {
         "tool, in browser playtesting, and exporting to play in Tabletop " +
         "Simulator. Creating decks for Magic has never been easier!",
       routeHandler: CardSearchRouteHandler(services),
+    },
+    {
+      routes: [
+        "deckviewer",
+        "deckviewer/:deckId",
+        "deckviewer/:deckId/:action",
+      ],
+      view: "deckviewer",
+      title: "My Decks",
+      description: "",
+      includedData: DeckViewerIncludedData,
+      routeHandler: DeckViewerRouteHandler(services),
     },
     {
       routes: ["tools"],

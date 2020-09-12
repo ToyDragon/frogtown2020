@@ -29,7 +29,7 @@ export default class AuthSession {
     ) {
       const response = await post<unknown, NewUserResponse>(
         "/authentication/newuser",
-        null
+        undefined
       );
       if (!response) {
         console.error("Unable to create a user :(");

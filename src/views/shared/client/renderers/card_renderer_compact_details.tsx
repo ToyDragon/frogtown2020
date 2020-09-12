@@ -5,8 +5,8 @@ import { DataLoader } from "../data_loader";
 export class CardRendererCompactDetails extends CardRendererDetails {
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -18,12 +18,12 @@ export class CardRendererCompactDetails extends CardRendererDetails {
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("compact");
+    this.cardArea.classList.add("compact");
     super.Initialize();
   }
 
   public Cleanup(): void {
-    this.cardArea.removeClass("compact");
+    this.cardArea.classList.remove("compact");
     super.Cleanup();
   }
 }

@@ -5,12 +5,12 @@ import { DataLoader, MapData } from "../data_loader";
 export class CardRendererText extends BaseCardRenderer {
   public groups: Group[];
 
-  protected cardList!: JQuery<HTMLTextAreaElement>;
+  protected cardList!: HTMLTextAreaElement;
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -27,15 +27,16 @@ export class CardRendererText extends BaseCardRenderer {
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("text");
-    // eslint-disable-next-line prettier/prettier
-    this.cardList = $("<textarea readonly class=\"text\"/>");
+    this.cardArea.classList.add("text");
+    this.cardList = document.createElement("textarea");
+    this.cardList.classList.add("test");
+    this.cardList.setAttribute("readonly", "true");
     this.cardArea.append(this.cardList);
   }
 
   public Cleanup(): void {
-    this.cardArea.removeClass("list");
-    this.cardArea.empty();
+    this.cardArea.classList.remove("list");
+    this.cardArea.innerHTML = "";
   }
 
   public ChangeCardSet(cardIds: string[], _miscOptions: MiscOptions): void {
@@ -46,10 +47,10 @@ export class CardRendererText extends BaseCardRenderer {
     const nameToCount: { [name: string]: number } = {};
     const idToName = this.dl.getMapData("IDToName");
     if (!cardIds || cardIds.length === 0 || !idToName) {
-      this.cardList.addClass("nodisp");
+      this.cardList.classList.add("nodisp");
       return;
     }
-    this.cardList.removeClass("nodisp");
+    this.cardList.classList.remove("nodisp");
     for (const cardId of cardIds) {
       const name = idToName[cardId];
       nameToCount[name] = nameToCount[name] || 0;
@@ -64,7 +65,7 @@ export class CardRendererText extends BaseCardRenderer {
       text += count + " " + name;
     }
 
-    this.cardList.text(text);
+    this.cardList.innerHTML = text;
   }
 
   public UpdateDisplayedCards(): void {}

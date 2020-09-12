@@ -16,8 +16,8 @@ export class CardRendererGrid extends BaseCardRenderer {
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -30,21 +30,21 @@ export class CardRendererGrid extends BaseCardRenderer {
   }
 
   public GetRequiredMaps(): (keyof MapData)[] {
-    return [];
+    return ["IDToName"];
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("grid");
+    this.cardArea.classList.add("grid");
   }
 
   public Cleanup(): void {
-    this.cardArea.css("padding-left", "0");
-    this.cardArea.removeClass("grid");
-    this.cardArea.empty();
+    this.cardArea.style.paddingLeft = "0";
+    this.cardArea.classList.remove("grid");
+    this.cardArea.innerHTML = "";
   }
 
   public ChangeCardSet(cardIds: string[], miscOptions: MiscOptions): void {
-    this.cardArea.empty();
+    this.cardArea.innerHTML = "";
     this.groups = this.ParseGroups(cardIds, miscOptions);
     const showDuplicates = !!miscOptions["Show Duplicates"];
     const stackDuplicates = !!miscOptions["Stack Duplicates"];
@@ -79,8 +79,9 @@ export class CardRendererGrid extends BaseCardRenderer {
       } else {
         if (stackDuplicates && nameToTitleDiv[name]) {
           // eslint-disable-next-line prettier/prettier
-          const cardDiv = $("<div class=\"card\"></div>");
-          cardDiv.attr("data-id", cardId);
+          const cardDiv = document.createElement("div");
+          cardDiv.classList.add("card");
+          cardDiv.setAttribute("data-id", cardId);
           nameToTitleDiv[name].prepend(cardDiv);
           group.cardDivs.push(cardDiv);
           if (nameToTitleDiv[name].children().length === 8) {
@@ -95,7 +96,8 @@ export class CardRendererGrid extends BaseCardRenderer {
       }
 
       // eslint-disable-next-line prettier/prettier
-      const groupDiv = $("<div class=\"group\"></div>");
+      const groupDiv = document.createElement("div");
+      groupDiv.classList.add("group");
 
       let groupText = "";
       if (firstGroup) {
@@ -119,14 +121,14 @@ export class CardRendererGrid extends BaseCardRenderer {
             {actionDetails.map((deet) => deet.element)}
           </div>
         </React.Fragment>,
-        groupDiv[0]
+        groupDiv
       );
 
       if (!cardRef.current || !containerRef.current) {
         return;
       }
 
-      group.cardDivs.push($(cardRef.current));
+      group.cardDivs.push(cardRef.current);
       if (stackDuplicates) {
         nameToTitleDiv[name] = $(containerRef.current);
       }
@@ -142,24 +144,24 @@ export class CardRendererGrid extends BaseCardRenderer {
     }
     const margin = 32;
     const cardWidth = 223 + margin;
-    const width = this.cardArea.innerWidth() || 0;
+    const width = this.cardArea.clientWidth || 0;
     const stacksInRow = Math.floor(width / cardWidth);
     const wastedSpace = width - stacksInRow * cardWidth;
     const leftMargin = Math.floor(wastedSpace / 2);
-    this.cardArea.css("padding-left", leftMargin + "px");
+    this.cardArea.style.paddingLeft = leftMargin + "px";
 
-    const parentHeight = this.scrollingParent.innerHeight() || 0;
-    const cardHeight = this.groups[0].cardDivs[0].outerHeight() || 0;
+    const parentHeight = this.scrollingParent.clientHeight || 0;
+    const cardHeight = this.groups[0].cardDivs[0].clientHeight || 0;
     const scrollBuffer = 300; //distance off the bottom and top that cards should start loading
 
     let failedCards = 0;
     groupLoop: for (const group of this.groups) {
       for (const cardDiv of group.cardDivs) {
         let y = 0;
-        let ele = cardDiv;
-        while (ele && !ele.hasClass("cardDisplay")) {
-          y += ele.position().top;
-          ele = ele.parent();
+        let ele: HTMLElement | null = cardDiv;
+        while (ele && !ele.classList.contains("cardDisplay")) {
+          y += ele.offsetTop;
+          ele = ele.parentElement;
         }
         if (y < -cardHeight) {
           continue;
@@ -175,9 +177,9 @@ export class CardRendererGrid extends BaseCardRenderer {
         }
         failedCards = 0;
         LoadCardImageIntoElement(
-          cardDiv.attr("data-id") || "",
+          cardDiv.getAttribute("data-id") || "",
           this.dl.dataDetails!,
-          cardDiv[0]
+          cardDiv
         );
       }
     }

@@ -8,13 +8,13 @@
   <% if (typeof(allViews) !== "undefined") { %>
     <% for(var i = 0; i < allViews.length; i++){ %>
       <% if(allViews[i].hidden) { continue; } %>
-      <% if(allViews[i].view === "myDecks") { %>
+      <% if(allViews[i].view === "deckviewer") { %>
         <div class="btn-group" style="margin-top: -8px;">
           <div class="btn dropdown-toggle btn-mydecks <%= ("Deck Viewer" === (typeof(view) !== "undefined" && view.title)) ? "active" : "" %>" data-toggle="dropdown" aria-expanded="false"><%= allViews[i].title %><span class="caret" style="margin-left: 5px;"></span></div>
           <ul class="dropdown-menu">
             <% var decks = JSON.parse(includedData).decks || []; %>
             <% for(var deckI = 0; deckI < decks.length; deckI++){ %>
-              <li><a href="/deckViewer/<%= decks[deckI]._id %>/edit.html"><%- decks[deckI].name -%></a></li>
+              <li><a href="/deckviewer/<%= decks[deckI].id %>/edit.html"><%- decks[deckI].name -%></a></li>
             <% } %>
             <% if(decks.length) { %>
               <li role="separator" class="divider"></li>

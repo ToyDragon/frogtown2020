@@ -10,3 +10,7 @@ export interface DataDetailsResponse {
   awsS3CompressedImageBucket: string;
   awsS3DataMapBucket: string;
 }
+
+export interface ToolbarNewDeckResponse {
+  deckId: string;
+}

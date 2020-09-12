@@ -18,6 +18,19 @@ export interface CardImageRow {
   quality: number;
 }
 
+export interface DeckKeyRow {
+  id: string;
+  owner_id: string;
+  name: string;
+}
+
+export interface DeckCardRow {
+  deck_id: string;
+  card_id: string;
+  board: number;
+  count: number;
+}
+
 export default class DatabaseManager {
   private connectionPool: mysql.Pool;
 
@@ -119,6 +132,7 @@ export default class DatabaseManager {
       CREATE TABLE IF NOT EXISTS user_keys(
         private_id VARCHAR(64) NOT NULL,
         public_id VARCHAR(24) NOT NULL,
+        back_url VARCHAR(100) NOT NULL,
         PRIMARY KEY(private_id),
         INDEX(private_id),
         INDEX(public_id)
@@ -157,7 +171,8 @@ export default class DatabaseManager {
         id VARCHAR(24) NOT NULL,
         owner_id VARCHAR(24) NOT NULL,
         name VARCHAR(100) NOT NULL,
-        PRIMARY KEY (id)
+        PRIMARY KEY (id),
+        INDEX(owner_id),
       ) ENGINE=InnoDB;
     `;
 
@@ -172,10 +187,11 @@ export default class DatabaseManager {
     // deck_cards table
     cmd = `
       CREATE TABLE IF NOT EXISTS deck_cards(
-        id VARCHAR(24) NOT NULL,
+        deck_id VARCHAR(24) NOT NULL,
         card_id VARCHAR(36) NOT NULL,
+        board SMALLINT NOT NULL,
         count SMALLINT NOT NULL,
-        PRIMARY KEY (id, card_id)
+        PRIMARY KEY (deck_id, card_id, board)
       ) ENGINE=InnoDB;
     `;
 
@@ -193,7 +209,8 @@ export default class DatabaseManager {
         card_id VARCHAR(36) NOT NULL,
         update_time DATETIME NOT NULL,
         quality TINYINT NOT NULL,
-        PRIMARY KEY (card_id)
+        PRIMARY KEY (card_id),
+        INDEX(quality)
       ) ENGINE=InnoDB;
     `;
     //Quality-

@@ -12,7 +12,7 @@ import * as Utils from "../utils";
 import { DataLoader, MapData } from "../data_loader";
 
 export class CardRendererList extends BaseCardRenderer {
-  public hoverCard!: JQuery;
+  public hoverCard!: HTMLElement;
   public groups: Group[];
 
   private static RARITY_TO_SYMBOL: Record<string, string | undefined> = {
@@ -32,8 +32,8 @@ export class CardRendererList extends BaseCardRenderer {
 
   public constructor(
     dataLoader: DataLoader,
-    cardArea: JQuery,
-    scrollingParent: JQuery,
+    cardArea: HTMLElement,
+    scrollingParent: HTMLElement,
     allowEdit: boolean,
     actionHandler: ActionHandler
   ) {
@@ -60,33 +60,36 @@ export class CardRendererList extends BaseCardRenderer {
   }
 
   public Initialize(): void {
-    this.cardArea.addClass("list");
-    // eslint-disable-next-line prettier/prettier
-    this.hoverCard = $("<img class=\"hoverCard nodisp\" />");
+    this.cardArea.classList.add("list");
+    this.hoverCard = document.createElement("img");
+    this.hoverCard.classList.add("hoverCard");
+    this.hoverCard.classList.add("nodisp");
     this.cardArea.append(this.hoverCard);
-    this.hoverCard.on("error", () => {
-      this.hoverCard.attr("src", "/CardBack.jpg");
+    this.hoverCard.addEventListener("error", () => {
+      this.hoverCard.setAttribute("src", "/CardBack.jpg");
     });
   }
 
-  private CreateCardList(): JQuery {
-    // eslint-disable-next-line prettier/prettier
-    const cardList = $("<div class=\"cardList\"></div>");
-    cardList.on("mouseout", () => {
-      this.hoverCard.addClass("nodisp");
+  private CreateCardList(): HTMLElement {
+    const cardList = document.createElement("div");
+    cardList.classList.add("cardList");
+    cardList.addEventListener("mouseout", () => {
+      this.hoverCard.classList.add("nodisp");
     });
 
     return cardList;
   }
 
   public Cleanup(): void {
-    this.cardArea.removeClass("list");
-    this.cardArea.empty();
+    this.cardArea.classList.remove("list");
+    this.cardArea.innerHTML = "";
   }
 
   public ChangeCardSet(cardIds: string[], miscOptions: MiscOptions): void {
-    this.hoverCard.addClass("nodisp");
-    this.cardArea.find(".group").remove();
+    this.hoverCard.classList.add("nodisp");
+    this.cardArea.querySelectorAll(".group").forEach((ele) => {
+      ele.remove();
+    });
     this.groups = this.ParseGroups(cardIds, miscOptions);
     const showDuplicates = !!miscOptions["Show Duplicates"];
     const stackDuplicates = !!miscOptions["Stack Duplicates"];
@@ -105,12 +108,12 @@ export class CardRendererList extends BaseCardRenderer {
     const nameToTitleDiv: { [name: string]: JQuery } = {};
     const usedNames: { [name: string]: boolean } = {};
     let count = 0;
-    // eslint-disable-next-line prettier/prettier
-    const groupDiv = $("<div class=\"group\"></div>");
+    const groupDiv = document.createElement("div");
+    groupDiv.classList.add("group");
     if (group.title) {
-      // eslint-disable-next-line prettier/prettier
-      const groupSeperator = $("<div class=\"groupSeperator\"></div>");
-      groupSeperator.text(group.title);
+      const groupSeperator = document.createElement("div");
+      groupSeperator.classList.add("groupSeperator");
+      groupSeperator.innerHTML = group.title;
       groupDiv.append(groupSeperator);
     }
     const cardList = this.CreateCardList();
@@ -162,10 +165,10 @@ export class CardRendererList extends BaseCardRenderer {
         break;
       }
 
-      // eslint-disable-next-line prettier/prettier
-      const cardDiv = $("<div class=\"card\"></div>");
-      cardDiv.addClass(count % 2 === 0 ? "even" : "odd");
-      cardDiv.attr("data-id", cardId);
+      const cardDiv = document.createElement("div");
+      cardDiv.classList.add("card");
+      cardDiv.classList.add(count % 2 === 0 ? "even" : "odd");
+      cardDiv.setAttribute("data-id", cardId);
 
       let typeString = "";
       const superTypes = idToSupertype[cardId];
@@ -237,7 +240,7 @@ export class CardRendererList extends BaseCardRenderer {
           </div>
           {actionDetails.map((deet) => deet.element)}
         </React.Fragment>,
-        cardDiv[0]
+        cardDiv
       );
       cardList.append(cardDiv);
 
@@ -248,21 +251,21 @@ export class CardRendererList extends BaseCardRenderer {
       this.SetupActions(actionDetails, cardId);
 
       if (setCode && setReference.current) {
-        this.putSetSVG($(setReference.current), setCode);
+        this.putSetSVG(setReference.current, setCode);
       }
 
-      cardDiv.on("mouseover", (event) => {
-        this.hoverCard.attr("data-id", cardId);
-        this.hoverCard.attr("data-lastFailedId", "");
-        this.hoverCard.attr(
+      cardDiv.addEventListener("mouseover", (event) => {
+        this.hoverCard.setAttribute("data-id", cardId);
+        this.hoverCard.setAttribute("data-lastFailedId", "");
+        this.hoverCard.setAttribute(
           "src",
           Utils.GetImageUrl(cardId, this.dl.dataDetails!)
         );
-        this.hoverCard.removeClass("nodisp");
+        this.hoverCard.classList.remove("nodisp");
         this.UpdateHoverPosition(event.pageX, event.pageY);
       });
 
-      cardDiv.on("mousemove", (event) => {
+      cardDiv.addEventListener("mousemove", (event) => {
         this.UpdateHoverPosition(event.pageX, event.pageY);
       });
     }
@@ -270,13 +273,13 @@ export class CardRendererList extends BaseCardRenderer {
   }
 
   public UpdateHoverPosition(posX: number, posY: number): void {
-    const cardHeight = this.hoverCard.outerHeight() || 0;
-    const bodyHeight = $("body").outerHeight() || 0;
+    const cardHeight = this.hoverCard.clientHeight || 0;
+    const bodyHeight = document.querySelector("body")!.clientHeight || 0;
     if (posY > bodyHeight - cardHeight) {
       posY -= cardHeight;
     }
-    this.hoverCard.css("left", posX + "px");
-    this.hoverCard.css("top", posY + "px");
+    this.hoverCard.style.left = posX + "px";
+    this.hoverCard.style.top = posY + "px";
   }
 
   public UpdateDisplayedCards(): void {}
