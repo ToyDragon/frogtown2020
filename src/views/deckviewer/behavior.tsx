@@ -286,10 +286,12 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      $("#filterSelection > div > ul > li[data-active=true]").trigger("click");
-      $("#filterSelection > div > ul > li[data-filtertype=misc]").trigger(
-        "click"
-      );
+      (document.querySelector(
+        "#filterSelection > div > ul > li[data-active=true]"
+      ) as HTMLElement | null)?.click();
+      (document.querySelector(
+        "#filterSelection > div > ul > li[data-filtertype=misc]"
+      ) as HTMLElement | null)?.click();
 
       this.cardSearchUtil!.GetNameFilter().setValue(
         this.dl.getMapData("IDToName")![cardId]
