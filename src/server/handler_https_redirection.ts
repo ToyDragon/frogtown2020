@@ -1,4 +1,3 @@
-import { logInfo } from "./log";
 import express from "express";
 
 const HandlerHTTPsRedirection: express.RequestHandler = (
@@ -6,8 +5,6 @@ const HandlerHTTPsRedirection: express.RequestHandler = (
   response,
   _next
 ) => {
-  logInfo("Redirecting to https");
-  // TODO: Handle prescribed subdomains, like "beta.frogtown.me"
   if (
     !request.subdomains ||
     request.subdomains.length === 0 ||
