@@ -1,5 +1,6 @@
 import PooledConnection from "./db_poolconnection";
 
+// Used as a helper for testing code that requires a connection to run.
 export default class PooledConnectionMock implements PooledConnection {
   public beginTransaction(cb: (e: Error | null) => void): void {
     cb(null);

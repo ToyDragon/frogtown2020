@@ -200,8 +200,10 @@ export async function getAllCardIDs(config: Config): Promise<string[]> {
     ),
   ];
   for (const map of allImgMaps) {
-    for (const id in map) {
-      result.push(id);
+    if (map) {
+      for (const id in map) {
+        result.push(id);
+      }
     }
   }
   return result;

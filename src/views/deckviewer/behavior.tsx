@@ -14,6 +14,7 @@ import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
 import { CardRendererCompactDetails } from "../shared/client/renderers/card_renderer_compact_details";
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
 import TableTopSimulator from "../shared/client/exporter/tabletop_simulator";
+import Debouncer from "../shared/debouncer";
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable-next-line node/no-unpublished-require */
 const rough = require("../../../node_modules/roughjs/bundled/rough.cjs.js");
@@ -35,10 +36,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardScrollingParent!: HTMLElement;
 
   //TODO also try to save when the user closes the page and save is pending
-  private saveDelay = 500;
+  private saveDebouncer = new Debouncer(500);
   private editingName = false;
-  private latestChange: Date | null = null;
-  private deckSaveWaiting = false;
   private tableTopSimulator!: TableTopSimulator;
 
   public async ready(): Promise<void> {
@@ -62,31 +61,32 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "#deckArea"
     ) as HTMLElement;
 
+    const deleteBtn = document.querySelector("#actionDelete");
+    const viewOthersBtn = document.querySelector("#actionViewOtherDecks");
+
     // Edit permissions
     let allowEdit = false;
     if (
       this.getIncludedData().deckDetails.ownerId !==
       this.authSession.user.publicId
     ) {
-      $("#actionDelete").addClass("nodisp");
+      deleteBtn?.classList.add("nodisp");
     } else {
-      $("#actionViewOtherDecks").addClass("nodisp");
+      viewOthersBtn?.classList.add("nodisp");
       allowEdit = true;
     }
 
     this.dl.startLoading(["IDToName", "IDToText"]);
 
     // View other decks by this user
-    document
-      .querySelector("#actionViewOtherDecks")
-      ?.addEventListener("click", () => {
-        window.location.replace(
-          "/mydecks/" + this.getIncludedData().deckDetails.ownerId + ".html"
-        );
-      });
+    viewOthersBtn?.addEventListener("click", () => {
+      window.location.replace(
+        "/mydecks/" + this.getIncludedData().deckDetails.ownerId + ".html"
+      );
+    });
 
     // Delete deck popup
-    document.querySelector("#actionDelete")?.addEventListener("click", () => {
+    deleteBtn?.addEventListener("click", () => {
       this.showPopup(document.querySelector("#deleteOverlay"));
     });
     document
@@ -501,7 +501,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       deckDetails.mainboard = deckDetails.mainboard.sort();
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
       console.log("adding card " + cardId + " to mainboard");
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
     } else if (action === "remove") {
       for (let i = 0; i < deckDetails.mainboard.length; i++) {
         const otherCardId = deckDetails.mainboard[i];
@@ -512,7 +512,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       }
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
       console.log("removing card " + cardId + " from mainboard");
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
       $("#filterSelection > div > ul > li[data-active=true]").trigger("click");
@@ -528,7 +528,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
     }
     this.updateTitle();
   }
@@ -566,36 +566,12 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     }
   }
 
-  private async queueSaveDeckChange(): Promise<void> {
-    this.latestChange = new Date();
-    if (!this.deckSaveWaiting) {
-      this.deckSaveWaiting = true;
-      console.log("Queueing save");
-      setTimeout(() => {
-        this.saveDeckChange();
-      }, this.saveDelay);
-    } else {
-      console.log("Not queueing save, already queued");
-    }
-  }
-
   private async saveDeckChange(): Promise<void> {
-    if (!this.latestChange) {
-      return;
-    }
-    const remainingTime =
-      this.latestChange.getTime() + this.saveDelay - new Date().getTime();
-    if (remainingTime > 0) {
-      console.log("Waiting " + remainingTime + " to save");
-      setTimeout(() => {
-        this.saveDeckChange();
-      }, remainingTime);
-    } else {
+    if (await this.saveDebouncer.waitAndShouldAct()) {
       const deetz = this.getIncludedData().deckDetails;
       deetz.ttsLink = "";
       this.updateTTSLink();
       console.log("Saving");
-      this.deckSaveWaiting = false;
       const response = await post<DeckViewerSaveDeck, string>(
         "/deckViewer/updateCards",
         {
@@ -614,7 +590,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       deckDetails.sideboard.push(cardId);
       deckDetails.sideboard = deckDetails.sideboard.sort();
       this.sideboardRenderArea.UpdateCardList(deckDetails.sideboard);
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
       this.updateSideboardTitle();
     } else if (action === "remove") {
       for (let i = 0; i < deckDetails.sideboard.length; i++) {
@@ -625,14 +601,14 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
         }
       }
       this.sideboardRenderArea.UpdateCardList(deckDetails.sideboard);
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
       this.updateSideboardTitle();
     } else if (action === "similar") {
       this.onSearchAction(action, cardId);
     } else if (action === "tomainboard") {
       this.onSideboardAction("remove", cardId);
       this.onSearchAction("add", cardId);
-      this.queueSaveDeckChange();
+      this.saveDeckChange();
       this.updateSideboardTitle();
     }
     this.updateTitle();
