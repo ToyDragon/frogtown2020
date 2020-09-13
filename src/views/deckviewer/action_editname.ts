@@ -1,5 +1,6 @@
 import { Deck } from "../shared/deck_types";
 import { post } from "../shared/client/request";
+import { DeckViewerChangeName } from "./types";
 
 let editingName = false;
 
@@ -46,10 +47,10 @@ function saveNameChange(deck: Deck, afterChange: () => void): boolean {
     errorDisplay.classList.add("nodisp");
     deck.name = newName;
     afterChange();
-    post<unknown, unknown>(
-      "/deckViewer/changeName/" + deck.id + "/" + encodeURIComponent(newName),
-      {}
-    );
+    post<DeckViewerChangeName, boolean>("/deckViewer/updateName", {
+      deckId: deck.id,
+      name: deck.name,
+    });
     return true;
   } else {
     errorDisplay.classList.remove("nodisp");

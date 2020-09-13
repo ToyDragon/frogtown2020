@@ -9,3 +9,8 @@ export interface DeckViewerSaveDeck {
   mainboard: string[];
   sideboard: string[];
 }
+
+export interface DeckViewerChangeName {
+  deckId: string;
+  name: string;
+}

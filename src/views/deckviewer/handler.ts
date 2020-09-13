@@ -5,11 +5,41 @@ import { Deck } from "../shared/deck_types";
 import { DeckKeyRow, DeckCardRow } from "../../server/database/db_manager";
 import { logInfo, logError } from "../../server/log";
 import { addEndpointWithParams } from "../../shared/utils";
-import { DeckViewerSaveDeck } from "./types";
+import { DeckViewerSaveDeck, DeckViewerChangeName } from "./types";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {
   const router = express.Router();
+
+  addEndpointWithParams<DeckViewerChangeName, boolean>(
+    router,
+    "/updateName",
+    async (user, params) => {
+      const connection = await services.dbManager.getConnection();
+      if (!connection) {
+        return false;
+      }
+
+      // Verify that this user is the owner of this deck.
+      const deckRows = await connection.query<DeckKeyRow[]>(
+        "SELECT * FROM deck_keys WHERE id=? AND owner_id=?;",
+        [params.deckId, user.publicId]
+      );
+      if (!deckRows?.value || deckRows.value.length === 0) {
+        logError("User tried to modify deck name they don't own.");
+        connection.release();
+        return false;
+      }
+
+      await connection.query<DeckKeyRow[]>(
+        "UPDATE deck_keys SET name=? WHERE id=?;",
+        [params.name, params.deckId]
+      );
+
+      connection.release();
+      return true;
+    }
+  );
 
   addEndpointWithParams<DeckViewerSaveDeck, string>(
     router,
@@ -27,6 +57,7 @@ export default function handler(services: Services): express.Router {
       );
       if (!deckRows?.value || deckRows.value.length === 0) {
         logError("User tried to modify deck they don't own.");
+        connection.release();
         return "";
       }
 
