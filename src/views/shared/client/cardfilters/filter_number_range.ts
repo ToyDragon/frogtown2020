@@ -1,27 +1,31 @@
 import { BaseFilter } from "./base_filter";
 
 export class FilterNumberRange extends BaseFilter {
-  private lowInput!: JQuery<HTMLElement>;
-  private highInput!: JQuery<HTMLElement>;
+  private lowInput!: HTMLInputElement;
+  private highInput!: HTMLInputElement;
 
   protected async setup(): Promise<void> {
-    const inputGroup = this.container.find("> .btn-group > .input-group");
-    this.lowInput = inputGroup.find("> input.min");
-    this.highInput = inputGroup.find("> input.max");
-    this.lowInput.on("change mouseup click", () => {
-      this.valueChanged();
-    });
-    this.highInput.on("change mouseup click", () => {
-      this.valueChanged();
-    });
+    const inputGroup = this.container.querySelector(
+      ".btn-group > .input-group"
+    );
+    this.lowInput = inputGroup?.querySelector("input.min") as HTMLInputElement;
+    this.highInput = inputGroup?.querySelector("input.max") as HTMLInputElement;
+    for (const event of ["change", "mouseup", "click"]) {
+      this.lowInput.addEventListener(event, () => {
+        this.valueChanged();
+      });
+      this.highInput.addEventListener(event, () => {
+        this.valueChanged();
+      });
+    }
 
-    this.lowInput.attr("disabled", "true");
-    this.highInput.attr("disabled", "true");
+    this.lowInput.setAttribute("disabled", "true");
+    this.highInput.setAttribute("disabled", "true");
 
     await this.dl.onLoaded(this.dataMapName);
     await this.dl.onLoaded(this.idMapName);
-    this.lowInput.removeAttr("disabled");
-    this.highInput.removeAttr("disabled");
+    this.lowInput.removeAttribute("disabled");
+    this.highInput.removeAttribute("disabled");
 
     this.ready = true;
   }
@@ -70,8 +74,8 @@ export class FilterNumberRange extends BaseFilter {
   }
 
   public getValues(): string[] {
-    let low = this.lowInput.val();
-    let high = this.highInput.val();
+    let low = Number(this.lowInput.value);
+    let high = Number(this.highInput.value);
     if (!low && !high) {
       return [];
     }
@@ -85,7 +89,7 @@ export class FilterNumberRange extends BaseFilter {
   }
 
   protected clear(): void {
-    this.lowInput.val("");
-    this.highInput.val("");
+    this.lowInput.value = "";
+    this.highInput.value = "";
   }
 }

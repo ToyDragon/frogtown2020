@@ -14,32 +14,36 @@ export class FilterDisplayOptions extends FilterDropdown {
     updateHandler: () => void,
     options: Displayable[]
   ) {
-    const root = $("div[data-filtertype=" + filtertype + "]");
-    if (root.attr("data-setupDisplay") !== "true") {
-      root.attr("data-setupDisplay", "true");
+    const root = document.querySelector(
+      "div[data-filtertype=" + filtertype + "]"
+    ) as HTMLElement;
+    if (root.getAttribute("data-setupDisplay") !== "true") {
+      root.setAttribute("data-setupDisplay", "true");
       let ix = 0;
       for (const option of options) {
-        const item = $("<li></li>");
-        const a = $(
-          // eslint-disable-next-line prettier/prettier
-          "<a href=\"#\">" +
-            option.title +
-            // eslint-disable-next-line prettier/prettier
-            " <span class=\"glyphicon glyphicon-ok\"></span></a>"
-        );
+        const item = document.createElement("li");
+        const a = document.createElement("a");
+        a.setAttribute("href", "#");
+        const okSpan = document.createElement("span");
+        okSpan.classList.add("glyphicon");
+        okSpan.classList.add("glyphicon-ok");
+        a.append(option.title);
+        a.append(okSpan);
         item.append(a);
-        item.attr("data-value", option.title);
+        item.setAttribute("data-value", option.title);
         const isDefault = ix === defaultIndex;
-        item.attr("data-active", "" + isDefault);
+        item.setAttribute("data-active", "" + isDefault);
         if (isDefault) {
-          item.addClass("default");
+          item.classList.add("default");
         }
-        $("div[data-filtertype=" + filtertype + "] ul").append(item);
+        document
+          .querySelector("div[data-filtertype=" + filtertype + "] ul")
+          ?.append(item);
 
         if (option.requiredMaps && option.requiredMaps.length > 0) {
-          item.attr("disabled", "true");
+          item.setAttribute("disabled", "true");
           dataLoader.onAllLoadedCB(option.requiredMaps, () => {
-            item.removeAttr("disabled");
+            item.removeAttribute("disabled");
           });
         }
 
@@ -50,6 +54,8 @@ export class FilterDisplayOptions extends FilterDropdown {
   }
 
   public resetDefault(): void {
-    $("div[data-filtertype=" + this.type + "] ul li.default").trigger("click");
+    (document.querySelector(
+      "div[data-filtertype=" + this.type + "] ul li.default"
+    ) as HTMLElement).click();
   }
 }

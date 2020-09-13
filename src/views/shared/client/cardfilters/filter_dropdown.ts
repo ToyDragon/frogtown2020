@@ -6,20 +6,21 @@ export class FilterDropdown extends BaseFilter {
   private noOthers!: boolean;
 
   protected async setup(): Promise<void> {
-    const alreadySetup = this.container.attr("data-setup") === "true";
-    this.container.attr("data-setup", "true");
+    const alreadySetup = this.container.getAttribute("data-setup") === "true";
+    this.container.setAttribute("data-setup", "true");
     this.requireAll = false;
     this.noOthers = false;
 
     if (this.dataMapName && this.idMapName && !alreadySetup) {
-      const button = this.container.find("> .btn-group > button");
-      const list = this.container.find("> div > ul");
-      const loadingElement = $(
-        // eslint-disable-next-line prettier/prettier
-        "<span class=\"glyphicon glyphicon-refresh\"></span>"
-      );
+      const button = this.container.querySelector(
+        ".btn-group > button"
+      ) as HTMLElement;
+      const list = this.container.querySelector("div > ul") as HTMLUListElement;
+      const loadingElement = document.createElement("span");
+      loadingElement.classList.add("glyphicon");
+      loadingElement.classList.add("glyphicon-refresh");
       button.append(loadingElement);
-      button.attr("disabled", "true");
+      button.setAttribute("disabled", "true");
       await this.dl.onLoaded(this.dataMapName);
       await this.dl.onLoaded(this.idMapName);
       if (this.dynamicOptions) {
@@ -28,20 +29,21 @@ export class FilterDropdown extends BaseFilter {
           if (this.excludeoptions[value]) {
             continue;
           }
-          const option = $(
-            // eslint-disable-next-line prettier/prettier
-            "<li data-value=\"" +
-              value +
-              // eslint-disable-next-line prettier/prettier
-              "\" data-active=\"false\"><a href=\"#\">" +
-              value +
-              // eslint-disable-next-line prettier/prettier
-              " <span class=\"glyphicon glyphicon-ok\"></span></a></li>"
-          );
+          const option = document.createElement("li");
+          option.setAttribute("data-value", value);
+          option.setAttribute("data-active", "false");
+          const a = document.createElement("a");
+          a.setAttribute("href", "#");
+          const okSpan = document.createElement("span");
+          okSpan.classList.add("glyphicon");
+          okSpan.classList.add("glyphicon-ok");
+          a.append(value);
+          a.append(okSpan);
+          option.append(a);
           list.prepend(option);
         }
       }
-      button.removeAttr("disabled");
+      button.removeAttribute("disabled");
       loadingElement.remove();
       this.ready = true;
     }
@@ -59,109 +61,130 @@ export class FilterDropdown extends BaseFilter {
   }
 
   private setupDropdownExclusive(alreadySetup: boolean): void {
-    const menu = this.container.find("ul.dropdown-menu");
-    menu.find("> li").on("click", (e) => {
-      if ($(e.delegateTarget).attr("disabled")) {
-        return;
-      }
-      if (!alreadySetup) {
-        $(e.delegateTarget).attr(
-          "data-active",
-          "" + ($(e.delegateTarget).attr("data-active") === "false")
-        );
-        if ($(e.delegateTarget).attr("data-active") === "true") {
-          const display =
-            $(e.delegateTarget).attr("data-display") ||
-            $(e.delegateTarget).attr("data-value");
-          this.valueDisplay.text(display || "");
-          menu
-            .find(
-              "> li:not([data-value=" +
-                $(e.delegateTarget).attr("data-value")!.replace(/ /g, "\\ ") +
-                "])"
-            )
-            .attr("data-active", "false");
-        } else {
-          this.valueDisplay.text("");
+    const menu = this.container.querySelector("ul.dropdown-menu");
+    menu?.querySelectorAll("li").forEach((ele) => {
+      ele.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLLIElement;
+        if (target.getAttribute("disabled")) {
+          return;
         }
-      }
-      this.valueChanged();
+        if (!alreadySetup) {
+          target.setAttribute(
+            "data-active",
+            "" + (target.getAttribute("data-active") === "false")
+          );
+          if (target.getAttribute("data-active") === "true") {
+            const display =
+              target.getAttribute("data-display") ||
+              target.getAttribute("data-value");
+            this.valueDisplay.innerText = display || "";
+            menu
+              .querySelector(
+                "li:not([data-value=" +
+                  target.getAttribute("data-value")!.replace(/ /g, "\\ ") +
+                  "])"
+              )
+              ?.setAttribute("data-active", "false");
+          } else {
+            this.valueDisplay.innerText = "";
+          }
+        }
+        this.valueChanged();
+      });
     });
   }
 
   private setupDropdownMany(alreadySetup: boolean): void {
-    const menu = this.container.find("ul.dropdown-menu");
-    const isMiscOptions = menu.hasClass("miscSelection");
-    menu.find("> li").on("click", (e) => {
-      if ($(e.delegateTarget).attr("disabled")) {
-        return;
-      }
-      if (!alreadySetup) {
-        $(e.delegateTarget).attr(
-          "data-active",
-          "" + ($(e.delegateTarget).attr("data-active") === "false")
-        );
-        if ($(e.delegateTarget).attr("data-active") === "false") {
-          if ($(e.delegateTarget).attr("data-value") === "And") {
-            this.requireAll = false;
-            menu.find("> li[data-value=Or]").attr("data-active", "true");
-          } else if ($(e.delegateTarget).attr("data-value") === "Or") {
-            this.requireAll = true;
-            menu.find("> li[data-value=And]").attr("data-active", "true");
-          } else if ($(e.delegateTarget).attr("data-value") === "NoOthers") {
-            this.noOthers = false;
-          }
-        } else {
-          if ($(e.delegateTarget).attr("data-value") === "And") {
-            this.requireAll = true;
-            menu.find("> li[data-value=Or]").attr("data-active", "false");
-          } else if ($(e.delegateTarget).attr("data-value") === "Or") {
-            this.requireAll = false;
-            menu.find("> li[data-value=And]").attr("data-active", "false");
-          } else if ($(e.delegateTarget).attr("data-value") === "NoOthers") {
-            this.noOthers = true;
-          }
+    const menu = this.container.querySelector(
+      "ul.dropdown-menu"
+    ) as HTMLElement;
+    const isMiscOptions = menu.classList.contains("miscSelection");
+    menu.querySelectorAll("li")?.forEach((ele) => {
+      ele.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLLIElement;
+        if (target.getAttribute("disabled")) {
+          return;
         }
-        const display = $("<div></div>");
-        const selected = menu.find(
-          "> li[data-active=true]:not([data-control=true])"
-        );
-        this.valueDisplay.empty();
-        if (selected.length > 0) {
-          let suffix = "";
-          if (
-            menu.find("> li[data-value=And]").attr("data-active") === "true" ||
-            isMiscOptions
-          ) {
-            suffix = " and";
+        if (!alreadySetup) {
+          target.setAttribute(
+            "data-active",
+            "" + (target.getAttribute("data-active") === "false")
+          );
+          if (target.getAttribute("data-active") === "false") {
+            if (target.getAttribute("data-value") === "And") {
+              this.requireAll = false;
+              menu
+                .querySelector("li[data-value=Or]")
+                ?.setAttribute("data-active", "true");
+            } else if (target.getAttribute("data-value") === "Or") {
+              this.requireAll = true;
+              menu
+                .querySelector("li[data-value=And]")
+                ?.setAttribute("data-active", "true");
+            } else if (target.getAttribute("data-value") === "NoOthers") {
+              this.noOthers = false;
+            }
           } else {
-            suffix = " or";
-          }
-          if (
-            menu.find("> li[data-value=NoOthers]").attr("data-active") ===
-            "true"
-          ) {
-            display.append($("<div>Only</div>"));
-          }
-          for (let i = 0; i < selected.length; i++) {
-            let newNode = null;
-            let valueDisplay = $(selected[i]).attr("data-display");
-            if (!valueDisplay) {
-              valueDisplay = $(selected[i]).attr("data-value");
+            if (target.getAttribute("data-value") === "And") {
+              this.requireAll = true;
+              menu
+                .querySelector("li[data-value=Or]")
+                ?.setAttribute("data-active", "false");
+            } else if (target.getAttribute("data-value") === "Or") {
+              this.requireAll = false;
+              menu
+                .querySelector("li[data-value=And]")
+                ?.setAttribute("data-active", "false");
+            } else if (target.getAttribute("data-value") === "NoOthers") {
+              this.noOthers = true;
             }
-            if (i < selected.length - 1) {
-              newNode = $("<div>" + valueDisplay + suffix + "</div>");
+          }
+          const display = document.createElement("div");
+          const selected = menu.querySelectorAll(
+            "li[data-active=true]:not([data-control=true])"
+          );
+          this.valueDisplay.innerHTML = "";
+          if (selected.length > 0) {
+            let suffix = "";
+            if (
+              menu
+                .querySelector("li[data-value=And]")
+                ?.getAttribute("data-active") === "true" ||
+              isMiscOptions
+            ) {
+              suffix = " and";
             } else {
-              newNode = $("<div>" + valueDisplay + "</div>");
+              suffix = " or";
             }
-            display.append(newNode);
+            if (
+              menu
+                .querySelector("li[data-value=NoOthers]")
+                ?.getAttribute("data-active") === "true"
+            ) {
+              const onlyDiv = document.createElement("div");
+              onlyDiv.innerText = "Only";
+              display.append(onlyDiv);
+            }
+            for (let i = 0; i < selected.length; i++) {
+              const newNode = document.createElement("div");
+              let valueDisplay = selected[i].getAttribute("data-display");
+              if (!valueDisplay) {
+                valueDisplay = selected[i].getAttribute("data-value");
+              }
+              if (i < selected.length - 1) {
+                newNode.innerText = valueDisplay + suffix;
+              } else {
+                newNode.innerText = valueDisplay || "";
+              }
+              display.append(newNode);
+            }
           }
+          this.valueDisplay.append(display);
         }
-        this.valueDisplay.append(display);
-      }
-      if (!this.isClearing) {
-        this.valueChanged();
-      }
+        if (!this.isClearing) {
+          this.valueChanged();
+        }
+      });
     });
   }
 
@@ -174,30 +197,36 @@ export class FilterDropdown extends BaseFilter {
   }
 
   public getValues(): string[] {
-    const activeItems = this.container.find(
+    const activeItems = this.container.querySelectorAll(
       "ul.dropdown-menu > li[data-active=true]:not([data-control])"
     );
-    return activeItems.toArray().map((element) => {
-      return $(element).attr("data-value") as string;
-    });
+    const results: string[] = [];
+    for (const element of activeItems) {
+      results.push(element.getAttribute("data-value") || "");
+    }
+    return results;
   }
 
   protected clear(): void {
-    const menu = this.container.find("ul.dropdown-menu");
+    const menu = this.container.querySelector("ul.dropdown-menu");
     this.isClearing = true;
-    menu.find("> li[data-active=true]").trigger("click");
+    menu?.querySelectorAll("li[data-active=true]").forEach((ele) => {
+      (ele as HTMLElement).click();
+    });
     this.isClearing = false;
     this.valueChanged();
   }
 
   public setValue(value: string[]): void {
-    const menu = this.container.find("ul.dropdown-menu");
+    const menu = this.container.querySelector("ul.dropdown-menu");
     this.isClearing = true;
-    menu.find("> li[data-active=true]").trigger("click");
+    menu?.querySelectorAll("li[data-active=true]").forEach((ele) => {
+      (ele as HTMLElement).click();
+    });
     for (const key of value) {
-      menu
-        .find("> li[data-value=" + key.replace(/ /g, "\\ ") + "]")
-        .trigger("click");
+      (menu?.querySelector(
+        "li[data-value=" + key.replace(/ /g, "\\ ") + "]"
+      ) as HTMLElement)?.click();
     }
     this.isClearing = false;
   }

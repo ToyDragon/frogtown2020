@@ -7,7 +7,7 @@ export class FilterText extends BaseFilter {
 
   protected setup(): void {
     this.lastChange = new Date();
-    this.input = this.container[0].querySelector(".input-group > input");
+    this.input = this.container.querySelector(".input-group > input");
     this.input?.setAttribute("disabled", "true");
     this.input?.addEventListener("keyup", () => {
       this.lastChange = new Date();

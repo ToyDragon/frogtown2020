@@ -1,8 +1,8 @@
 import { DataLoader } from "../data_loader";
 
 export class BaseFilter {
-  public container: JQuery<HTMLElement>;
-  public valueDisplay: JQuery<HTMLElement>;
+  public container: HTMLElement;
+  public valueDisplay: HTMLElement;
   public dataMapName: string;
   public idMapName: string;
   public dynamicOptions: boolean;
@@ -21,12 +21,15 @@ export class BaseFilter {
   ) {
     this.type = fitlertype;
     this.dl = dataLoader;
-    this.container = $("div[data-filtertype=" + fitlertype + "]");
-    this.dataMapName = this.container.attr("data-datamapname") || "";
-    this.idMapName = this.container.attr("data-idmapname") || "";
-    this.dynamicOptions = this.container.attr("data-dynamicoptions") === "true";
+    this.container = document.querySelector(
+      "div[data-filtertype=" + fitlertype + "]"
+    ) as HTMLElement;
+    this.dataMapName = this.container.getAttribute("data-datamapname") || "";
+    this.idMapName = this.container.getAttribute("data-idmapname") || "";
+    this.dynamicOptions =
+      this.container.getAttribute("data-dynamicoptions") === "true";
     const allExcludedOptions = (
-      this.container.attr("data-excludeoptions") || ""
+      this.container.getAttribute("data-excludeoptions") || ""
     ).split(",");
     this.excludeoptions = {};
     for (const option of allExcludedOptions) {
@@ -34,9 +37,11 @@ export class BaseFilter {
         this.excludeoptions[option] = true;
       }
     }
-    this.filterclass = this.container.attr("data-filterclass") || "";
-    this.valueDisplay = this.container.find(".dropdownValue");
-    this.active = !this.container.hasClass("nodisp");
+    this.filterclass = this.container.getAttribute("data-filterclass") || "";
+    this.valueDisplay = this.container.querySelector(
+      ".dropdownValue"
+    ) as HTMLElement;
+    this.active = !this.container.classList.contains("nodisp");
     this.ready = false;
     this.updateHandler = updateHandler;
     this.setup();
@@ -44,12 +49,12 @@ export class BaseFilter {
 
   public hide(): void {
     this.clear();
-    this.container.addClass("nodisp");
+    this.container.classList.add("nodisp");
     this.active = false;
   }
 
   public show(): void {
-    this.container.removeClass("nodisp");
+    this.container.classList.remove("nodisp");
     this.active = true;
   }
 
