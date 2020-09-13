@@ -20,7 +20,12 @@ export default function setupBulkImport(
     const inputArea = document.querySelector(
       "#bulkInputArea"
     ) as HTMLTextAreaElement;
-    const result = getCardsByName(dl, inputArea.value);
+
+    const nameToID = dl.getMapData("NameToID");
+    if (!nameToID) {
+      return;
+    }
+    const result = getCardsByName(inputArea.value, nameToID);
     const inputAreaError = document.querySelector(
       "#bulkInputErr"
     ) as HTMLHeadingElement;
@@ -40,9 +45,9 @@ export default function setupBulkImport(
     });
 }
 
-function getCardsByName(
-  dl: DataLoader,
-  bulkName: string
+export function getCardsByName(
+  bulkName: string,
+  nameToID: Record<string, string[]>
 ): { ids: string[]; errors: string[] } {
   const parseRegex = /([0-9]+)?x?\s*([a-zA-Z, '`-]+)/;
   const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
@@ -56,11 +61,6 @@ function getCardsByName(
       .replace(/[^a-zA-Z]/g, "");
   };
 
-  const nameToID = dl.getMapData("NameToID");
-  if (!nameToID) {
-    return result;
-  }
-
   for (const name in nameToID) {
     const id = nameToID[name][0];
     const cname = cleanName(name);
@@ -68,9 +68,7 @@ function getCardsByName(
   }
 
   for (const rawLine of rawLines) {
-    console.log("Checking " + rawLine);
     const res = parseRegex.exec(rawLine);
-    console.log(res);
     if (res) {
       const count = res[1] || 1;
       const name = cleanName(res[2]);
