@@ -6,11 +6,6 @@
         "securePort": 8443,
         "unsecurePort": 8080
     },
-	"ttsDeckJsonDir": "TODO",
-	"ttsDraftJsonDir": "TODO",
-	"ttsPublicDeckJsonDir": "TODO",
-	"hqImagePublicDir": "TODO",
-    "imageDir": "TODO",
     "mapFiles": [
         "./mapfiles/defaultMaps.json",
         "./mapfiles/tokenMaps.json",
@@ -33,5 +28,9 @@
         "host": "35.222.178.187",
         "user": "root",
         "passwordFile": "./secrets/sqlpassword.txt"
-    }
+    },
+    "cardImageRoutes": [
+        "/Images/:version/:cardImage",
+        "/Images/:cardImage"
+    ]
 }

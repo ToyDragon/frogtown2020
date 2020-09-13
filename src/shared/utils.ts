@@ -1,5 +1,6 @@
 import * as express from "express";
 import Config from "../server/config";
+import * as http from "http";
 import * as https from "https";
 
 /**
@@ -146,16 +147,39 @@ export function dateToMySQL(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
-export function httpsGet<T>(path: string): Promise<T> {
+export function httpsGetMessage(path: string): Promise<http.IncomingMessage> {
   return new Promise((resolve) => {
-    https.get(path, (msg) => {
-      let data = "";
-      msg.on("data", (chunk) => {
-        data += chunk;
-      });
-      msg.on("close", () => {
-        resolve(JSON.parse(data) as T);
-      });
+    https.get(path, async (msg) => {
+      if (msg.statusCode === 301) {
+        const newUrl = msg.headers.location || "";
+        resolve(await httpsGetMessage(newUrl));
+      } else {
+        resolve(msg);
+      }
+    });
+  });
+}
+
+export function httpsGet<T>(path: string): Promise<T | null> {
+  return new Promise((resolve) => {
+    https.get(path, async (msg) => {
+      if (msg.statusCode === 301) {
+        const newUrl = msg.headers.location || "";
+        resolve(await httpsGet<T>(newUrl));
+      } else {
+        let data = "";
+        msg.on("data", (chunk) => {
+          data += chunk;
+        });
+        msg.on("close", () => {
+          let result: T | null = null;
+          try {
+            result = JSON.parse(data);
+          } finally {
+            resolve(result);
+          }
+        });
+      }
     });
   });
 }

@@ -5,14 +5,14 @@ import { setLogLevel, Level } from "../log";
 setLogLevel(Level.NONE);
 
 test("Doesn't allow multiple transactions", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect((await fakeConnection.beginTransaction()).err).toBeNull();
   expect((await fakeConnection.beginTransaction()).err).not.toBeNull();
   done();
 });
 
 test("Allow multiple queries in transaction", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect((await fakeConnection.beginTransaction()).err).toBeNull();
   expect(
     (await fakeConnection.query<void>("SELECT * FROM FAKETABLE", [""])).err
@@ -25,7 +25,7 @@ test("Allow multiple queries in transaction", async (done) => {
 });
 
 test("Allow queries outside of transactions", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect(
     (await fakeConnection.query<void>("SELECT * FROM FAKETABLE", [""])).err
   ).toBeNull();
@@ -36,7 +36,7 @@ test("Allow queries outside of transactions", async (done) => {
 });
 
 test("Doesn't allow queries after release", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect(
     (await fakeConnection.query<void>("SELECT * FROM FAKETABLE", [""])).err
   ).toBeNull();
@@ -48,7 +48,7 @@ test("Doesn't allow queries after release", async (done) => {
 });
 
 test("Doesn't allow closing transactions multiple times", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect((await fakeConnection.beginTransaction()).err).toBeNull();
   expect((await fakeConnection.commitOrRollback()).err).toBeNull();
   expect((await fakeConnection.commitOrRollback()).err).not.toBeNull();
@@ -56,7 +56,7 @@ test("Doesn't allow closing transactions multiple times", async (done) => {
 });
 
 test("Doesn't allow transaction after release", async (done) => {
-  const fakeConnection = new DatabaseConnection(new PooledConnectionMock());
+  const fakeConnection = new DatabaseConnection("", new PooledConnectionMock());
   expect((await fakeConnection.release()).err).toBeNull();
   expect((await fakeConnection.beginTransaction()).err).not.toBeNull();
   done();

@@ -47,12 +47,8 @@ export default class DatabaseManager {
     this.connectionPool = mysql.createPool(connectionOptions);
   }
 
-  /**
-   * Helper method to promise-ize connection.query. We can't use poolconnection
-   * here because this is not from a pool.
-   * @param {mysql.Connection} con
-   * @param {string} query
-   */
+  // Helper method to promise-ize connection.query. We can't use poolconnection
+  // here because this is not from a pool.
   private performQuery(
     con: mysql.Connection,
     query: string
@@ -64,10 +60,7 @@ export default class DatabaseManager {
     });
   }
 
-  /**
-   * Ensures that the frogtown database exists.
-   * @param {Config} config
-   */
+  // Ensures that the frogtown database exists.
   private async ensureDatabaseExists(config: Config): Promise<boolean> {
     // Setup database-less connection
     const pw = fs.readFileSync(config.database.passwordFile).toString();
@@ -110,10 +103,7 @@ export default class DatabaseManager {
     return true;
   }
 
-  /**
-   * Ensures that the frogtown database and tables exist.
-   * @param {Config} config
-   */
+  // Ensures that the frogtown database and tables exist.
   public async ensureDatabaseAndTablesExist(config: Config): Promise<void> {
     // Database needs to be created before getConnection can succeed.
     if (!(await this.ensureDatabaseExists(config))) {
@@ -134,8 +124,8 @@ export default class DatabaseManager {
         public_id VARCHAR(24) NOT NULL,
         back_url VARCHAR(100) NOT NULL,
         PRIMARY KEY(private_id),
-        INDEX(private_id),
-        INDEX(public_id)
+        INDEX (private_id),
+        INDEX (public_id)
       ) ENGINE=InnoDB;
     `;
 
@@ -144,6 +134,7 @@ export default class DatabaseManager {
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);
+      connection.release();
       return;
     }
 
@@ -162,6 +153,7 @@ export default class DatabaseManager {
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);
+      connection.release();
       return;
     }
 
@@ -172,7 +164,7 @@ export default class DatabaseManager {
         owner_id VARCHAR(24) NOT NULL,
         name VARCHAR(100) NOT NULL,
         PRIMARY KEY (id),
-        INDEX(owner_id),
+        INDEX (owner_id)
       ) ENGINE=InnoDB;
     `;
 
@@ -181,6 +173,7 @@ export default class DatabaseManager {
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);
+      connection.release();
       return;
     }
 
@@ -200,6 +193,7 @@ export default class DatabaseManager {
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);
+      connection.release();
       return;
     }
 
@@ -210,7 +204,7 @@ export default class DatabaseManager {
         update_time DATETIME NOT NULL,
         quality TINYINT NOT NULL,
         PRIMARY KEY (card_id),
-        INDEX(quality)
+        INDEX (quality)
       ) ENGINE=InnoDB;
     `;
     //Quality-
@@ -223,23 +217,24 @@ export default class DatabaseManager {
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
       logCritical(result.err);
+      connection.release();
       return;
     }
 
     logInfo("Ensured tables exist.");
+    connection.release();
   }
 
-  /**
-   * Retrieves a database connection from the connection pool.
-   */
+  // Retrieves a database connection from the connection pool.
   public getConnection(): Promise<DatabaseConnection | null> {
+    const debugStack = new Error().stack!;
     return new Promise<DatabaseConnection | null>((resolve) => {
       this.connectionPool.getConnection((err, rawConnection) => {
         if (err) {
           logError(err);
           resolve(null);
         } else {
-          resolve(new DatabaseConnection(rawConnection));
+          resolve(new DatabaseConnection(debugStack, rawConnection));
         }
       });
     });

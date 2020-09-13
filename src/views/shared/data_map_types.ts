@@ -59,9 +59,3 @@ export class MapData {
   public IDToNumber: CardIDMap<string> = {};
   public IDToCost: CardIDMap<string> = {};
 }
-
-export abstract class MapLoader {
-  public abstract LoadMapData<T>(
-    mapName: string
-  ): Promise<CardIDMap<T> | NumericValueMap<T> | StringValueMap<T>>;
-}

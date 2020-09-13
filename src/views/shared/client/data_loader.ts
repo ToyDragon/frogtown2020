@@ -96,6 +96,8 @@ export class MapData {
   public IDToCollectorsNumber: CardIDMap<string> = {};
   public IDToCost: CardIDMap<string> = {};
   public IDToLargeImageURI: CardIDMap<string> = {};
+  public IDToTokenStrings: CardIDMap<string> = {};
+  public TokenStringToTokenID: CardIDMap<string> = {};
 }
 
 export class DataLoader {

@@ -1,6 +1,6 @@
 import ViewBehavior from "../shared/client/view_behavior";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
-import { post, get } from "../shared/client/request";
+import { post } from "../shared/client/request";
 import { DeckViewerIncludedData, DeckViewerSaveDeck } from "./types";
 import { BaseCardRenderer } from "../shared/client/renderers/base_card_renderer";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
@@ -13,6 +13,7 @@ import { CardRenderArea } from "../shared/client/renderers/card_render_area";
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
 import { CardRendererCompactDetails } from "../shared/client/renderers/card_renderer_compact_details";
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
+import TableTopSimulator from "../shared/client/exporter/tabletop_simulator";
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable-next-line node/no-unpublished-require */
 const rough = require("../../../node_modules/roughjs/bundled/rough.cjs.js");
@@ -33,10 +34,12 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardArea!: HTMLElement;
   private cardScrollingParent!: HTMLElement;
 
-  private editingName = false;
+  //TODO also try to save when the user closes the page and save is pending
   private saveDelay = 500;
+  private editingName = false;
   private latestChange: Date | null = null;
   private deckSaveWaiting = false;
+  private tableTopSimulator!: TableTopSimulator;
 
   public async ready(): Promise<void> {
     //TODO handle no included data about deck
@@ -46,6 +49,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       window.location.replace("/cardsearch.html");
     }
     */
+    this.tableTopSimulator = new TableTopSimulator(this.dl);
 
     this.mainboardArea = document.querySelector("#mainboard") as HTMLElement;
     this.sideboardArea = document.querySelector("#sideboard") as HTMLElement;
@@ -153,38 +157,9 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
 
     // Export to TTS
     this.updateTTSLink();
-    document
-      .querySelector("#actionExportTTS")
-      ?.addEventListener("click", async (e) => {
-        const liTTSExport = document.querySelector(
-          "#liTTSExport"
-        ) as HTMLLIElement;
-        const btnExportTTS = document.querySelector(
-          "#actionExportTTS"
-        ) as HTMLElement;
-        if (
-          !this.getIncludedData().deckDetails.ttsLink &&
-          !liTTSExport.getAttribute("disabled") &&
-          btnExportTTS.getAttribute("href") === "#"
-        ) {
-          liTTSExport.setAttribute("disabled", "true");
-          $("#actionExportTTS").text("Generating TTS files...");
-          console.log("Requesting export.");
-          e.preventDefault();
-          e.stopPropagation();
-
-          const link = await post<unknown, string>(
-            "/deckViewer/export/tts/" + this.getIncludedData().deckDetails.id,
-            {}
-          );
-          console.log("Export finished: " + link);
-          if (link) {
-            this.getIncludedData().deckDetails.ttsLink = link;
-            liTTSExport.removeAttribute("disabled");
-            this.updateTTSLink();
-          }
-        }
-      });
+    this.tableTopSimulator.ready.then(() => {
+      this.updateTTSLink();
+    });
 
     // Card search
     const deckRenderers: BaseCardRenderer[] = [
@@ -720,30 +695,24 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     return result;
   }
 
-  private async updateTTSLink(): Promise<void> {
-    const ttsLink = this.getIncludedData().deckDetails.ttsLink;
+  private updateTTSLink(): void {
     const btnExportTTS = document.querySelector("#actionExportTTS");
     if (!btnExportTTS) {
       return;
     }
 
-    if (ttsLink && btnExportTTS.getAttribute("href") === "#") {
-      console.log("Requesting " + ttsLink);
-      const data = await get(ttsLink);
-      btnExportTTS.innerHTML = "Download Tabletop Simulator Deck";
-      btnExportTTS.setAttribute(
-        "href",
-        "data:text/json," + encodeURIComponent(JSON.stringify(data))
-      );
-      btnExportTTS.setAttribute(
-        "download",
-        this.getIncludedData().deckDetails.name + ".json"
-      );
-    } else {
-      $("#actionExportTTS").text("Export to Tabletop Simulator");
-      $("#actionExportTTS").attr("href", "#");
-      $("#actionExportTTS").removeAttr("download");
-    }
+    const deckJSON = this.tableTopSimulator.exportDeck(
+      this.getIncludedData().deckDetails
+    );
+    btnExportTTS.innerHTML = "Download Tabletop Simulator Deck";
+    btnExportTTS.setAttribute(
+      "href",
+      "data:text/json," + encodeURIComponent(deckJSON)
+    );
+    btnExportTTS.setAttribute(
+      "download",
+      this.getIncludedData().deckDetails.name + ".json"
+    );
   }
 
   private showPopup(popup: HTMLElement | null): void {

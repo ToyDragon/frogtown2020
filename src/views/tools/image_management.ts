@@ -19,7 +19,7 @@ import imagemagick from "imagemagick-stream";
 
 export async function getAllImageInfos(
   services: Services
-): Promise<CardImageInfoResponse> {
+): Promise<CardImageInfoResponse | null> {
   const allInfos: Record<string, ImageInfo> = {};
   const connection = await services.dbManager.getConnection();
   let lastUpdateDate: Date | null = null;
@@ -46,6 +46,11 @@ export async function getAllImageInfos(
       []
     );
     connection.release();
+
+    if (!IDToHighResAvail || !IDToLargeImage) {
+      logError("Unable to load data maps from S3.");
+      return null;
+    }
 
     // Handle all cards that have known image states
     if (allImageInfos && allImageInfos.value) {
@@ -139,6 +144,11 @@ export async function startUpdatingImages(
       services.config.storage.awsS3DataMapBucket +
       "/IDToHasHighRes.json"
   );
+
+  if (!idToLargeImage || !IDToHighResAvail) {
+    logError("Unable to load data maps from S3.");
+    return;
+  }
 
   if (updateImageRequest.allMissingCards) {
     //TODO: I'll implement this when most/all cards are done.

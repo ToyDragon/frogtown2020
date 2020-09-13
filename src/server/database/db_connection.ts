@@ -2,19 +2,35 @@ import { logError } from "../log";
 import { DatabaseActionResult } from "./db_action_result";
 import PooledConnection from "./db_poolconnection";
 
+let errorHandlerApplied = false;
+
 export class DatabaseConnection {
   private rawConnection: PooledConnection;
   private connectionOpen: boolean;
   private transactionOpen: boolean;
 
-  public constructor(rawConnection: PooledConnection) {
+  private debugStack: string;
+
+  public constructor(debugStack: string, rawConnection: PooledConnection) {
     this.rawConnection = rawConnection;
     this.transactionOpen = false;
     this.connectionOpen = true;
+    this.debugStack = debugStack;
 
-    this.rawConnection.on("error", (err) => {
-      logError("SQL Error: " + err);
-    });
+    if (!errorHandlerApplied) {
+      // I don't fully understand but I think event handlers added here apply to all connections.
+      errorHandlerApplied = true;
+      this.rawConnection.on("error", (err) => {
+        logError("SQL Error: " + err);
+      });
+    }
+
+    setTimeout(() => {
+      if (this.connectionOpen) {
+        logError("Connection open for 10 seconds.");
+        logError(this.debugStack);
+      }
+    }, 10000);
   }
 
   public beginTransaction(): Promise<DatabaseActionResult<void>> {

@@ -1,11 +1,6 @@
 export default class Config {
   public adminId = "";
   public hostname = "";
-  public ttsDeckJsonDir = "";
-  public ttsDraftJsonDir = "";
-  public ttsPublicDeckJsonDir = "";
-  public hqImagePublicDir = "";
-  public imageDir = "";
   public nohttps = false;
   public sslOptions = {
     keyFile: "",
@@ -30,4 +25,5 @@ export default class Config {
     user: "",
     passwordFile: "",
   };
+  public cardImageRoutes: string[] = [];
 }

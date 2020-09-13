@@ -43,10 +43,10 @@
     "webpack-cli": "^3.3.12"
   },
   "scripts": {
-    "start": "webpack --config ./bin/webpack.config.js && node ./bin/server/server.js",
+    "start": "webpack --config ./bin/webpack.config.js && node ./bin/server/runner.js",
     "test": "jest",
     "lint": "npx eslint \"./src/**/*.ts\"",
-    "startprod": "node ./bin/server/server.js"
+    "startprod": "node ./bin/server/runner.js"
   },
   "author": "",
   "license": "ISC"

@@ -19,98 +19,116 @@ import ViewHandler from "./handler_views";
 import * as Logs from "./log";
 import DatabaseManager from "./database/db_manager";
 import ScryfallManager from "./scryfall_manager";
+import ImagesHandler from "./handler_images";
 
-// Setup command line params
-const options = commandLineArgs([
-  {
-    name: "config",
-    alias: "c",
-    type: String,
-    defaultValue: "./example_config.json",
-  },
-  { name: "loglevel", alias: "l", type: Number, defaultValue: Logs.Level.INFO },
-]);
+export default class Server {
+  public run(serverLabel: string): void {
+    // Setup command line params
+    const options = commandLineArgs([
+      {
+        name: "config",
+        alias: "c",
+        type: String,
+        defaultValue: "./example_config.json",
+      },
+      {
+        name: "loglevel",
+        alias: "l",
+        type: Number,
+        defaultValue: Logs.Level.INFO,
+      },
+    ]);
 
-// Initial some global stuff
-Logs.setLogLevel(options["loglevel"]);
+    // Initial some global stuff
+    Logs.setLogLevel(options["loglevel"]);
+    Logs.setLogLabel(serverLabel);
 
-// Create the primary server
-const app = express();
+    // Create the primary server
+    const app = express();
 
-// View engine setup
-app.set("views", "./views");
-app.set("view engine", "ejs");
+    // View engine setup
+    app.set("views", "./views");
+    app.set("view engine", "ejs");
 
-// Third-party middleware setup
-app.use(compression());
-app.use(cookieParser());
-app.use(bodyParser.json());
+    // Third-party middleware setup
+    app.use(compression());
+    app.use(cookieParser());
+    app.use(bodyParser.json());
 
-// Helper function to log server initialization errors
-function HandleServerError(error: Error) {
-  Logs.logCritical(error);
-  Logs.logCritical("Error while initiliazing server.");
+    // Helper function to log server initialization errors
+    function HandleServerError(error: Error) {
+      Logs.logCritical(error);
+      Logs.logCritical("Error while initiliazing server.");
+    }
+
+    // Load config
+    LoadConfigFromFile(options["config"]).then(async (config: Config) => {
+      Logs.logInfo("Loaded config.");
+      const services: Services = {
+        config: config,
+        dbManager: new DatabaseManager(config),
+        storagePortal: new S3StoragePortal(config),
+        scryfallManager: new ScryfallManager(),
+      };
+
+      // Handlers
+      const imageHandler = ImagesHandler(services);
+      app.use(ErrorHandler); // Trigger on unhandled errors
+      app.use(SetupRequiredHandler(services));
+      app.use(ViewHandler(services));
+      app.use("/CardBack.jpg", express.static("./static/CardBack.jpg"));
+      for (const path of config.cardImageRoutes) {
+        app.use(path, imageHandler);
+      }
+      app.use(NotFoundHandler); // Trigger on unrecognized path
+
+      // Server options
+      let serverOptions: https.ServerOptions = {};
+      if (!config.nohttps) {
+        serverOptions = {
+          key: fs.readFileSync(config.sslOptions.keyFile),
+          cert: fs.readFileSync(config.sslOptions.certFile),
+        };
+      }
+
+      // Initialize the database
+      await services.dbManager.ensureDatabaseAndTablesExist(config);
+
+      // Listen for traffic
+      if (config.nohttps) {
+        // HTTP mode for ease of debugging
+        http
+          .createServer(app)
+          .listen(config.network.unsecurePort)
+          .on("error", HandleServerError);
+        Logs.logCritical(
+          "Started non-HTTPs server on port " +
+            config.network.unsecurePort +
+            "."
+        );
+        Logs.logCritical("==========================================");
+        Logs.logCritical(
+          "This mode is only recommended for development, and even then it is" +
+            "strongly recommended that you setup HTTPS. The .XYZ domain is like $1/year, " +
+            "grab one, get a certificate set up, and setup your HOSTS file to point your " +
+            "subdomain to localhost."
+        );
+        Logs.logCritical("==========================================");
+      } else {
+        // HTTPS mode intended for production
+        https
+          .createServer(serverOptions, app)
+          .listen(config.network.securePort)
+          .on("error", HandleServerError);
+        Logs.logInfo("Server listening on port " + config.network.securePort);
+
+        const httpApp = express();
+        httpApp.get("*", HTTPSRedirectionHandler);
+        http
+          .createServer(httpApp)
+          .listen(config.network.unsecurePort)
+          .on("error", HandleServerError);
+      }
+    });
+  }
 }
-
-// Load config
-LoadConfigFromFile(options["config"]).then(async (config: Config) => {
-  Logs.logInfo("Loaded config.");
-  const services: Services = {
-    config: config,
-    dbManager: new DatabaseManager(config),
-    storagePortal: new S3StoragePortal(config),
-    scryfallManager: new ScryfallManager(),
-  };
-
-  // Handlers
-  app.use(ErrorHandler); // Trigger on unhandled errors
-  app.use(SetupRequiredHandler(services));
-  app.use(ViewHandler(services));
-  app.use(NotFoundHandler); // Trigger on unrecognized path
-
-  // Server options
-  let serverOptions: https.ServerOptions = {};
-  if (!config.nohttps) {
-    serverOptions = {
-      key: fs.readFileSync(config.sslOptions.keyFile),
-      cert: fs.readFileSync(config.sslOptions.certFile),
-    };
-  }
-
-  // Initialize the database
-  await services.dbManager.ensureDatabaseAndTablesExist(config);
-
-  // Listen for traffic
-  if (config.nohttps) {
-    // HTTP mode for ease of debugging
-    http
-      .createServer(app)
-      .listen(config.network.unsecurePort)
-      .on("error", HandleServerError);
-    Logs.logCritical(
-      "Started non-HTTPs server on port " + config.network.unsecurePort + "."
-    );
-    Logs.logCritical("==========================================");
-    Logs.logCritical(
-      "This mode is only recommended for development, and even then it is" +
-        "strongly recommended that you setup HTTPS. The .XYZ domain is like $1/year, " +
-        "grab one, get a certificate set up, and setup your HOSTS file to point your " +
-        "subdomain to localhost."
-    );
-    Logs.logCritical("==========================================");
-  } else {
-    // HTTPS mode intended for production
-    https
-      .createServer(serverOptions, app)
-      .listen(config.network.securePort)
-      .on("error", HandleServerError);
-    Logs.logInfo("Server listening on port " + config.network.securePort);
-
-    const httpApp = express();
-    httpApp.get("*", HTTPSRedirectionHandler);
-    http
-      .createServer(httpApp)
-      .listen(config.network.unsecurePort)
-      .on("error", HandleServerError);
-  }
-});
