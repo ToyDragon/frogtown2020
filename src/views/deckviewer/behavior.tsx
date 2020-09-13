@@ -18,11 +18,10 @@ import { CardRendererCompactDetails } from "../shared/client/renderers/card_rend
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
 import TableTopSimulator from "../shared/client/exporter/tabletop_simulator";
 import Debouncer from "../shared/debouncer";
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable-next-line node/no-unpublished-require */
-const rough = require("../../../node_modules/roughjs/bundled/rough.cjs.js");
-/* eslint-enable @typescript-eslint/no-var-requires */
-/* eslint-enable-next-line node/no-unpublished-require */
+import setupBulkImport from "./action_bulkimport";
+import setupDelete from "./action_delete";
+import setupEditName from "./action_editname";
+import setupSearchArrow from "./search_arrow";
 
 class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardSearchUtil: CardSearchBehavior | null = null;
@@ -38,17 +37,13 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardArea!: HTMLElement;
   private cardScrollingParent!: HTMLElement;
   private saveDebouncer = new Debouncer(500);
-  private editingName = false;
   private tableTopSimulator!: TableTopSimulator;
 
   public async ready(): Promise<void> {
-    //TODO handle no included data about deck
-    /*
-    if(!includedData.deckDetails){
+    if (!this.getIncludedData()?.deckDetails?.id) {
       //Deck was likely deleted
       window.location.replace("/cardsearch.html");
     }
-    */
     this.tableTopSimulator = new TableTopSimulator(this.dl);
 
     this.mainboardArea = document.querySelector("#mainboard") as HTMLElement;
@@ -62,19 +57,14 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "#deckArea"
     ) as HTMLElement;
 
-    const deleteBtn = document.querySelector("#actionDelete");
     const viewOthersBtn = document.querySelector("#actionViewOtherDecks");
 
     // Edit permissions
-    let allowEdit = false;
-    if (
-      this.getIncludedData().deckDetails.ownerId !==
-      this.authSession.user.publicId
-    ) {
-      deleteBtn?.classList.add("nodisp");
-    } else {
+    const allowEdit =
+      this.getIncludedData().deckDetails.ownerId ===
+      this.authSession.user.publicId;
+    if (allowEdit) {
       viewOthersBtn?.classList.add("nodisp");
-      allowEdit = true;
     }
 
     this.dl.startLoading(["IDToName", "IDToText"]);
@@ -87,24 +77,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     });
 
     // Delete deck popup
-    deleteBtn?.addEventListener("click", () => {
-      this.showPopup(document.querySelector("#deleteOverlay"));
-    });
-    document
-      .querySelector("#btnCloseDeletePopup")
-      ?.addEventListener("click", () => {
-        document.querySelector("#deleteOverlay")?.classList.add("nodisp");
-      });
-    document
-      .querySelector("#btnConfirmDelete")
-      ?.addEventListener("click", async () => {
-        document.querySelector("#deleteOverlay")?.classList.add("nodisp");
-        await post(
-          "/deckViewer/deleteDeck/" + this.getIncludedData().deckDetails.id,
-          {}
-        );
-        window.location.replace("/cardsearch.html");
-      });
+    setupDelete(allowEdit, this.getIncludedData().deckDetails.id);
 
     // Clone deck action
     document
@@ -118,43 +91,9 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       });
 
     // Bulk import popup
-    document
-      .querySelector("#actionBulkImport")
-      ?.addEventListener("click", () => {
-        const inputArea = document.querySelector(
-          "#bulkInputArea"
-        ) as HTMLTextAreaElement;
-        inputArea.value = "";
-        const inputAreaError = document.querySelector(
-          "#bulkInputErr"
-        ) as HTMLHeadingElement;
-        inputAreaError.textContent = "";
-        this.showPopup(document.querySelector("#importOverlay"));
-      });
-    document
-      .querySelector("#btnConfirmImport")
-      ?.addEventListener("click", () => {
-        const inputArea = document.querySelector(
-          "#bulkInputArea"
-        ) as HTMLTextAreaElement;
-        const result = this.getCardsByName(inputArea.value);
-        const inputAreaError = document.querySelector(
-          "#bulkInputErr"
-        ) as HTMLHeadingElement;
-        if (result.errors.length) {
-          inputAreaError.textContent = "Can't find " + result.errors.join(", ");
-        } else {
-          for (const cardId of result.ids) {
-            this.onSearchAction("add", cardId);
-          }
-          document.querySelector("#importOverlay")?.classList.add("nodisp");
-        }
-      });
-    document
-      .querySelector("#btnCloseImportPopup")
-      ?.addEventListener("click", () => {
-        document.querySelector("#importOverlay")?.classList.add("nodisp");
-      });
+    setupBulkImport(this.dl, (cardId) => {
+      this.onSearchAction("add", cardId);
+    });
 
     // Export to TTS
     this.updateTTSLink();
@@ -286,42 +225,14 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       }
     );
 
-    const nameEntry = document.querySelector("#nameEntry") as HTMLInputElement;
-    const actionNameChange = document.querySelector(
-      "#actionChangeName"
-    ) as HTMLElement;
-    const nameDisplay = document.querySelector(
-      "#mainNameDisplay"
-    ) as HTMLElement;
-    nameDisplay.innerText = this.getIncludedData().deckDetails.name;
-    const doneEditingName = () => {
-      if (this.saveNameChange()) {
-        nameEntry.classList.add("nodisp");
-        nameDisplay.classList.remove("nodisp");
-        this.editingName = false;
+    setupEditName(
+      () => {
+        return this.getIncludedData().deckDetails;
+      },
+      () => {
+        this.updateTitle();
       }
-    };
-    nameEntry.addEventListener("keydown", (e) => {
-      if (e.keyCode === 13) {
-        doneEditingName();
-      }
-    });
-    actionNameChange.addEventListener("click", () => {
-      if (this.editingName) {
-        doneEditingName();
-      } else {
-        nameEntry.classList.remove("nodisp");
-        nameEntry.value = this.getIncludedData().deckDetails.name;
-        nameEntry.focus();
-        nameDisplay.classList.add("nodisp");
-        this.editingName = true;
-      }
-    });
-
-    this.drawArrow();
-    setInterval(() => {
-      this.drawArrow();
-    }, 125);
+    );
 
     // Update immediately in case the user changes the active renderer before the assigned renderer is ready.
     this.mainboardRenderArea.UpdateCardList(
@@ -342,45 +253,10 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
           this.getIncludedData().deckDetails.sideboard
         );
       });
-  }
 
-  private drawArrow(): void {
-    const searchSvg = document.querySelector("#searchSVG") as SVGSVGElement;
-    searchSvg.innerHTML = "";
-    let numCards = 0;
-
-    numCards += this.getIncludedData().deckDetails.mainboard.length;
-    numCards += this.getIncludedData().deckDetails.sideboard.length;
-
-    if (numCards === 0) {
-      const rc = rough.svg(searchSvg);
-      const startX = 150;
-      const startY = 15;
-      const width = 250;
-      const height = 420;
-      const points = [
-        [startX + width / 3, startY + height],
-        [startX + width / 3, startY + height / 4],
-        [startX, startY + height / 4],
-        [startX + width / 2, startY],
-        [startX + width, startY + height / 4],
-        [startX + (2 * width) / 3, startY + height / 4],
-        [startX + (2 * width) / 3, startY + height],
-      ];
-
-      for (let i = 0; i < points.length; i++) {
-        const ni = (i + 1) % points.length;
-
-        const l = points[i];
-        const r = points[ni];
-        const ele = rc.line(l[0], l[1], r[0], r[1], {
-          bowing: 3,
-          stroke: "#303b4c",
-          strokeWidth: 3,
-        });
-        searchSvg.append(ele);
-      }
-    }
+    setupSearchArrow(() => {
+      return this.getIncludedData().deckDetails;
+    });
   }
 
   private updateCardDivs(): void {
@@ -435,30 +311,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       " (" +
       (deetz.mainboard.length + deetz.sideboard.length) +
       " cards)";
-  }
-
-  private saveNameChange(): boolean {
-    const errorDisplay = document.querySelector(
-      "#divNameErr"
-    ) as HTMLDivElement;
-    const nameEntry = document.querySelector("#nameEntry") as HTMLInputElement;
-    const newName = (nameEntry.value + "").trim();
-    if (newName.length < 100 && newName.length > 0) {
-      errorDisplay.classList.add("nodisp");
-      this.getIncludedData().deckDetails.name = newName;
-      this.updateTitle();
-      post<unknown, unknown>(
-        "/deckViewer/changeName/" +
-          this.getIncludedData().deckDetails.id +
-          "/" +
-          encodeURIComponent(newName),
-        {}
-      );
-      return true;
-    } else {
-      errorDisplay.classList.remove("nodisp");
-      return false;
-    }
   }
 
   private async saveDeckChange(): Promise<void> {
@@ -519,52 +371,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     }
   }
 
-  private getCardsByName(
-    bulkName: string
-  ): { ids: string[]; errors: string[] } {
-    const parseRegex = /([0-9]+)?x?\s*([a-zA-Z, '`-]+)/;
-    const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
-    const rawLines = (bulkName + "").split("\n");
-    const cleanNameMap: { [name: string]: string } = {};
-
-    const cleanName = (name?: string) => {
-      return (name + "")
-        .toLowerCase()
-        .split("/")[0]
-        .replace(/[^a-zA-Z]/g, "");
-    };
-
-    const nameToID = this.dl.getMapData("NameToID");
-    if (!nameToID) {
-      return result;
-    }
-
-    for (const name in nameToID) {
-      const id = nameToID[name][0];
-      const cname = cleanName(name);
-      cleanNameMap[cname] = id;
-    }
-
-    for (const rawLine of rawLines) {
-      console.log("Checking " + rawLine);
-      const res = parseRegex.exec(rawLine);
-      console.log(res);
-      if (res) {
-        const count = res[1] || 1;
-        const name = cleanName(res[2]);
-        const cardId = cleanNameMap[name];
-        if (!cardId) {
-          result.errors.push(res[2]);
-        } else {
-          for (let i = 0; i < count; i++) {
-            result.ids.push(cardId);
-          }
-        }
-      }
-    }
-    return result;
-  }
-
   private updateTTSLink(): void {
     const btnExportTTS = document.querySelector("#actionExportTTS");
     if (!btnExportTTS) {
@@ -583,20 +389,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "download",
       this.getIncludedData().deckDetails.name + ".json"
     );
-  }
-
-  private showPopup(popup: HTMLElement | null): void {
-    if (popup) {
-      popup.classList.remove("nodisp");
-      if (popup.parentElement) {
-        const pWidth = popup.parentElement.clientWidth;
-        const popupContentEle = popup.querySelector("> .popup") as HTMLElement;
-        if (popupContentEle) {
-          const width = popupContentEle.clientWidth;
-          popupContentEle.style.marginLeft = pWidth / 2 - width / 2 + "px";
-        }
-      }
-    }
   }
 }
 

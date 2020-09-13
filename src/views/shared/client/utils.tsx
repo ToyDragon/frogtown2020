@@ -100,3 +100,17 @@ export function LoadCardImageIntoElement(
   // eslint-disable-next-line prettier/prettier
   element.style.backgroundImage = "url(\"" + imageUrl + "\")";
 }
+
+export function showPopup(popup: HTMLElement | null): void {
+  if (popup) {
+    popup.classList.remove("nodisp");
+    if (popup.parentElement) {
+      const pWidth = popup.parentElement.clientWidth;
+      const popupContentEle = popup.querySelector("> .popup") as HTMLElement;
+      if (popupContentEle) {
+        const width = popupContentEle.clientWidth;
+        popupContentEle.style.marginLeft = pWidth / 2 - width / 2 + "px";
+      }
+    }
+  }
+}
