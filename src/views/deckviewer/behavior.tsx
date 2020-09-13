@@ -102,6 +102,13 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     });
 
     // Card search
+    this.cardSearchUtil = new CardSearchBehavior(
+      this.dl,
+      (cardIds: string[], _miscOptions: MiscOptions) => {
+        this.searchRenderArea.UpdateCardList(cardIds);
+      }
+    );
+
     const mainboardOptions: CardRendererOptions = {
       dataLoader: this.dl,
       cardArea: this.mainboardArea,
@@ -217,13 +224,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.updateCardDivs();
     }, 250);
     this.updateCardDivs();
-
-    this.cardSearchUtil = new CardSearchBehavior(
-      this.dl,
-      (cardIds: string[], _miscOptions: MiscOptions) => {
-        this.searchRenderArea.UpdateCardList(cardIds);
-      }
-    );
 
     setupEditName(
       () => {
