@@ -1,16 +1,9 @@
-import { ActionHandler } from "./base_card_renderer";
 import { CardRendererDetails } from "./card_renderer_details";
-import { DataLoader } from "../data_loader";
+import { CardRendererOptions } from "./base_card_renderer";
 
 export class CardRendererCompactDetails extends CardRendererDetails {
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    super(dataLoader, cardArea, scrollingParent, allowEdit, actionHandler);
+  public constructor(options: CardRendererOptions) {
+    super(options);
   }
 
   public GetDisplayName(): string {

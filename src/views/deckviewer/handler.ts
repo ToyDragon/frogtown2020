@@ -3,7 +3,7 @@ import Services from "../../server/services";
 import { IncludedData } from "../../server/view_data";
 import { Deck } from "../shared/deck_types";
 import { DeckKeyRow, DeckCardRow } from "../../server/database/db_manager";
-import { logInfo } from "../../server/log";
+import { logInfo, logError } from "../../server/log";
 import { addEndpointWithParams } from "../../shared/utils";
 import { DeckViewerSaveDeck } from "./types";
 
@@ -26,6 +26,7 @@ export default function handler(services: Services): express.Router {
         [params.deckId, user.publicId]
       );
       if (!deckRows?.value || deckRows.value.length === 0) {
+        logError("User tried to modify deck they don't own.");
         return "";
       }
 
@@ -152,7 +153,7 @@ export const DeckViewerIncludedData: IncludedData[] = [
             if (cardRow.board === 0) {
               mainboard.push(cardRow.card_id);
             } else {
-              mainboard.push(cardRow.card_id);
+              sideboard.push(cardRow.card_id);
             }
           }
         }

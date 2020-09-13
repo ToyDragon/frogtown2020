@@ -1,6 +1,9 @@
 import ViewBehavior from "../shared/client/view_behavior";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
-import { BaseCardRenderer } from "../shared/client/renderers/base_card_renderer";
+import {
+  BaseCardRenderer,
+  CardRendererOptions,
+} from "../shared/client/renderers/base_card_renderer";
 import { CardRendererList } from "../shared/client/renderers/card_renderer_list";
 import { CardRendererDetails } from "../shared/client/renderers/card_renderer_details";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
@@ -14,56 +17,29 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
 
   public async ready(): Promise<void> {
     this.dl.startLoading(["IDToName", "IDToText"]);
-
-    const onCardAction = (action: string, cardId: string) => {
-      this.onCardAction(action, cardId);
-    };
     const cardArea = document.querySelector("#cardArea") as HTMLElement;
     const scrollingParent = document.querySelector(
       "#cardSearch"
     ) as HTMLElement;
+    const searchOptions: CardRendererOptions = {
+      dataLoader: this.dl,
+      cardArea: cardArea,
+      scrollingParent: scrollingParent,
+      allowEdit: false,
+      actionHandler: (action: string, cardId: string) => {
+        this.onCardAction(action, cardId);
+      },
+    };
     const allRenderers: BaseCardRenderer[] = [
-      new CardRendererGrid(
-        this.dl,
-        cardArea,
-        scrollingParent,
-        false,
-        onCardAction
-      ),
-      new CardRendererList(
-        this.dl,
-        cardArea,
-        scrollingParent,
-        false,
-        onCardAction
-      ),
-      new CardRendererDetails(
-        this.dl,
-        cardArea,
-        scrollingParent,
-        false,
-        onCardAction
-      ),
-      new CardRendererText(
-        this.dl,
-        cardArea,
-        scrollingParent,
-        false,
-        onCardAction
-      ),
+      new CardRendererGrid(searchOptions),
+      new CardRendererList(searchOptions),
+      new CardRendererDetails(searchOptions),
+      new CardRendererText(searchOptions),
     ];
 
     // TODO
     // if (Utils.IsDebug()) {
-    allRenderers.push(
-      new CardRendererTextIDs(
-        this.dl,
-        cardArea,
-        scrollingParent,
-        false,
-        onCardAction
-      )
-    );
+    allRenderers.push(new CardRendererTextIDs(searchOptions));
     // }
 
     this.cardSearchUtil = new CardSearchBehavior(

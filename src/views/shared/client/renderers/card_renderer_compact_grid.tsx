@@ -2,20 +2,13 @@ import * as ReactDom from "react-dom";
 import * as React from "react";
 
 import { CardRendererGrid } from "./card_renderer_grid";
-import { DataLoader } from "../data_loader";
-import { Group, ActionHandler, ActionList } from "./base_card_renderer";
+import { Group, ActionList, CardRendererOptions } from "./base_card_renderer";
 
 export class CardRendererCompactGrid extends CardRendererGrid {
   private hoveredCard: HTMLElement | null = null;
 
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    super(dataLoader, cardArea, scrollingParent, allowEdit, actionHandler);
+  public constructor(options: CardRendererOptions) {
+    super(options);
   }
 
   public GetDisplayName(): string {

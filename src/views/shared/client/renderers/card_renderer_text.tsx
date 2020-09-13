@@ -1,20 +1,18 @@
 import { MiscOptions } from "../cardfilters/filter_misc_options";
-import { BaseCardRenderer, Group, ActionHandler } from "./base_card_renderer";
-import { DataLoader, MapData } from "../data_loader";
+import {
+  BaseCardRenderer,
+  Group,
+  CardRendererOptions,
+} from "./base_card_renderer";
+import { MapData } from "../data_loader";
 
 export class CardRendererText extends BaseCardRenderer {
   public groups: Group[];
 
   protected cardList!: HTMLTextAreaElement;
 
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    super(dataLoader, cardArea, scrollingParent, allowEdit, actionHandler);
+  public constructor(options: CardRendererOptions) {
+    super(options);
     this.groups = [];
   }
 

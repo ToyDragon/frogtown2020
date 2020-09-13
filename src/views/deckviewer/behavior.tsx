@@ -2,7 +2,10 @@ import ViewBehavior from "../shared/client/view_behavior";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
 import { post } from "../shared/client/request";
 import { DeckViewerIncludedData, DeckViewerSaveDeck } from "./types";
-import { BaseCardRenderer } from "../shared/client/renderers/base_card_renderer";
+import {
+  BaseCardRenderer,
+  CardRendererOptions,
+} from "../shared/client/renderers/base_card_renderer";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
 import { CardRendererText } from "../shared/client/renderers/card_renderer_text";
 import { CardRendererCompactGrid } from "../shared/client/renderers/card_renderer_compact_grid";
@@ -162,67 +165,25 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     });
 
     // Card search
+    const mainboardOptions: CardRendererOptions = {
+      dataLoader: this.dl,
+      cardArea: this.mainboardArea,
+      scrollingParent: this.deckScrollingParent,
+      allowEdit: allowEdit,
+      actionHandler: (action: string, cardId: string) => {
+        this.onSearchAction(action, cardId);
+      },
+    };
     const deckRenderers: BaseCardRenderer[] = [
-      new CardRendererGrid(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererList(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererDetails(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererCompactGrid(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererText(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
+      new CardRendererGrid(mainboardOptions),
+      new CardRendererList(mainboardOptions),
+      new CardRendererDetails(mainboardOptions),
+      new CardRendererCompactGrid(mainboardOptions),
+      new CardRendererText(mainboardOptions),
     ];
-
     //TODO
     //if (Utils.IsDebug()) {
-    deckRenderers.push(
-      new CardRendererTextIDs(
-        this.dl,
-        this.mainboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      )
-    );
+    deckRenderers.push(new CardRendererTextIDs(mainboardOptions));
     //}
 
     const defaultDeckOptions: MiscOptions = {
@@ -246,67 +207,26 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
 
     this.updateSideboardTitle();
 
+    const sideboardOptions: CardRendererOptions = {
+      dataLoader: this.dl,
+      cardArea: this.sideboardArea,
+      scrollingParent: this.deckScrollingParent,
+      allowEdit: allowEdit,
+      actionHandler: (action: string, cardId: string) => {
+        this.onSideboardAction(action, cardId);
+      },
+    };
     const sideboardRenderers: BaseCardRenderer[] = [
-      new CardRendererGrid(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      ),
-      new CardRendererList(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      ),
-      new CardRendererDetails(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      ),
-      new CardRendererCompactGrid(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      ),
-      new CardRendererText(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      ),
+      new CardRendererGrid(sideboardOptions),
+      new CardRendererList(sideboardOptions),
+      new CardRendererDetails(sideboardOptions),
+      new CardRendererCompactGrid(sideboardOptions),
+      new CardRendererText(sideboardOptions),
     ];
 
     //TODO
     //if (Utils.IsDebug()) {
-    sideboardRenderers.push(
-      new CardRendererTextIDs(
-        this.dl,
-        this.sideboardArea,
-        this.deckScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSideboardAction(action, cardId);
-        }
-      )
-    );
+    sideboardRenderers.push(new CardRendererTextIDs(sideboardOptions));
     //}
 
     const defaultSideboardOptions: MiscOptions = {
@@ -327,43 +247,20 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "DeckViewerDeck"
     );
 
+    const searchOptions: CardRendererOptions = {
+      dataLoader: this.dl,
+      cardArea: this.cardArea,
+      scrollingParent: this.cardScrollingParent,
+      allowEdit: allowEdit,
+      actionHandler: (action: string, cardId: string) => {
+        this.onSearchAction(action, cardId);
+      },
+    };
     const cardRenderers: BaseCardRenderer[] = [
-      new CardRendererGrid(
-        this.dl,
-        this.cardArea,
-        this.cardScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererCompactList(
-        this.dl,
-        this.cardArea,
-        this.cardScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererCompactDetails(
-        this.dl,
-        this.cardArea,
-        this.cardScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
-      new CardRendererCompactGrid(
-        this.dl,
-        this.cardArea,
-        this.cardScrollingParent,
-        allowEdit,
-        (action: string, cardId: string) => {
-          this.onSearchAction(action, cardId);
-        }
-      ),
+      new CardRendererGrid(searchOptions),
+      new CardRendererCompactList(searchOptions),
+      new CardRendererCompactDetails(searchOptions),
+      new CardRendererCompactGrid(searchOptions),
     ];
     const defaultSearchOptions: MiscOptions = {
       "Action Add": true,
@@ -569,7 +466,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private async saveDeckChange(): Promise<void> {
     if (await this.saveDebouncer.waitAndShouldAct()) {
       const deetz = this.getIncludedData().deckDetails;
-      deetz.ttsLink = "";
       this.updateTTSLink();
       console.log("Saving");
       const response = await post<DeckViewerSaveDeck, string>(

@@ -8,6 +8,5 @@ export interface Deck {
   mainboard: string[];
   sideboard: string[];
   name: string;
-  ttsLink?: string;
   subsets?: MapData;
 }

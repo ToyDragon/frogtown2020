@@ -5,23 +5,17 @@ import { MiscOptions } from "../cardfilters/filter_misc_options";
 import {
   BaseCardRenderer,
   Group,
-  ActionHandler,
   ActionList,
+  CardRendererOptions,
 } from "./base_card_renderer";
 import { LoadCardImageIntoElement } from "../utils";
-import { DataLoader, MapData } from "../data_loader";
+import { MapData } from "../data_loader";
 
 export class CardRendererGrid extends BaseCardRenderer {
   public groups: Group[];
 
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    super(dataLoader, cardArea, scrollingParent, allowEdit, actionHandler);
+  public constructor(options: CardRendererOptions) {
+    super(options);
     this.groups = [];
   }
 

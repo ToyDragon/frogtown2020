@@ -80,6 +80,14 @@ export interface ActionDetail {
   ref: React.RefObject<HTMLDivElement>;
 }
 
+export interface CardRendererOptions {
+  dataLoader: DataLoader;
+  cardArea: HTMLElement;
+  scrollingParent: HTMLElement;
+  allowEdit: boolean;
+  actionHandler: ActionHandler;
+}
+
 export abstract class BaseCardRenderer {
   protected cardArea: HTMLElement;
   protected scrollingParent: HTMLElement;
@@ -92,18 +100,12 @@ export abstract class BaseCardRenderer {
   private svgBySet: { [setCode: string]: string } = {};
   private allowEdit: boolean;
 
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    this.dl = dataLoader;
-    this.cardArea = cardArea;
-    this.scrollingParent = scrollingParent;
-    this.allowEdit = allowEdit;
-    this.actionHandler = actionHandler;
+  public constructor(options: CardRendererOptions) {
+    this.dl = options.dataLoader;
+    this.cardArea = options.cardArea;
+    this.scrollingParent = options.scrollingParent;
+    this.allowEdit = options.allowEdit;
+    this.actionHandler = options.actionHandler;
   }
 
   public ChangeCardSet(_cardIds: string[], _miscOptions: MiscOptions): void {}

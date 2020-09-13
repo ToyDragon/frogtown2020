@@ -6,10 +6,10 @@ import {
   BaseCardRenderer,
   Group,
   ActionList,
-  ActionHandler,
+  CardRendererOptions,
 } from "./base_card_renderer";
 import * as Utils from "../utils";
-import { DataLoader, MapData } from "../data_loader";
+import { MapData } from "../data_loader";
 
 export class CardRendererList extends BaseCardRenderer {
   public hoverCard!: HTMLElement;
@@ -30,14 +30,8 @@ export class CardRendererList extends BaseCardRenderer {
     special: "S",
   };
 
-  public constructor(
-    dataLoader: DataLoader,
-    cardArea: HTMLElement,
-    scrollingParent: HTMLElement,
-    allowEdit: boolean,
-    actionHandler: ActionHandler
-  ) {
-    super(dataLoader, cardArea, scrollingParent, allowEdit, actionHandler);
+  public constructor(options: CardRendererOptions) {
+    super(options);
     this.groups = [];
   }
 
