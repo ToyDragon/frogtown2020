@@ -8,8 +8,6 @@ import {
 import { FilterDatalist } from "./cardfilters/filter_datalist";
 import { FilterDropdown } from "./cardfilters/filter_dropdown";
 import { FilterNumberRange } from "./cardfilters/filter_number_range";
-// import { FilterDisplayOptions } from "./cardfilters/filter_display_options";
-// import { FilterDropdownDataMap } from "./cardfilters/filter_dropdown_datamap";
 
 export class CardSearchBehavior {
   public cardChangeCB: (cards: string[], options: MiscOptions) => void;
@@ -87,27 +85,42 @@ export class CardSearchBehavior {
       this.miscFilter,
     ];
 
-    $("#filterSelection > div > ul > li").on("click", (e) => {
-      const item = $(e.currentTarget);
-      const type = item.attr("data-filtertype") || "";
-      if (type === "clearall") {
-        $("#filterSelection > div > ul > li[data-active=true]").trigger(
-          "click"
-        );
-      } else if (type === "showall") {
-        $(
-          "#filterSelection > div > ul > li[data-active=false]:not(data-control)"
-        ).trigger("click");
-      } else {
-        item.attr("data-active", "" + (item.attr("data-active") === "false"));
-        const filter = this.GetFilterByType(type);
-        if (item.attr("data-active") === "true") {
-          filter.show();
-        } else {
-          filter.hide();
-        }
-      }
-    });
+    document
+      .querySelectorAll("#filterSelection > div > ul > li")
+      .forEach((ele) => {
+        ele.addEventListener("click", (e) => {
+          const item = e.currentTarget as HTMLElement;
+          const type = item.getAttribute("data-filtertype") || "";
+          if (type === "clearall") {
+            document
+              .querySelectorAll(
+                "#filterSelection > div > ul > li[data-active=true]"
+              )
+              .forEach((ele) => {
+                (ele as HTMLElement).click();
+              });
+          } else if (type === "showall") {
+            document
+              .querySelectorAll(
+                "#filterSelection > div > ul > li[data-active=false]:not(data-control)"
+              )
+              .forEach((ele) => {
+                (ele as HTMLElement).click();
+              });
+          } else {
+            item.setAttribute(
+              "data-active",
+              "" + (item.getAttribute("data-active") === "false")
+            );
+            const filter = this.GetFilterByType(type);
+            if (item.getAttribute("data-active") === "true") {
+              filter.show();
+            } else {
+              filter.hide();
+            }
+          }
+        });
+      });
 
     this.dl.onLoadedCB("FrontIDToBackID", () => {
       const frontIDToBackID = this.dl.getMapData("FrontIDToBackID");
