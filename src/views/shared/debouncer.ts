@@ -8,6 +8,13 @@ export default class Debouncer {
     this.delay = delay;
     this.lastAction = new Date();
     this.lastAction.setFullYear(1990);
+
+    document.addEventListener("onbeforeunload", () => {
+      if (this.inProgressRequest) {
+        this.inProgressRequest(true);
+        this.inProgressRequest = null;
+      }
+    });
   }
 
   public waitAndShouldAct(): Promise<boolean> {

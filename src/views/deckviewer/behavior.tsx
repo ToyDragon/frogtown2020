@@ -37,8 +37,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private searchRenderArea!: CardRenderArea;
   private cardArea!: HTMLElement;
   private cardScrollingParent!: HTMLElement;
-
-  //TODO also try to save when the user closes the page and save is pending
   private saveDebouncer = new Debouncer(500);
   private editingName = false;
   private tableTopSimulator!: TableTopSimulator;
