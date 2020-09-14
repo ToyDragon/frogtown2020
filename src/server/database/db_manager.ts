@@ -227,6 +227,13 @@ export default class DatabaseManager {
 
   // Retrieves a database connection from the connection pool.
   public getConnection(): Promise<DatabaseConnection | null> {
+    // Default timeout 10 seconds
+    return this.getConnectionTimeout(10000);
+  }
+
+  public getConnectionTimeout(
+    timeoutMillis: number
+  ): Promise<DatabaseConnection | null> {
     const debugStack = new Error().stack!;
     return new Promise<DatabaseConnection | null>((resolve) => {
       this.connectionPool.getConnection((err, rawConnection) => {
@@ -234,7 +241,9 @@ export default class DatabaseManager {
           logError(err);
           resolve(null);
         } else {
-          resolve(new DatabaseConnection(debugStack, rawConnection));
+          resolve(
+            new DatabaseConnection(timeoutMillis, debugStack, rawConnection)
+          );
         }
       });
     });

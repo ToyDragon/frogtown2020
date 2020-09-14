@@ -1,7 +1,7 @@
 import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
 import { DataFileRow } from "../../server/database/db_manager";
-import { logInfo, logError } from "../../server/log";
+import { logInfo } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
 import * as https from "https";
 import {
@@ -54,7 +54,6 @@ export async function getDataInfo(
       "SELECT * FROM data_files;",
       []
     );
-    logError("Result: " + JSON.stringify(allDataRows));
     if (allDataRows.value) {
       for (const row of allDataRows.value) {
         if (row.name === "all_cards") {

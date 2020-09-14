@@ -21,7 +21,7 @@ export async function getAllImageInfos(
   services: Services
 ): Promise<CardImageInfoResponse | null> {
   const allInfos: Record<string, ImageInfo> = {};
-  const connection = await services.dbManager.getConnection();
+  const connection = await services.dbManager.getConnectionTimeout(30000);
   let lastUpdateDate: Date | null = null;
   const cardsNotHQWithHQAvailable: string[] = [];
   const cardsMissingWithLQAvailable: string[] = [];
@@ -35,11 +35,35 @@ export async function getAllImageInfos(
         services.config.storage.awsS3DataMapBucket +
         "/IDToHasHighRes.json"
     );
+    const TokenIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+      services.config.storage.externalRoot +
+        "/" +
+        services.config.storage.awsS3DataMapBucket +
+        "/TokenIDToHasHighRes.json"
+    );
+    const BackIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+      services.config.storage.externalRoot +
+        "/" +
+        services.config.storage.awsS3DataMapBucket +
+        "/BackIDToHasHighRes.json"
+    );
     const IDToLargeImage = await httpsGet<Record<string, string>>(
       services.config.storage.externalRoot +
         "/" +
         services.config.storage.awsS3DataMapBucket +
         "/IDToLargeImageURI.json"
+    );
+    const TokenIDToLargeImage = await httpsGet<Record<string, string>>(
+      services.config.storage.externalRoot +
+        "/" +
+        services.config.storage.awsS3DataMapBucket +
+        "/TokenIDToLargeImageURI.json"
+    );
+    const BackIDToLargeImage = await httpsGet<Record<string, string>>(
+      services.config.storage.externalRoot +
+        "/" +
+        services.config.storage.awsS3DataMapBucket +
+        "/BackIDToLargeImageURI.json"
     );
     const allImageInfos = await connection.query<CardImageRow[]>(
       "SELECT * FROM card_images;",
@@ -47,7 +71,14 @@ export async function getAllImageInfos(
     );
     connection.release();
 
-    if (!IDToHighResAvail || !IDToLargeImage) {
+    if (
+      !IDToHighResAvail ||
+      !TokenIDToHighResAvail ||
+      !BackIDToHighResAvail ||
+      !IDToLargeImage ||
+      !TokenIDToLargeImage ||
+      !BackIDToLargeImage
+    ) {
       logError("Unable to load data maps from S3.");
       return null;
     }
@@ -58,13 +89,21 @@ export async function getAllImageInfos(
       for (const info of allImageInfos.value) {
         allInfos[info.card_id] = info.quality;
         const thisDate = new Date(info.update_time + " UTC");
-        if (info.quality !== ImageInfo.HQ && IDToHighResAvail[info.card_id]) {
+        const highResAvailable =
+          IDToHighResAvail[info.card_id] ||
+          TokenIDToHighResAvail[info.card_id] ||
+          BackIDToHighResAvail[info.card_id];
+        if (info.quality !== ImageInfo.HQ && highResAvailable) {
           cardsNotHQWithHQAvailable.push(info.card_id);
         }
+        const imageAvailable =
+          IDToLargeImage[info.card_id] ||
+          TokenIDToLargeImage[info.card_id] ||
+          BackIDToLargeImage[info.card_id];
         if (
           (info.quality === ImageInfo.NONE ||
             info.quality === ImageInfo.MISSING) &&
-          IDToLargeImage[info.card_id]
+          imageAvailable
         ) {
           cardsMissingWithLQAvailable.push(info.card_id);
         }
@@ -78,8 +117,16 @@ export async function getAllImageInfos(
     for (const cardId in allKnownIds) {
       if (typeof allInfos[cardId] === "undefined") {
         allInfos[cardId] = ImageInfo.MISSING;
-        if (IDToLargeImage[cardId]) {
-          if (IDToHighResAvail[cardId]) {
+        if (
+          IDToLargeImage[cardId] ||
+          TokenIDToLargeImage[cardId] ||
+          BackIDToLargeImage[cardId]
+        ) {
+          if (
+            IDToHighResAvail[cardId] ||
+            TokenIDToHighResAvail[cardId] ||
+            BackIDToHighResAvail[cardId]
+          ) {
             cardsNotHQWithHQAvailable.push(cardId);
           } else {
             cardsMissingWithLQAvailable.push(cardId);
@@ -138,14 +185,45 @@ export async function startUpdatingImages(
       services.config.storage.awsS3DataMapBucket +
       "/IDToLargeImageURI.json"
   );
+  const TokenIDToLargeImage = await httpsGet<Record<string, string>>(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/TokenIDToLargeImageURI.json"
+  );
+  const BackIDToLargeImage = await httpsGet<Record<string, string>>(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/BackIDToLargeImageURI.json"
+  );
   const IDToHighResAvail = await httpsGet<Record<string, boolean>>(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/IDToHasHighRes.json"
   );
+  const TokenIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/TokenIDToHasHighRes.json"
+  );
+  const BackIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/BackIDToHasHighRes.json"
+  );
 
-  if (!idToLargeImage || !IDToHighResAvail) {
+  if (
+    !idToLargeImage ||
+    !TokenIDToLargeImage ||
+    !BackIDToLargeImage ||
+    !IDToHighResAvail ||
+    !TokenIDToHighResAvail ||
+    !BackIDToHighResAvail
+  ) {
     logError("Unable to load data maps from S3.");
     return;
   }
@@ -157,7 +235,10 @@ export async function startUpdatingImages(
     for (const cardId of updateImageRequest.cardIds) {
       imagesBeingUpdated.push({
         cardId: cardId,
-        isHighRes: IDToHighResAvail[cardId],
+        isHighRes:
+          IDToHighResAvail[cardId] ||
+          TokenIDToHighResAvail[cardId] ||
+          BackIDToHighResAvail[cardId],
       });
     }
     logInfo(
@@ -174,13 +255,17 @@ export async function startUpdatingImages(
   const connection = await services.dbManager.getConnection();
   if (connection) {
     imageUpdateIndex = 0;
-    loadNextImage(services, idToLargeImage, connection);
+    loadNextImage(
+      services,
+      [idToLargeImage, TokenIDToLargeImage, BackIDToLargeImage],
+      connection
+    );
   }
 }
 
 function loadNextImage(
   services: Services,
-  idToLargeImage: Record<string, string>,
+  imageMaps: Record<string, string>[],
   connection: DatabaseConnection
 ): void {
   if (imageUpdateIndex >= (imagesBeingUpdated?.length || 0)) {
@@ -189,14 +274,14 @@ function loadNextImage(
     imageUpdateIndex = 0;
     connection.release();
   } else {
-    loadOneImage(services, idToLargeImage, connection);
+    loadOneImage(services, imageMaps, connection);
     imageUpdateIndex += 1;
   }
 }
 
 function loadOneImage(
   services: Services,
-  idToLargeImage: Record<string, string>,
+  imageMaps: Record<string, string>[],
   connection: DatabaseConnection
 ): void {
   const imgToLoad = imageUpdateIndex;
@@ -218,12 +303,15 @@ function loadOneImage(
     return;
   }
 
-  const url = idToLargeImage[cardDetails.cardId];
+  let url = "";
+  for (const map of imageMaps) {
+    url = url || map[cardDetails.cardId];
+  }
   if (!url) {
     logWarning(
       "Failed to load image from scryfall because no scryfall image available."
     );
-    loadNextImage(services, idToLargeImage, connection);
+    loadNextImage(services, imageMaps, connection);
     return;
   }
 
@@ -274,7 +362,7 @@ function loadOneImage(
           cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
         ]
       );
-      loadNextImage(services, idToLargeImage, connection);
+      loadNextImage(services, imageMaps, connection);
     });
   });
 }

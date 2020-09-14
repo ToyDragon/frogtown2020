@@ -35,6 +35,12 @@
           "duplicates": false,
           "key": "id",
           "value": "tokenstring"
+      },
+      {
+          "name": "TokenIDToHasHighRes",
+          "duplicates": false,
+          "key": "id",
+          "value": "highres_image"
       }
   ]
 }

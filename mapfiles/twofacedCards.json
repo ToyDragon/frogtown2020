@@ -23,6 +23,12 @@
           "duplicates": false,
           "key": "id",
           "value": "card_faces.1.illustration_id"
+      },
+      {
+          "name": "BackIDToHasHighRes",
+          "duplicates": false,
+          "key": "id",
+          "value": "highres_image"
       }
   ]
 }

@@ -11,7 +11,11 @@ export class DatabaseConnection {
 
   private debugStack: string;
 
-  public constructor(debugStack: string, rawConnection: PooledConnection) {
+  public constructor(
+    timeoutMillis: number,
+    debugStack: string,
+    rawConnection: PooledConnection
+  ) {
     this.rawConnection = rawConnection;
     this.transactionOpen = false;
     this.connectionOpen = true;
@@ -27,10 +31,10 @@ export class DatabaseConnection {
 
     setTimeout(() => {
       if (this.connectionOpen) {
-        logError("Connection open for 10 seconds.");
+        logError("Connection open for " + timeoutMillis + " milliseconds.");
         logError(this.debugStack);
       }
-    }, 10000);
+    }, timeoutMillis);
   }
 
   public beginTransaction(): Promise<DatabaseActionResult<void>> {
