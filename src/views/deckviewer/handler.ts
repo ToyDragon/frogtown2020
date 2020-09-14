@@ -41,6 +41,38 @@ export default function handler(services: Services): express.Router {
     }
   );
 
+  addEndpointWithParams<DeckViewerChangeName, boolean>(
+    router,
+    "/deleteDeck",
+    async (user, params) => {
+      const connection = await services.dbManager.getConnection();
+      if (!connection) {
+        return false;
+      }
+
+      // Verify that this user is the owner of this deck.
+      const deckRows = await connection.query<DeckKeyRow[]>(
+        "SELECT * FROM deck_keys WHERE id=? AND owner_id=?;",
+        [params.deckId, user.publicId]
+      );
+      if (!deckRows?.value || deckRows.value.length === 0) {
+        logError("User tried to modify deck name they don't own.");
+        connection.release();
+        return false;
+      }
+
+      await connection.query<void>("DELETE FROM deck_keys WHERE id=?;", [
+        params.deckId,
+      ]);
+      await connection.query<void>("DELETE FROM deck_cards WHERE deck_id=?;", [
+        params.deckId,
+      ]);
+
+      connection.release();
+      return true;
+    }
+  );
+
   addEndpointWithParams<DeckViewerSaveDeck, string>(
     router,
     "/updateCards",

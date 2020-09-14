@@ -14,3 +14,7 @@ export interface DeckViewerChangeName {
   deckId: string;
   name: string;
 }
+
+export interface DeckViewerDelete {
+  deckId: string;
+}

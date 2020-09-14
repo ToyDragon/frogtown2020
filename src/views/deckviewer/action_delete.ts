@@ -1,5 +1,6 @@
 import { showPopup } from "../shared/client/utils";
 import { post } from "../shared/client/request";
+import { DeckViewerDelete } from "./types";
 
 export default function setupDelete(allowEdit: boolean, deckId: string): void {
   const deleteBtn = document.querySelector("#actionDelete");
@@ -20,7 +21,9 @@ export default function setupDelete(allowEdit: boolean, deckId: string): void {
     .querySelector("#btnConfirmDelete")
     ?.addEventListener("click", async () => {
       document.querySelector("#deleteOverlay")?.classList.add("nodisp");
-      await post("/deckViewer/deleteDeck/" + deckId, {});
+      await post<DeckViewerDelete, boolean>("/deckViewer/deleteDeck", {
+        deckId: deckId,
+      });
       window.location.replace("/cardsearch.html");
     });
 }
