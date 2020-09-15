@@ -143,6 +143,7 @@ export class CardRendererGrid extends BaseCardRenderer {
     const wastedSpace = width - stacksInRow * cardWidth;
     const leftMargin = Math.floor(wastedSpace / 2);
     this.cardArea.style.paddingLeft = leftMargin + "px";
+    const scrollOffset = this.cardArea.parentElement?.scrollTop || 0;
 
     const parentHeight = this.scrollingParent.clientHeight || 0;
     const cardHeight = this.groups[0].cardDivs[0].clientHeight || 0;
@@ -151,7 +152,7 @@ export class CardRendererGrid extends BaseCardRenderer {
     let failedCards = 0;
     groupLoop: for (const group of this.groups) {
       for (const cardDiv of group.cardDivs) {
-        let y = 0;
+        let y = -scrollOffset;
         let ele: HTMLElement | null = cardDiv;
         while (ele && !ele.classList.contains("cardDisplay")) {
           y += ele.offsetTop;

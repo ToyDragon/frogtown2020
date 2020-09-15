@@ -18,6 +18,8 @@ export default async function CheckForDBIssue(services: Services): Promise<Setup
         "address. Verify that your database firewall allows connections on " +
         "the appropriate ports.",
     });
+  } else {
+    connection.release();
   }
 
   if (issues.length === 0) {
