@@ -10,7 +10,7 @@ export async function getPublicKeyFromPrivateKey(
   services: Services
 ): Promise<string | null> {
   cContainer = cContainer || new ConnectionContainer();
-  if (!(await cContainer?.push(services))) {
+  if (!(await cContainer.push(services))) {
     return null;
   }
 
@@ -32,7 +32,7 @@ export async function getPublicKeyExists(
   services: Services
 ): Promise<boolean | null> {
   cContainer = cContainer || new ConnectionContainer();
-  if (!(await cContainer?.push(services))) {
+  if (!(await cContainer.push(services))) {
     return null;
   }
 

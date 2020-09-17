@@ -12,13 +12,19 @@ import {
   CardImageUpdateProgressResponse,
 } from "./types";
 
-/**
- * Router that handles requests available outside of the context
- * of a single page.
- * @param {Services} services
- */
+// Router that handles requests available outside of the context
+// of a single page.
 export default function handler(services: Services): express.Router {
   const router = express.Router();
+
+  // Drop all requests unless they come from the admin user.
+  router.use((req, res, next) => {
+    if (req.cookies["privateId"] === services.config.adminId) {
+      next();
+    } else {
+      res.end();
+    }
+  });
 
   addEndpoint<DataInfoResponse>(
     router,

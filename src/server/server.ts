@@ -29,7 +29,7 @@ export default class Server {
         name: "config",
         alias: "c",
         type: String,
-        defaultValue: "./example_config.json",
+        defaultValue: "./config.json",
       },
       {
         name: "loglevel",
