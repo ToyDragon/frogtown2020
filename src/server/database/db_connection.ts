@@ -63,10 +63,12 @@ export class DatabaseConnection {
     query: string,
     values: unknown[]
   ): Promise<DatabaseActionResult<T>> {
+    const err = new Error();
     return new Promise((resolve) => {
       if (!this.connectionOpen) {
         const msg = "Tried to query when the connection wasn't open.";
         logError(msg);
+        logError(err.stack);
         resolve(new DatabaseActionResult<T>(new Error(msg), null));
       } else {
         this.rawConnection.query<T>(query, values, (err, results) => {

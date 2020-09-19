@@ -65,7 +65,7 @@ export default function handler(services: Services): express.Router {
     "/data_maps_progress",
     async (_userDetails) => {
       return {
-        progress: DataManagement.getMapConstructionProgress(),
+        progress: await DataManagement.getMapConstructionProgress(services),
       };
     }
   );
@@ -90,7 +90,7 @@ export default function handler(services: Services): express.Router {
     router,
     "/get_image_update_progress",
     async (_userDetails) => {
-      return await ImageManagement.getImageUpdateProgress();
+      return await ImageManagement.getImageUpdateProgress(services);
     }
   );
 

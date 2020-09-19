@@ -195,7 +195,8 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     if (
       !dataInfo.dataMapsUpdateDate ||
       !dataInfo.dataMapsChangeDate ||
-      !dataInfo.allCardsChangeDate
+      !dataInfo.allCardsChangeDate ||
+      !dataInfo.allCardsS3Date
     ) {
       ReactDom.render(
         <span>
@@ -220,6 +221,10 @@ class ToolsBehavior extends ViewBehavior<unknown> {
           . New file available with change made{" "}
           <span className="inlinedata">
             {new Date(dataInfo.allCardsChangeDate).toLocaleString()}
+          </span>
+          . S3 version updated{" "}
+          <span className="inlinedata">
+            {new Date(dataInfo.allCardsS3Date).toLocaleString()}
           </span>
         </span>,
         ele

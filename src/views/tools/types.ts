@@ -4,6 +4,7 @@ export interface DataInfoResponse {
   allCardsNextChangeDate: string;
   dataMapsUpdateDate: string | null;
   dataMapsChangeDate: string | null;
+  allCardsS3Date: string | null;
   allCardsUpdateInProgress: boolean;
   dataMapsUpdateInProgress: boolean;
 }

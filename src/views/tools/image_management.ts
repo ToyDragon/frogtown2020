@@ -16,12 +16,16 @@ import { DatabaseConnection } from "../../server/database/db_connection";
 import * as stream from "stream";
 import imagemagick from "imagemagick-stream";
 import { CardImagesRow } from "../../server/database/dbinfos/db_info_card_images";
+import { trySetBatchInProgress, endBatch } from "./batch_status";
+import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 
 export async function getAllImageInfos(
   services: Services
 ): Promise<CardImageInfoResponse | null> {
   const allInfos: Record<string, ImageInfo> = {};
-  const connection = await services.dbManager.getConnectionTimeout(30000);
+  const connection = await services.dbManager.getConnectionTimeout(
+    5 * 60 * 1000 // 5 minute timeout
+  );
   let lastUpdateDate: Date | null = null;
   const cardsNotHQWithHQAvailable: string[] = [];
   const cardsMissingWithLQAvailable: string[] = [];
@@ -162,20 +166,52 @@ interface PendingImageDetails {
 let imagesBeingUpdated: PendingImageDetails[] | null = null;
 let imageUpdateIndex = 0;
 
-export async function getImageUpdateProgress(): Promise<
-  CardImageUpdateProgressResponse
-> {
-  return {
-    position: imageUpdateIndex,
-    max: imagesBeingUpdated?.length || 0,
+function getResultLineZero(result: BatchStatusRow[] | null): string {
+  if (!result || result.length === 0 || !result[0]) {
+    return "";
+  }
+  return result[0].value;
+}
+
+export async function getImageUpdateProgress(
+  services: Services
+): Promise<CardImageUpdateProgressResponse> {
+  const connection = await services.dbManager.getConnection();
+  const result = {
+    position: 0,
+    max: 0,
   };
+  if (!connection) {
+    return result;
+  }
+
+  let data = await connection.query<BatchStatusRow[]>(
+    "SELECT * FROM batch_status WHERE name=?;",
+    ["update_images_count"]
+  );
+  result.position = Number(getResultLineZero(data.value));
+  data = await connection.query<BatchStatusRow[]>(
+    "SELECT * FROM batch_status WHERE name=?;",
+    ["update_images_max"]
+  );
+  result.max = Number(getResultLineZero(data.value));
+
+  connection.release();
+  return result;
 }
 
 export async function startUpdatingImages(
   services: Services,
   updateImageRequest: CardImageUpdateStartRequest
 ): Promise<void> {
-  if (imagesBeingUpdated !== null) {
+  const connection = await services.dbManager.getConnectionTimeout(
+    20 * 60 * 1000 // 20 minute timeout
+  );
+  if (!connection) {
+    return;
+  }
+  if (!(await trySetBatchInProgress(connection))) {
+    connection.release();
     return;
   }
 
@@ -252,28 +288,42 @@ export async function startUpdatingImages(
     return;
   }
 
-  const connection = await services.dbManager.getConnection();
-  if (connection) {
-    imageUpdateIndex = 0;
-    loadNextImage(
-      services,
-      [idToLargeImage, TokenIDToLargeImage, BackIDToLargeImage],
-      connection
-    );
-  }
+  imageUpdateIndex = 0;
+
+  await connection.query<BatchStatusRow[]>(
+    "REPLACE INTO batch_status (name, value) VALUES (?, ?), (?, ?);",
+    ["update_images_count", "0", "update_images_max", imagesBeingUpdated.length]
+  );
+
+  loadNextImage(
+    services,
+    [idToLargeImage, TokenIDToLargeImage, BackIDToLargeImage],
+    connection
+  );
 }
 
-function loadNextImage(
+async function loadNextImage(
   services: Services,
   imageMaps: Record<string, string>[],
   connection: DatabaseConnection
-): void {
+): Promise<void> {
   if (imageUpdateIndex >= (imagesBeingUpdated?.length || 0)) {
     logInfo("Done loading images");
     imagesBeingUpdated = null;
     imageUpdateIndex = 0;
+    await connection.query<BatchStatusRow[]>(
+      "REPLACE INTO batch_status (name, value) VALUES (?, ?), (?, ?);",
+      ["update_images_count", "0", "update_images_max", "0"]
+    );
+    await endBatch(connection);
     connection.release();
   } else {
+    if (imageUpdateIndex % 20 === 0) {
+      await connection.query<BatchStatusRow[]>(
+        "REPLACE INTO batch_status (name, value) VALUES (?, ?);",
+        ["update_images_count", imageUpdateIndex]
+      );
+    }
     loadOneImage(services, imageMaps, connection);
     imageUpdateIndex += 1;
   }

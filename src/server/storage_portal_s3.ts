@@ -12,12 +12,14 @@ export default class S3StoragePortal implements StoragePortal {
   private s3: AWS.S3;
 
   public constructor(config: Config) {
-    /* eslint-disable prettier/prettier */
+    const key = fs.readFileSync(config.storage.awsAccessKeyIdFile).toString();
+    const secret = fs
+      .readFileSync(config.storage.awsSecretAccessKeyFile)
+      .toString();
     this.s3 = new AWS.S3({
-      accessKeyId: fs.readFileSync(config.storage.awsAccessKeyIdFile).toString(),
-      secretAccessKey: fs.readFileSync(config.storage.awsSecretAccessKeyFile).toString(),
+      accessKeyId: key,
+      secretAccessKey: secret,
     });
-    /* eslint-enable prettier/prettier */
   }
 
   public async canWriteToBucket(bucket: string): Promise<boolean> {
@@ -44,14 +46,12 @@ export default class S3StoragePortal implements StoragePortal {
     return success;
   }
 
-  /**
-   * Upload a file to the given S3 bucket.
-   * @param {string} bucket
-   * @param {string} objectKey
-   * @param {string} filepath
-   */
-  // eslint-disable-next-line prettier/prettier
-  public async uploadFileToBucket(bucket: string, objectKey: string, filepath: string): Promise<boolean> {
+  // Upload a file to the given S3 bucket.
+  public async uploadFileToBucket(
+    bucket: string,
+    objectKey: string,
+    filepath: string
+  ): Promise<boolean> {
     // Set up request
     const putObjectRequest = {
       Bucket: bucket,
@@ -68,6 +68,24 @@ export default class S3StoragePortal implements StoragePortal {
     });
 
     return success;
+  }
+
+  public async getObjectChangedDate(
+    bucket: string,
+    objectKey: string
+  ): Promise<string> {
+    // Set up request
+    const headObjectRequest = {
+      Bucket: bucket,
+      Key: objectKey,
+    };
+
+    // Get date
+    return await new Promise<string>((resolve) => {
+      this.s3.headObject(headObjectRequest, (_err, data) => {
+        resolve(data?.LastModified?.toLocaleString() || "");
+      });
+    });
   }
 
   public async uploadStringToBucket(
@@ -116,13 +134,11 @@ export default class S3StoragePortal implements StoragePortal {
     return passthrough;
   }
 
-  /**
-   * Delete an object from the given S3 bucket.
-   * @param {string} bucket
-   * @param {string} objectKey
-   */
-  // eslint-disable-next-line prettier/prettier
-  public async deleteObjectFromBucket(bucket: string, objectKey: string): Promise<boolean> {
+  //Delete an object from the given S3 bucket.
+  public async deleteObjectFromBucket(
+    bucket: string,
+    objectKey: string
+  ): Promise<boolean> {
     // Set up request
     const deleteObjectRequest = {
       Bucket: bucket,

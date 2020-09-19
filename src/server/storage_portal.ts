@@ -11,4 +11,5 @@ export default interface StoragePortal {
   ): Promise<boolean>;
   deleteObjectFromBucket(bucket: string, objectKey: string): Promise<boolean>;
   uploadStreamToBucket(bucket: string, objectKey: string): stream.PassThrough;
+  getObjectChangedDate(bucket: string, objectKey: string): Promise<string>;
 }
