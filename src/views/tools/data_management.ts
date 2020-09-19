@@ -1,6 +1,5 @@
 import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
-import { DataFileRow } from "../../server/database/db_manager";
 import { logInfo } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
 import * as https from "https";
@@ -8,6 +7,7 @@ import {
   constructAllMaps,
   getConstructionProgress,
 } from "./mapconstruction/construct_all_maps";
+import { DataFilesRow } from "../../server/database/dbinfos/db_info_data_files";
 
 const allDataKey = "AllData.json";
 
@@ -50,7 +50,7 @@ export async function getDataInfo(
 
   const connection = await services.dbManager.getConnection();
   if (connection) {
-    const allDataRows = await connection.query<DataFileRow[]>(
+    const allDataRows = await connection.query<DataFilesRow[]>(
       "SELECT * FROM data_files;",
       []
     );
@@ -93,7 +93,7 @@ export async function startConstructingDataMaps(
   if (!connection) {
     return;
   }
-  const allDataRows = await connection.query<DataFileRow[]>(
+  const allDataRows = await connection.query<DataFilesRow[]>(
     "SELECT * FROM data_files WHERE name=?;",
     ["all_cards"]
   );

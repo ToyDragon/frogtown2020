@@ -5,31 +5,11 @@ import Config from "../config";
 import { DatabaseConnection } from "./db_connection";
 import { logCritical, logInfo, logError } from "../log";
 import { DatabaseActionResult } from "./db_action_result";
-
-export interface DataFileRow {
-  name: string;
-  update_time: string;
-  change_time: string;
-}
-
-export interface CardImageRow {
-  card_id: string;
-  update_time: string;
-  quality: number;
-}
-
-export interface DeckKeyRow {
-  id: string;
-  owner_id: string;
-  name: string;
-}
-
-export interface DeckCardRow {
-  deck_id: string;
-  card_id: string;
-  board: number;
-  count: number;
-}
+import { DBInfoUserKeys } from "./dbinfos/db_info_user_keys";
+import { DBInfoDeckKeys } from "./dbinfos/db_info_deck_keys";
+import { DBInfoDataFiles } from "./dbinfos/db_info_data_files";
+import { DBInfoDeckCards } from "./dbinfos/db_info_deck_cards";
+import { DBInfoCardImages } from "./dbinfos/db_info_card_images";
 
 export default class DatabaseManager {
   private connectionPool: mysql.Pool;
@@ -117,108 +97,19 @@ export default class DatabaseManager {
       return;
     }
 
-    // user_keys table
-    let cmd = `
-      CREATE TABLE IF NOT EXISTS user_keys(
-        private_id VARCHAR(64) NOT NULL,
-        public_id VARCHAR(24) NOT NULL,
-        back_url VARCHAR(100) NOT NULL,
-        PRIMARY KEY(private_id),
-        INDEX (private_id),
-        INDEX (public_id)
-      ) ENGINE=InnoDB;
-    `;
+    const tablesInfos = [
+      new DBInfoUserKeys(),
+      new DBInfoDataFiles(),
+      new DBInfoDeckKeys(),
+      new DBInfoDeckCards(),
+      new DBInfoCardImages(),
+    ];
 
-    // Perform creation and check for errors.
-    let result = await connection.query(cmd, []);
-    if (result.err) {
-      logCritical("Error while ensuring required database tables exist.");
-      logCritical(result.err);
-      connection.release();
-      return;
-    }
-
-    // data_files table
-    cmd = `
-      CREATE TABLE IF NOT EXISTS data_files(
-        name VARCHAR(64) NOT NULL,
-        update_time DATETIME NOT NULL,
-        change_time DATETIME NOT NULL,
-        PRIMARY KEY (name)
-      ) ENGINE=InnoDB;
-    `;
-
-    // Perform creation and check for errors.
-    result = await connection.query(cmd, []);
-    if (result.err) {
-      logCritical("Error while ensuring required database tables exist.");
-      logCritical(result.err);
-      connection.release();
-      return;
-    }
-
-    // deck_keys table
-    cmd = `
-      CREATE TABLE IF NOT EXISTS deck_keys(
-        id VARCHAR(24) NOT NULL,
-        owner_id VARCHAR(24) NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        PRIMARY KEY (id),
-        INDEX (owner_id)
-      ) ENGINE=InnoDB;
-    `;
-
-    // Perform creation and check for errors.
-    result = await connection.query(cmd, []);
-    if (result.err) {
-      logCritical("Error while ensuring required database tables exist.");
-      logCritical(result.err);
-      connection.release();
-      return;
-    }
-
-    // deck_cards table
-    cmd = `
-      CREATE TABLE IF NOT EXISTS deck_cards(
-        deck_id VARCHAR(24) NOT NULL,
-        card_id VARCHAR(36) NOT NULL,
-        board SMALLINT NOT NULL,
-        count SMALLINT NOT NULL,
-        PRIMARY KEY (deck_id, card_id, board)
-      ) ENGINE=InnoDB;
-    `;
-
-    // Perform creation and check for errors.
-    result = await connection.query(cmd, []);
-    if (result.err) {
-      logCritical("Error while ensuring required database tables exist.");
-      logCritical(result.err);
-      connection.release();
-      return;
-    }
-
-    // card_images table
-    cmd = `
-      CREATE TABLE IF NOT EXISTS card_images(
-        card_id VARCHAR(36) NOT NULL,
-        update_time DATETIME NOT NULL,
-        quality TINYINT NOT NULL,
-        PRIMARY KEY (card_id),
-        INDEX (quality)
-      ) ENGINE=InnoDB;
-    `;
-    //Quality-
-    //  0- No image
-    //  1- LQ
-    //  2- HQ
-
-    // Perform creation and check for errors.
-    result = await connection.query(cmd, []);
-    if (result.err) {
-      logCritical("Error while ensuring required database tables exist.");
-      logCritical(result.err);
-      connection.release();
-      return;
+    for (const info of tablesInfos) {
+      if (!(await info.ensureTableExists(connection))) {
+        connection.release();
+        return;
+      }
     }
 
     logInfo("Ensured tables exist.");

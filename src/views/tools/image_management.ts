@@ -5,7 +5,6 @@ import {
   httpsGet,
 } from "../../shared/utils";
 import Services from "../../server/services";
-import { CardImageRow } from "../../server/database/db_manager";
 import {
   ImageInfo,
   CardImageInfoResponse,
@@ -16,6 +15,7 @@ import { logInfo, logError, logWarning } from "../../server/log";
 import { DatabaseConnection } from "../../server/database/db_connection";
 import * as stream from "stream";
 import imagemagick from "imagemagick-stream";
+import { CardImagesRow } from "../../server/database/dbinfos/db_info_card_images";
 
 export async function getAllImageInfos(
   services: Services
@@ -65,7 +65,7 @@ export async function getAllImageInfos(
         services.config.storage.awsS3DataMapBucket +
         "/BackIDToLargeImageURI.json"
     );
-    const allImageInfos = await connection.query<CardImageRow[]>(
+    const allImageInfos = await connection.query<CardImagesRow[]>(
       "SELECT * FROM card_images;",
       []
     );

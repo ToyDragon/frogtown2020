@@ -2,10 +2,11 @@ import * as express from "express";
 import Services from "../../server/services";
 import { IncludedData } from "../../server/view_data";
 import { Deck } from "../shared/deck_types";
-import { DeckKeyRow, DeckCardRow } from "../../server/database/db_manager";
 import { logInfo, logError } from "../../server/log";
 import { addEndpointWithParams } from "../../shared/utils";
 import { DeckViewerSaveDeck, DeckViewerChangeName } from "./types";
+import { DeckKeysRow } from "../../server/database/dbinfos/db_info_deck_keys";
+import { DeckCardsRow } from "../../server/database/dbinfos/db_info_deck_cards";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {
@@ -21,7 +22,7 @@ export default function handler(services: Services): express.Router {
       }
 
       // Verify that this user is the owner of this deck.
-      const deckRows = await connection.query<DeckKeyRow[]>(
+      const deckRows = await connection.query<DeckKeysRow[]>(
         "SELECT * FROM deck_keys WHERE id=? AND owner_id=?;",
         [params.deckId, user.publicId]
       );
@@ -31,7 +32,7 @@ export default function handler(services: Services): express.Router {
         return false;
       }
 
-      await connection.query<DeckKeyRow[]>(
+      await connection.query<DeckKeysRow[]>(
         "UPDATE deck_keys SET name=? WHERE id=?;",
         [params.name, params.deckId]
       );
@@ -51,7 +52,7 @@ export default function handler(services: Services): express.Router {
       }
 
       // Verify that this user is the owner of this deck.
-      const deckRows = await connection.query<DeckKeyRow[]>(
+      const deckRows = await connection.query<DeckKeysRow[]>(
         "SELECT * FROM deck_keys WHERE id=? AND owner_id=?;",
         [params.deckId, user.publicId]
       );
@@ -83,7 +84,7 @@ export default function handler(services: Services): express.Router {
       }
 
       // Verify that this user is the owner of this deck.
-      const deckRows = await connection.query<DeckKeyRow[]>(
+      const deckRows = await connection.query<DeckKeysRow[]>(
         "SELECT * FROM deck_keys WHERE id=? AND owner_id=?;",
         [params.deckId, user.publicId]
       );
@@ -99,7 +100,7 @@ export default function handler(services: Services): express.Router {
       } = { mainboard: {}, sideboard: {} };
 
       // Get all existing cards in deck, so if some are removed we can delete their rows.
-      const existingCardRows = await connection.query<DeckCardRow[]>(
+      const existingCardRows = await connection.query<DeckCardsRow[]>(
         "SELECT * FROM deck_cards WHERE deck_id=?;",
         [params.deckId]
       );
@@ -193,7 +194,7 @@ export const DeckViewerIncludedData: IncludedData[] = [
 
       // Load deck details
       const deckId = req.params["deckId"] || "";
-      const deckRows = await connection.query<DeckKeyRow[]>(
+      const deckRows = await connection.query<DeckKeysRow[]>(
         "SELECT * FROM deck_keys WHERE id=?;",
         [deckId]
       );
@@ -206,7 +207,7 @@ export const DeckViewerIncludedData: IncludedData[] = [
       // Load cards in deck
       const mainboard: string[] = [];
       const sideboard: string[] = [];
-      const cardRows = await connection.query<DeckCardRow[]>(
+      const cardRows = await connection.query<DeckCardsRow[]>(
         "SELECT * FROM deck_cards WHERE deck_id=?;",
         [deckId]
       );

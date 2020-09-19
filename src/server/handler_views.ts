@@ -3,7 +3,7 @@ import Services from "./services";
 import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 import SharedHandler from "../views/shared/server/handler";
-import { DeckKeyRow } from "./database/db_manager";
+import { DeckKeysRow } from "./database/dbinfos/db_info_deck_keys";
 
 /**
  * Helper function to gather data required for a page to render
@@ -74,7 +74,7 @@ export default function ViewHandler(services: Services): express.Router {
             return decks;
           }
 
-          const deckRows = await connection.query<DeckKeyRow[]>(
+          const deckRows = await connection.query<DeckKeysRow[]>(
             "SELECT * FROM deck_keys WHERE owner_id=?;",
             [req.cookies["publicId"]]
           );
