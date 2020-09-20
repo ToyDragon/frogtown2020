@@ -1,7 +1,7 @@
 import { DataLoader, CardIDMap, MapData } from "../data_loader";
 import { MiscOptions } from "../cardfilters/filter_misc_options";
 import * as React from "react";
-import { get, requestRaw } from "../request";
+import { requestRaw } from "../request";
 
 export class Group {
   public title = "";
@@ -307,7 +307,10 @@ export abstract class BaseCardRenderer {
     return [];
   }
 
-  protected async putSetSVG(svg: SVGSVGElement, setCode: string): Promise<void> {
+  protected async putSetSVG(
+    svg: SVGSVGElement,
+    setCode: string
+  ): Promise<void> {
     if (this.svgBySet[setCode]) {
       svg.innerHTML = this.svgBySet[setCode];
     } else {
@@ -327,7 +330,10 @@ export abstract class BaseCardRenderer {
       } else {
         this.pendingSetSVGs[setCode] = [];
         this.pendingSetSVGs[setCode].push(svg);
-        const svgString = (await requestRaw(svgURL, {}, "GET")).replace(/ fill="[^"]+"/, "");
+        const svgString = (await requestRaw(svgURL, {}, "GET")).replace(
+          / fill="[^"]+"/,
+          ""
+        );
         for (const ele of this.pendingSetSVGs[setCode]) {
           ele.innerHTML = svgString;
         }
