@@ -43,3 +43,7 @@ export interface CardImageInfoResponse {
   cardsNotHQWithHQAvailable: string[];
   cardsMissingWithLQAvailable: string[];
 }
+
+export interface MissingSetSVGsResponse {
+  sets: string[];
+}

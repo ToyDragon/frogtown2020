@@ -18,6 +18,7 @@ export default class Config {
     awsS3FullQualityImageBucket: "",
     awsS3HighQualityImageBucket: "",
     awsS3CompressedImageBucket: "",
+    awsS3SetSVGBucket: "",
     awsS3DataMapBucket: "",
   };
   public database = {

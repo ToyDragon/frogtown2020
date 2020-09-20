@@ -10,12 +10,14 @@ import {
   CardImageInfoResponse,
   CardImageUpdateStartRequest,
   CardImageUpdateProgressResponse,
+  MissingSetSVGsResponse,
 } from "./types";
 import {
   getImageVersionDetails,
   setImageVersion,
 } from "../shared/server/image_version";
 import { logInfo } from "../../server/log";
+import { getSetsMissingSVG, downloadMissingSVGs } from "./svg_management";
 
 // Router that handles requests available outside of the context
 // of a single page.
@@ -109,6 +111,20 @@ export default function handler(services: Services): express.Router {
       return await ImageManagement.getImageUpdateProgress(services);
     }
   );
+
+  addEndpoint<MissingSetSVGsResponse>(
+    router,
+    "/get_missing_set_svgs",
+    async (_userDetails) => {
+      return {
+        sets: await getSetsMissingSVG(services),
+      };
+    }
+  );
+
+  addEndpoint(router, "/download_missing_set_svgs", async (_userDetails) => {
+    await downloadMissingSVGs(services);
+  });
 
   return router;
 }

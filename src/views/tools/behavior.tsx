@@ -8,6 +8,7 @@ import {
   CardImageInfoResponse,
   CardImageUpdateProgressResponse,
   ImageInfo,
+  MissingSetSVGsResponse,
 } from "./types";
 import { post } from "../shared/client/request";
 import { wait } from "../../shared/utils";
@@ -362,6 +363,30 @@ class ToolsBehavior extends ViewBehavior<unknown> {
           });
         }, 3000);
       });
+    }
+
+    this.updateMissingSetSVGs();
+    const btnDownloadSetSVGs = document.querySelector("#btnDownloadSVGs");
+    btnDownloadSetSVGs?.addEventListener("click", async () => {
+      await post("/tools/download_missing_set_svgs", {});
+      this.updateMissingSetSVGs();
+    });
+  }
+
+  private async updateMissingSetSVGs(): Promise<void> {
+    const result = await post<unknown, MissingSetSVGsResponse>(
+      "/tools/get_missing_set_svgs",
+      {}
+    );
+    const btnDownloadSetSVGs = document.querySelector("#btnDownloadSVGs");
+    const spanMissingSetSVGs = document.querySelector("#spanMissingSetSVGs");
+    if (spanMissingSetSVGs && result && btnDownloadSetSVGs) {
+      spanMissingSetSVGs.innerHTML = result.sets.length + " Missing";
+      if (result.sets.length) {
+        btnDownloadSetSVGs.removeAttribute("disabled");
+      } else {
+        btnDownloadSetSVGs.setAttribute("disabled", "true");
+      }
     }
   }
 }

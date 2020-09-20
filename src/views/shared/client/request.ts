@@ -11,6 +11,21 @@ export async function request<R, T>(
   body: R,
   method: string
 ): Promise<T | null> {
+  const result = await requestRaw(route, body, method);
+  try {
+    const data = (JSON.parse(result) as unknown) as T | null;
+    return data;
+  } catch (e) {
+    console.log("Unable to parse JSON");
+    return null;
+  }
+}
+
+export async function requestRaw<R>(
+  route: string,
+  body: R,
+  method: string
+): Promise<string> {
   const options: RequestInit = {
     method: method,
     headers: {
@@ -21,13 +36,5 @@ export async function request<R, T>(
   if (method === "GET") {
     delete options.body;
   }
-  const result = await fetch(route, options);
-  try {
-    const data = ((await result.json()) as unknown) as T | null;
-    return data;
-  } catch (e) {
-    console.log("Unable to parse JSON");
-    console.log(route);
-    return null;
-  }
+  return await (await fetch(route, options)).text();
 }

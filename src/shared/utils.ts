@@ -2,6 +2,7 @@ import * as express from "express";
 import Config from "../server/config";
 import * as http from "http";
 import * as https from "https";
+import { logError } from "../server/log";
 
 /**
  * Any shared helper functions whose usefullness isn't restricted to a single area.
@@ -163,28 +164,34 @@ export function httpsGetMessage(path: string): Promise<http.IncomingMessage> {
   });
 }
 
-export function httpsGet<T>(path: string): Promise<T | null> {
+export function httpsGetRaw<T>(path: string): Promise<string> {
   return new Promise((resolve) => {
     https.get(path, async (msg) => {
       if (msg.statusCode === 301) {
         const newUrl = msg.headers.location || "";
-        resolve(await httpsGet<T>(newUrl));
+        resolve(await httpsGetRaw<T>(newUrl));
       } else {
         let data = "";
         msg.on("data", (chunk) => {
           data += chunk;
         });
         msg.on("close", () => {
-          let result: T | null = null;
-          try {
-            result = JSON.parse(data);
-          } finally {
-            resolve(result);
-          }
+          resolve(data);
         });
       }
     });
   });
+}
+
+export async function httpsGet<T>(path: string): Promise<T | null> {
+  const data = await httpsGetRaw(path);
+  let result: T | null = null;
+  try {
+    result = JSON.parse(data);
+  } catch (e) {
+    logError(e);
+  }
+  return result;
 }
 
 export async function getAllCardIDs(config: Config): Promise<string[]> {

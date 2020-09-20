@@ -14,6 +14,7 @@ export interface DataDetailsResponse {
   awsS3HighQualityImageBucket: string;
   awsS3CompressedImageBucket: string;
   awsS3DataMapBucket: string;
+  awsS3SetSVGBucket: string;
   imageVersion: ImageVersionDetails;
 }
 

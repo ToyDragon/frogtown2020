@@ -13,6 +13,7 @@ export async function getDataDetails(
     awsS3CompressedImageBucket:
       services.config.storage.awsS3CompressedImageBucket,
     awsS3DataMapBucket: services.config.storage.awsS3DataMapBucket,
+    awsS3SetSVGBucket: services.config.storage.awsS3SetSVGBucket,
     changeDate: "",
     imageVersion: await getImageVersionDetails(services),
   };

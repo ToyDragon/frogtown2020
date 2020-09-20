@@ -1,7 +1,7 @@
 import * as http from "http";
 import { logInfo } from "./log";
 import { RateLimiter } from "./rate_limiter";
-import { httpsGet, httpsGetMessage } from "../shared/utils";
+import { httpsGet, httpsGetMessage, httpsGetRaw } from "../shared/utils";
 
 let alreadyExists = false;
 
@@ -15,6 +15,14 @@ export default class ScryfallManager {
     alreadyExists = true;
     // Scryfall asks for 50-100ms delay, use 150 here to be safe.
     this.rateLimiter = new RateLimiter(150);
+  }
+
+  public async requestRaw(url: string): Promise<string | null> {
+    await this.rateLimiter.lock();
+    logInfo("Requesting scryfall url: " + url);
+    const response = await httpsGetRaw(url);
+    this.rateLimiter.unlock();
+    return response;
   }
 
   public async request<T>(url: string): Promise<T | null> {

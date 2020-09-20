@@ -1,6 +1,7 @@
 import { DataLoader, CardIDMap, MapData } from "../data_loader";
 import { MiscOptions } from "../cardfilters/filter_misc_options";
 import * as React from "react";
+import { get, requestRaw } from "../request";
 
 export class Group {
   public title = "";
@@ -306,24 +307,31 @@ export abstract class BaseCardRenderer {
     return [];
   }
 
-  protected putSetSVG(svg: SVGSVGElement, setCode: string): void {
+  protected async putSetSVG(svg: SVGSVGElement, setCode: string): Promise<void> {
     if (this.svgBySet[setCode]) {
       svg.innerHTML = this.svgBySet[setCode];
     } else {
+      if (!this.dl.dataDetails) {
+        console.log("Trying to show set svg before details loaded.");
+        return;
+      }
+      const svgURL =
+        this.dl.dataDetails.baseURL +
+        "/" +
+        this.dl.dataDetails.awsS3SetSVGBucket +
+        "/" +
+        setCode +
+        ".svg";
       if (this.pendingSetSVGs[setCode]) {
         this.pendingSetSVGs[setCode].push(svg);
       } else {
         this.pendingSetSVGs[setCode] = [];
         this.pendingSetSVGs[setCode].push(svg);
-        $.get("/Icons/Sets/" + setCode + ".svg", (data: XMLDocument) => {
-          const svgString = new XMLSerializer()
-            .serializeToString(data.documentElement)
-            .replace(/ fill="[^"]+"/, "");
-          for (const ele of this.pendingSetSVGs[setCode]) {
-            ele.innerHTML = svgString;
-          }
-          this.svgBySet[setCode] = svgString;
-        });
+        const svgString = (await requestRaw(svgURL, {}, "GET")).replace(/ fill="[^"]+"/, "");
+        for (const ele of this.pendingSetSVGs[setCode]) {
+          ele.innerHTML = svgString;
+        }
+        this.svgBySet[setCode] = svgString;
       }
     }
   }

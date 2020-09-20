@@ -10,6 +10,7 @@
           <li>Generate new data maps. Refresh to see the new image stats.</li>
           <li>Update images.</li>
           <li>Increment image version to invalidate client caches.</li>
+          <li>Download any new set SVGs that are available.</li>
         </ol>
       </div>
     </div>
@@ -84,6 +85,19 @@
       </div>
       <div>
         <button id="btnIncrementImageVersion">Increment Image Version</button>
+      </div>
+    </div>
+    
+    <div class="subheading"><span class="title">Set SVGs</span></div>
+    <div class="infoSectionBody">
+      <div id="divCardImageInfo">
+        <span>
+          There are 
+          <span id="spanMissingSetSVGs" class="inlinedata">x Missing</span> set SVGs.
+        </span>
+      </div>
+      <div>
+        <button id="btnDownloadSVGs" disabled>Download SVGs</button>
       </div>
     </div>
   </div>

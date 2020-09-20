@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as stream from "stream";
 import Config from "./config";
 import * as utils from "../shared/utils";
-import { logInfo, logError } from "./log";
+import { logInfo, logError, logCritical } from "./log";
 
 export default class S3StoragePortal implements StoragePortal {
   private s3: AWS.S3;
@@ -104,11 +104,46 @@ export default class S3StoragePortal implements StoragePortal {
     // Attempt upload
     const success = await new Promise<boolean>((resolve) => {
       this.s3.putObject(putObjectRequest, (err, _data) => {
+        if (err) {
+          logError("Error uploading string to S3 bucket");
+          logError(err);
+        }
         resolve(!err);
       });
     });
 
     return success;
+  }
+
+  // Should not be used on large (>1000 item) buckets. Will only return the first 1000 items.
+  public listObjects(bucket: string): Promise<string[]> {
+    return new Promise((resolve) => {
+      this.s3.listObjectsV2(
+        {
+          Bucket: bucket,
+        },
+        (err, data) => {
+          const results: string[] = [];
+          if (data.Contents) {
+            for (const obj of data.Contents) {
+              if (obj.Key) {
+                results.push(obj.Key);
+              }
+            }
+          }
+          if (err) {
+            logCritical("Error while listing S3 objects");
+            logCritical(err);
+          }
+          if (data.IsTruncated) {
+            logCritical(
+              "ListObjects truncated result, shouldn't be called on large buckets."
+            );
+          }
+          resolve(results);
+        }
+      );
+    });
   }
 
   public uploadStreamToBucket(
