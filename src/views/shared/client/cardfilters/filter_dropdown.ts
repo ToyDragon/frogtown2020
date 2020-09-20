@@ -78,13 +78,16 @@ export class FilterDropdown extends BaseFilter {
               target.getAttribute("data-display") ||
               target.getAttribute("data-value");
             this.valueDisplay.innerText = display || "";
-            menu
-              .querySelector(
-                "li:not([data-value=" +
-                  target.getAttribute("data-value")!.replace(/ /g, "\\ ") +
-                  "])"
-              )
-              ?.setAttribute("data-active", "false");
+            const allOtherOptions = menu.querySelectorAll(
+              "li:not([data-value=" +
+                target.getAttribute("data-value")!.replace(/ /g, "\\ ") +
+                "])"
+            );
+            if (allOtherOptions) {
+              for (const option of allOtherOptions) {
+                option.setAttribute("data-active", "false");
+              }
+            }
           } else {
             this.valueDisplay.innerText = "";
           }
