@@ -132,9 +132,6 @@ class SettingsViewBehavior extends ViewBehavior<unknown> {
     if (preview) {
       // eslint-disable-next-line prettier/prettier
       preview.style.backgroundImage = "url('" + backURL + "')";
-      preview.style.backgroundColor = "red";
-      // eslint-disable-next-line prettier/prettier
-      console.log("Set background to " + "url('" + backURL + "')");
     }
   }
 
