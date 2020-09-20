@@ -31,8 +31,8 @@ export class AsyncCacher<T> {
       }
     }
 
-    let resolver!: () => void;
-    this.inProgress[r] = new Promise((resolverTmp) => {
+    let resolver!: (value: T) => void;
+    this.inProgress[r] = new Promise<T>((resolverTmp) => {
       resolver = resolverTmp;
     });
     const value = await this.retriever(r);
@@ -41,7 +41,7 @@ export class AsyncCacher<T> {
       date: new Date(),
     };
     delete this.inProgress[r];
-    resolver();
+    resolver(value);
     return value;
   }
 }
