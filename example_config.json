@@ -22,6 +22,7 @@
         "awsS3FullQualityImageBucket": "frogtown.apricot.images.source",
         "awsS3HighQualityImageBucket": "frogtown.apricot.images.compressed.hq",
         "awsS3CompressedImageBucket": "frogtown.apricot.images.compressed.lq",
+        "awsS3SetSVGBucket": "frogtown.apricot.setsvgs",
         "awsS3DataMapBucket": "frogtown.apricot.data"
     },
     "database": {

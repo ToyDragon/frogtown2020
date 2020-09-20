@@ -6,11 +6,7 @@ import SharedHandler from "../views/shared/server/handler";
 import { DeckKeysRow } from "./database/dbinfos/db_info_deck_keys";
 import { UserKeysRow } from "./database/dbinfos/db_info_user_keys";
 
-/**
- * Helper function to gather data required for a page to render
- * @param {express.Request} req
- * @param {IncludedData[]} includedData
- */
+// Helper function to gather data required for a page to render.
 export function retrieveAllData(
   services: Services,
   req: express.Request,
@@ -41,11 +37,59 @@ export function retrieveAllData(
   });
 }
 
-/**
- * Creates route handler to serve views
- * @param {Services} services
- * @return {express.Router}
- */
+// List of decks shown in the toolbar.
+const includedDataDecks: IncludedData = {
+  var: "decks",
+  retriever: async (services, req) => {
+    const decks: { id: string; name: string }[] = [];
+    const connection = await services.dbManager.getConnection();
+    if (!connection) {
+      return decks;
+    }
+
+    const deckRows = await connection.query<DeckKeysRow[]>(
+      "SELECT * FROM deck_keys WHERE owner_id=?;",
+      [req.cookies["publicId"]]
+    );
+    if (deckRows?.value && deckRows?.value.length > 0) {
+      for (const deckRow of deckRows.value) {
+        decks.push({
+          id: deckRow.id,
+          name: deckRow.name,
+        });
+      }
+    }
+
+    connection.release();
+    return decks;
+  },
+};
+
+// Details about the current user.
+const includedDataUserDetails: IncludedData = {
+  var: "userDetails",
+  retriever: async (services, req) => {
+    const userDetails = { name: "", backUrl: "" };
+    const connection = await services.dbManager.getConnection();
+    if (!connection) {
+      return userDetails;
+    }
+
+    const userRows = await connection.query<UserKeysRow[]>(
+      "SELECT * FROM user_keys WHERE public_id=?;",
+      [req.cookies["publicId"]]
+    );
+    if (userRows?.value && userRows?.value.length > 0) {
+      userDetails.name = userRows.value[0].name;
+      userDetails.backUrl = userRows.value[0].back_url;
+    }
+
+    connection.release();
+    return userDetails;
+  },
+};
+
+// Creates route handler to serve views
 export default function ViewHandler(services: Services): express.Router {
   const router = express.Router();
   const allPages = GetAllPages(services);
@@ -66,54 +110,8 @@ export default function ViewHandler(services: Services): express.Router {
     const renderCallback = (req: express.Request, res: express.Response) => {
       logInfo("Handling request for page " + view.title);
       const data = view.includedData || [];
-      data.push({
-        var: "decks",
-        retriever: async (services, _req) => {
-          const decks: { id: string; name: string }[] = [];
-          const connection = await services.dbManager.getConnection();
-          if (!connection) {
-            return decks;
-          }
-
-          const deckRows = await connection.query<DeckKeysRow[]>(
-            "SELECT * FROM deck_keys WHERE owner_id=?;",
-            [req.cookies["publicId"]]
-          );
-          if (deckRows?.value && deckRows?.value.length > 0) {
-            for (const deckRow of deckRows.value) {
-              decks.push({
-                id: deckRow.id,
-                name: deckRow.name,
-              });
-            }
-          }
-
-          connection.release();
-          return decks;
-        },
-      });
-      data.push({
-        var: "userDetails",
-        retriever: async (services, _req) => {
-          const userDetails = { name: "", backUrl: "" };
-          const connection = await services.dbManager.getConnection();
-          if (!connection) {
-            return userDetails;
-          }
-
-          const userRows = await connection.query<UserKeysRow[]>(
-            "SELECT * FROM user_keys WHERE public_id=?;",
-            [req.cookies["publicId"]]
-          );
-          if (userRows?.value && userRows?.value.length > 0) {
-            userDetails.name = userRows.value[0].name;
-            userDetails.backUrl = userRows.value[0].back_url;
-          }
-
-          connection.release();
-          return userDetails;
-        },
-      });
+      data.push(includedDataDecks);
+      data.push(includedDataUserDetails);
       retrieveAllData(services, req, data).then((includedData) => {
         res.render("pages/" + view.view, {
           view: view,
