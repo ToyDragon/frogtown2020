@@ -11,6 +11,11 @@ import {
   CardImageUpdateStartRequest,
   CardImageUpdateProgressResponse,
 } from "./types";
+import {
+  getImageVersionDetails,
+  setImageVersion,
+} from "../shared/server/image_version";
+import { logInfo } from "../../server/log";
 
 // Router that handles requests available outside of the context
 // of a single page.
@@ -75,6 +80,17 @@ export default function handler(services: Services): express.Router {
     "/get_card_image_info",
     async (_userDetails) => {
       return await ImageManagement.getAllImageInfos(services);
+    }
+  );
+
+  addEndpoint<boolean>(
+    router,
+    "/increment_image_version",
+    async (_userDetails) => {
+      const version = await getImageVersionDetails(services);
+      logInfo("Setting image version to " + (version.version + 1));
+      await setImageVersion(services, version.version + 1);
+      return true;
     }
   );
 

@@ -1,6 +1,7 @@
 import Services from "../../../server/services";
 import { DataDetailsResponse } from "../handler_types";
 import { logCritical } from "../../../server/log";
+import { getImageVersionDetails } from "./image_version";
 
 export async function getDataDetails(
   services: Services
@@ -13,7 +14,7 @@ export async function getDataDetails(
       services.config.storage.awsS3CompressedImageBucket,
     awsS3DataMapBucket: services.config.storage.awsS3DataMapBucket,
     changeDate: "",
-    imageVersion: 1, // TODO this should come out of the DB
+    imageVersion: await getImageVersionDetails(services),
   };
   const connection = await services.dbManager.getConnection();
   if (!connection) {

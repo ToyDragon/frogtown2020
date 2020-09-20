@@ -123,7 +123,7 @@ export default class TableTopSimulator {
         ),
         backURL: deckObj.ownerBackURL || rootURL + "/CardBack.jpg",
       },
-      imageVersion
+      imageVersion.version
     );
 
     return JSON.stringify(compiledDeck);

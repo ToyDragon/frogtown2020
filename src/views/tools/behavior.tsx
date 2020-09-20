@@ -24,6 +24,7 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     this.updateAllCardsFromDataInfo(result);
     this.updateDataMapsFromDataInfo(result);
     this.updateCardImageInfo();
+    this.updateImageVersionInfo();
   }
 
   private async updateCardImageInfo(): Promise<void> {
@@ -183,6 +184,28 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     this.updateAllCardsProgress();
   }
 
+  private async updateImageVersionInfo(): Promise<void> {
+    const ele = document.querySelector("#divCardImageVersionInfo");
+    if (!this.dl.dataDetails) {
+      ReactDom.render(<span>Unable to load database details.</span>, ele);
+      return;
+    }
+    ReactDom.render(
+      <span>
+        Card image version{" "}
+        <span className="inlinedata">
+          {this.dl.dataDetails.imageVersion.version}
+        </span>
+        , last updated{" "}
+        <span className="inlinedata">
+          {new Date(this.dl.dataDetails.imageVersion.change).toLocaleString()}
+        </span>
+        .
+      </span>,
+      ele
+    );
+  }
+
   private async updateDataMapsFromDataInfo(
     dataInfo: DataInfoResponse | null
   ): Promise<void> {
@@ -272,6 +295,16 @@ class ToolsBehavior extends ViewBehavior<unknown> {
 
   public async ready(): Promise<void> {
     await this.updateDisplay();
+
+    const btnIncrementImageVersion = document.querySelector(
+      "#btnIncrementImageVersion"
+    );
+    if (btnIncrementImageVersion) {
+      btnIncrementImageVersion.addEventListener("click", async () => {
+        await post("/tools/increment_image_version", {});
+        location.reload();
+      });
+    }
 
     const btnUpdateAllCards = document.querySelector("#btnUpdateAllCardsFile");
     if (btnUpdateAllCards) {

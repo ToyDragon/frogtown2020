@@ -2,8 +2,17 @@
 <div class="centeredContent">
   <div class="infoSection">
     <div class="heading"><span class="title">Tools</span></div>
-    <div class="infoSectionBody">Use the tools on this page to update the card database.</div>
-
+    <div class="infoSectionBody">
+      <div>
+        <h3>How to update cards.</h3>
+        <ol>
+          <li>Download new all cards file. It will potentially take up to 30 minutes for S3 to recognize the upload, wait until the S3 change date is what you expect.</li>
+          <li>Generate new data maps. Refresh to see the new image stats.</li>
+          <li>Update images.</li>
+          <li>Increment image version to invalidate client caches.</li>
+        </ol>
+      </div>
+    </div>
     <div class="subheading"><span class="title">Data Maps</span></div>
     <div class="infoSectionBody">
       <div id="divAllCardsInfo">
@@ -44,7 +53,6 @@
         <div id="divUpdateDataMapsProgress"></div>
       </div>
     </div>
-
     <div class="subheading"><span class="title">Card Images</span></div>
     <div class="infoSectionBody">
       <div id="divCardImageInfo">
@@ -66,6 +74,16 @@
       </div>
       <div>
         <div id="divUpdateImagesProgress"></div>
+      </div>
+      <div id="divCardImageVersionInfo">
+        <span>Card image version
+          <span class="inlinedata">...</span>,
+          last updated
+          <span class="inlinedata">....................................</span>.
+        </span>
+      </div>
+      <div>
+        <button id="btnIncrementImageVersion">Increment Image Version</button>
       </div>
     </div>
   </div>

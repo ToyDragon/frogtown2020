@@ -11,6 +11,7 @@ import { DBInfoDataFiles } from "./dbinfos/db_info_data_files";
 import { DBInfoDeckCards } from "./dbinfos/db_info_deck_cards";
 import { DBInfoCardImages } from "./dbinfos/db_info_card_images";
 import { DBInfoBatchStatus } from "./dbinfos/db_info_batch_status";
+import { DBInfoMetadata } from "./dbinfos/db_info_metadata";
 
 export default class DatabaseManager {
   private connectionPool: mysql.Pool;
@@ -105,6 +106,7 @@ export default class DatabaseManager {
       new DBInfoDeckCards(),
       new DBInfoCardImages(),
       new DBInfoBatchStatus(),
+      new DBInfoMetadata(),
     ];
 
     for (const info of tablesInfos) {
