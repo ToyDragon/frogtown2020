@@ -106,11 +106,12 @@ export async function createNewUser(
   } else {
     // Insert user into database
     const cmd = `
-    INSERT INTO user_keys (private_id, public_id, back_url) VALUES (?, ?, ?);
+    INSERT INTO user_keys (private_id, public_id, back_url, name) VALUES (?, ?, ?, ?);
     `;
     const result = await cContainer.connection.query<void>(cmd, [
       newPrivateId,
       newPublicId,
+      "",
       "",
     ]);
 

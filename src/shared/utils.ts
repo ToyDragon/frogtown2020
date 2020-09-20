@@ -99,6 +99,7 @@ export function randomName(): string {
 export interface UserDetails {
   publicId: string | null;
   privateId: string | null;
+  ipAddress: string | null;
 }
 
 // Helper that makes it easy to enforce response types.
@@ -111,6 +112,7 @@ export function addEndpoint<T>(
     const userDetails: UserDetails = {
       publicId: request.cookies["publicId"] || null,
       privateId: request.cookies["privateId"] || null,
+      ipAddress: request.ip,
     };
     response.end(JSON.stringify(await cb(userDetails)));
   });
@@ -126,6 +128,7 @@ export function addEndpointWithParams<R, T>(
     const userDetails: UserDetails = {
       publicId: request.cookies["publicId"] || null,
       privateId: request.cookies["privateId"] || null,
+      ipAddress: request.ip,
     };
     response.end(
       JSON.stringify(await cb(userDetails, (request.body as unknown) as R))

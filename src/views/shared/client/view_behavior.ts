@@ -3,8 +3,17 @@ import ToolbarController from "./toolbar_controller";
 import { DataLoader } from "./data_loader";
 import { post } from "./request";
 import { ToolbarNewDeckResponse } from "../handler_types";
+import { Deck } from "../deck_types";
 
 declare let includedData: unknown;
+
+interface DefaultData {
+  userDetails: {
+    name: string;
+    backUrl: string;
+  };
+  decks: Deck[];
+}
 
 export default class ViewBehavior<K> {
   public authSession: AuthSession;
@@ -34,8 +43,8 @@ export default class ViewBehavior<K> {
     }
   }
 
-  public getIncludedData(): K {
-    return includedData as K;
+  public getIncludedData(): K & DefaultData {
+    return includedData as K & DefaultData;
   }
 
   public async ready(): Promise<void> {}

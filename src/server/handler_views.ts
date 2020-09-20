@@ -4,6 +4,7 @@ import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 import SharedHandler from "../views/shared/server/handler";
 import { DeckKeysRow } from "./database/dbinfos/db_info_deck_keys";
+import { UserKeysRow } from "./database/dbinfos/db_info_user_keys";
 
 /**
  * Helper function to gather data required for a page to render
@@ -89,6 +90,28 @@ export default function ViewHandler(services: Services): express.Router {
 
           connection.release();
           return decks;
+        },
+      });
+      data.push({
+        var: "userDetails",
+        retriever: async (services, _req) => {
+          const userDetails = { name: "", backUrl: "" };
+          const connection = await services.dbManager.getConnection();
+          if (!connection) {
+            return userDetails;
+          }
+
+          const userRows = await connection.query<UserKeysRow[]>(
+            "SELECT * FROM user_keys WHERE public_id=?;",
+            [req.cookies["publicId"]]
+          );
+          if (userRows?.value && userRows?.value.length > 0) {
+            userDetails.name = userRows.value[0].name;
+            userDetails.backUrl = userRows.value[0].back_url;
+          }
+
+          connection.release();
+          return userDetails;
         },
       });
       retrieveAllData(services, req, data).then((includedData) => {

@@ -20,3 +20,12 @@ export interface DataDetailsResponse {
 export interface ToolbarNewDeckResponse {
   deckId: string;
 }
+
+export interface UserDetailsRequest {
+  publicId: string;
+}
+
+export interface UserDetailsResponse {
+  backURL: string;
+  name: string;
+}

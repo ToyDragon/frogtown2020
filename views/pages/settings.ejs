@@ -1,0 +1,51 @@
+<%- include("../partials/page_header") %>
+<div class="centeredContent">
+  <div class="infoSection">
+    <div class="heading"><span class="title">Settings</span></div>
+    <div class="infoSectionBody">
+      <p>When sharing decks your username is displayed below the deck name. Usernames are not unique, you can use the same name as someone else.</p>
+      <div class="btn-group">
+          <div class="input-group name">
+              <span class="input-group-addon"><span class="glyphicon glyphicon-user" title="Name"></span> Username</span>
+              <input type="text" id="inputName" class="form-control" placeholder="Username">
+              <span class="input-group-addon refresh nodisp"><span class="glyphicon glyphicon-refresh"></span></span>
+              <span class="input-group-addon ok"><span class="glyphicon glyphicon-ok"></span></span>
+          </div>
+      </div>
+    </div>
+    <div class="subheading"><span class="title">TTS Export Options</span></div>
+    <div class="infoSectionBody">
+      <div>
+        <p>Both high and low quality assets are created when you export your deck. By default all players will download the low quality assets. You can use the button below to opt into downloading high quality assets. You will get high quality assets for all decks generated on frogtown, not just your own.</p>
+        <p>You will have to clear your TableTopSimluator deck cache when changing this setting, delete all of the files in My Games\Tabletop Simulator\Mods\Images.</p>
+        <div><span id="spanCurrentQualityDisplay" class="inlinedata">Using xxxx Quality</span></div>
+        <button class="btn btn-default" type="button" id="btnToggleHQ">Change to XXXX Quality</button>
+      </div>
+      <p></p>
+      <div class="input-group tts">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-user" title="TTS Back"></span> Preferred TTS Back</span>
+          <input type="text" id="ttsBackInput" class="form-control" placeholder="https://www.frogtown.me/Images/CardBack.jpg">
+          <span class="input-group-addon refresh nodisp"><span class="glyphicon glyphicon-refresh"></span></span>
+          <span class="input-group-addon ok"><span class="glyphicon glyphicon-ok"></span></span>
+      </div>
+      <p>Back Image Preview:</p>
+      <div id="ttsBackPreview"></div>
+    </div>
+    <div class="subheading"><span class="title">Authentication</span></div>
+    <div class="infoSectionBody">
+      <p>Unlike most sites, Frogtown does not use a username/password system for accounts. Instead, you are automatically provided a private ID used for authentication when you visit the site. This private key is what allows you to edit and create decks.</p>
+      <p>When you connect from another device, or even another browser, you will have a new account created. If you want to synchronize decks across multiple devices use the button below to find your private ID, and on your second device use the same button to change your ID.</p>
+      <p>If you clear your cookies you will lose access to your account. If you want you can click the button below to find your private ID and save it somewhere so you can restore it. If you choose not to it isn't a big deal, you can find your old decks and clone them to the new account from the deck actions button.</p>
+      <button id="btnChangePrivateId" type="button" class="btn btn-default">View/Edit Private ID</button>
+      <div id="divPrivateId" class="input-group nodisp id">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-user" title="Private ID"></span> Private ID</span>
+          <input type="text" id="inputId" class="form-control" placeholder="PrivateId">
+          <span class="input-group-addon error nodisp"><span class="glyphicon glyphicon-ban-circle"></span></span>
+          <span class="input-group-addon refresh nodisp"><span class="glyphicon glyphicon-refresh"></span></span>
+          <span class="input-group-addon ok"><span class="glyphicon glyphicon-ok"></span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/page_footer") %>

@@ -6,7 +6,8 @@ export class DBInfoUserKeys extends DBInfo {
       CREATE TABLE IF NOT EXISTS user_keys(
         private_id VARCHAR(64) NOT NULL,
         public_id VARCHAR(24) NOT NULL,
-        back_url VARCHAR(100) NOT NULL,
+        back_url VARCHAR(256) NOT NULL,
+        name VARCHAR(100) NOT NULL,
         PRIMARY KEY(private_id),
         INDEX (private_id),
         INDEX (public_id)
@@ -19,4 +20,5 @@ export interface UserKeysRow {
   private_id: string;
   public_id: string;
   back_url: string;
+  name: string;
 }

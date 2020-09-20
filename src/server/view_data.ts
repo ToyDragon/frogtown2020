@@ -2,6 +2,7 @@ import express from "express";
 
 import Services from "./services";
 import CardSearchRouteHandler from "../views/cardsearch/handler";
+import SettingsRouteHandler from "../views/settings/handler";
 import DeckViewerRouteHandler, {
   DeckViewerIncludedData,
 } from "../views/deckviewer/handler";
@@ -37,6 +38,18 @@ export interface IncludedData {
 export function GetAllPages(services: Services): PageData[] {
   return [
     {
+      routes: [
+        "deckviewer",
+        "deckviewer/:deckId",
+        "deckviewer/:deckId/:action",
+      ],
+      view: "deckviewer",
+      title: "My Decks",
+      description: "",
+      includedData: DeckViewerIncludedData,
+      routeHandler: DeckViewerRouteHandler(services),
+    },
+    {
       index: true,
       routes: ["cardsearch"],
       view: "cardsearch",
@@ -48,16 +61,11 @@ export function GetAllPages(services: Services): PageData[] {
       routeHandler: CardSearchRouteHandler(services),
     },
     {
-      routes: [
-        "deckviewer",
-        "deckviewer/:deckId",
-        "deckviewer/:deckId/:action",
-      ],
-      view: "deckviewer",
-      title: "My Decks",
+      routes: ["settings"],
+      view: "settings",
+      title: "Settings",
       description: "",
-      includedData: DeckViewerIncludedData,
-      routeHandler: DeckViewerRouteHandler(services),
+      routeHandler: SettingsRouteHandler(services),
     },
     {
       routes: ["tools"],
