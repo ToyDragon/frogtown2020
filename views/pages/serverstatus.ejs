@@ -1,0 +1,14 @@
+<%- include("../partials/page_header") %>
+<div class="centeredContent">
+  <div class="infoSection">
+    <div class="heading"><span class="title">Server Status</span></div>
+    <div class="infoSectionBody">
+      <input id="cbHeartbeatFilter" type="checkbox" checked/><span>Filter servers with old heartbeat (>5 minutes)</span>
+      <table id="tblStatus">
+      </table>
+      <span id="spanLoading">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/page_footer") %>

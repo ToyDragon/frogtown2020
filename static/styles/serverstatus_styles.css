@@ -1,0 +1,7 @@
+table td {
+  padding: 5px 20px;
+}
+
+table tr:nth-of-type(2n) {
+  background-color: lightblue;
+}

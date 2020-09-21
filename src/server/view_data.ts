@@ -7,6 +7,7 @@ import DeckViewerRouteHandler, {
   DeckViewerIncludedData,
 } from "../views/deckviewer/handler";
 import ToolsRouteHandler from "../views/tools/handler";
+import ServerStatusRouteHandler from "../views/serverstatus/handler";
 
 /**
  * Data required for a page to be displayed, and to be available in the header nav bar.
@@ -74,6 +75,14 @@ export function GetAllPages(services: Services): PageData[] {
       hidden: true,
       description: "",
       routeHandler: ToolsRouteHandler(services),
+    },
+    {
+      routes: ["serverstatus"],
+      view: "serverstatus",
+      title: "Server Status",
+      hidden: true,
+      description: "",
+      routeHandler: ServerStatusRouteHandler(services),
     },
   ];
 }

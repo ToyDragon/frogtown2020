@@ -20,6 +20,7 @@ import * as Logs from "./log";
 import DatabaseManager from "./database/db_manager";
 import ScryfallManager from "./scryfall_manager";
 import ImagesHandler from "./handler_images";
+import { initStatusManagement } from "./status_manager";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -93,6 +94,9 @@ export default class Server {
 
       // Initialize the database
       await services.dbManager.ensureDatabaseAndTablesExist(config);
+
+      // Heartbeats and server status managment
+      initStatusManagement(serverLabel, services);
 
       // Listen for traffic
       if (config.nohttps) {
