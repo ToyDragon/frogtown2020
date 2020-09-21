@@ -11,8 +11,12 @@ interface DefaultData {
   userDetails: {
     name: string;
     backUrl: string;
+    error: boolean;
   };
   decks: Deck[];
+  auth: {
+    errorOccurred: boolean;
+  };
 }
 
 export default class ViewBehavior<K> {
@@ -25,7 +29,9 @@ export default class ViewBehavior<K> {
     this.authSession = new AuthSession();
     this.tbController = new ToolbarController();
     this.dl.init().then(async () => {
-      await this.authSession.ensureValidUser();
+      await this.authSession.ensureValidUser(
+        this.getIncludedData().userDetails.error
+      );
       this.ready();
     });
 

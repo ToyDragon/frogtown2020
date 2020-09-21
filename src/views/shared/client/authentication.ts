@@ -2,8 +2,6 @@ import { setCookie, getCookie } from "./cookies";
 import { NewUserResponse } from "../handler_types";
 import { post } from "./request";
 
-declare let includedData: { errorOccurred: boolean };
-
 class User {
   public publicId: string;
   public privateId: string;
@@ -21,11 +19,11 @@ export default class AuthSession {
     this.user = new User(getCookie("publicId"), getCookie("privateId"));
   }
 
-  public async ensureValidUser(): Promise<void> {
+  public async ensureValidUser(errorOccurred: boolean): Promise<void> {
     if (
       this.user.publicId === "" ||
       this.user.privateId === "" ||
-      includedData.errorOccurred
+      errorOccurred
     ) {
       const response = await post<unknown, NewUserResponse>(
         "/authentication/newuser",

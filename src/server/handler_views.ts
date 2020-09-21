@@ -69,7 +69,7 @@ const includedDataDecks: IncludedData = {
 const includedDataUserDetails: IncludedData = {
   var: "userDetails",
   retriever: async (services, req) => {
-    const userDetails = { name: "", backUrl: "" };
+    const userDetails = { name: "", backUrl: "", error: true };
     const connection = await services.dbManager.getConnection();
     if (!connection) {
       return userDetails;
@@ -82,6 +82,7 @@ const includedDataUserDetails: IncludedData = {
     if (userRows?.value && userRows?.value.length > 0) {
       userDetails.name = userRows.value[0].name;
       userDetails.backUrl = userRows.value[0].back_url;
+      userDetails.error = false;
     }
 
     connection.release();
