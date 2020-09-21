@@ -8,10 +8,9 @@ import DeckViewerRouteHandler, {
 } from "../views/deckviewer/handler";
 import ToolsRouteHandler from "../views/tools/handler";
 import ServerStatusRouteHandler from "../views/serverstatus/handler";
+import HelpRouteHandler from "../views/help/handler";
 
-/**
- * Data required for a page to be displayed, and to be available in the header nav bar.
- */
+// Data required for a page to be displayed, and to be available in the header nav bar.
 export class PageData {
   public routes: string[] = [];
   public view = "";
@@ -24,18 +23,13 @@ export class PageData {
   public includedData?: IncludedData[];
 }
 
-/**
- * Describes a piece of data that can be included with views, and an async callback to retrieve it.
- */
+// Describes a piece of data that can be included with views, and an async callback to retrieve it.
 export interface IncludedData {
   var: string;
   retriever: (services: Services, req: express.Request) => Promise<unknown>;
 }
 
-/**
- * Gets the data for all pages that can be displayed.
- * @param {Services} services
- */
+// Gets the data for all pages that can be displayed.
 export function GetAllPages(services: Services): PageData[] {
   return [
     {
@@ -67,6 +61,13 @@ export function GetAllPages(services: Services): PageData[] {
       title: "Settings",
       description: "",
       routeHandler: SettingsRouteHandler(services),
+    },
+    {
+      routes: ["help"],
+      view: "help",
+      title: "Help",
+      description: "",
+      routeHandler: HelpRouteHandler(services),
     },
     {
       routes: ["tools"],
