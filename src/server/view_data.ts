@@ -9,6 +9,7 @@ import DeckViewerRouteHandler, {
 import ToolsRouteHandler from "../views/tools/handler";
 import ServerStatusRouteHandler from "../views/serverstatus/handler";
 import HelpRouteHandler from "../views/help/handler";
+import PrivacyRouteHandler from "../views/privacy/handler";
 
 // Data required for a page to be displayed, and to be available in the header nav bar.
 export class PageData {
@@ -68,6 +69,13 @@ export function GetAllPages(services: Services): PageData[] {
       title: "Help",
       description: "",
       routeHandler: HelpRouteHandler(services),
+    },
+    {
+      routes: ["privacy"],
+      view: "privacy",
+      title: "Privacy",
+      description: "",
+      routeHandler: PrivacyRouteHandler(services),
     },
     {
       routes: ["tools"],
