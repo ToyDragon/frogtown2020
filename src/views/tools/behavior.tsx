@@ -15,6 +15,7 @@ import { wait } from "../../shared/utils";
 
 class ToolsBehavior extends ViewBehavior<unknown> {
   public cardIdsToDownloadImagesFor: string[] | null = null;
+  public cardIdsAlreadyDownloadedImagesFor: Record<string, boolean> = {};
 
   public async updateDisplay(): Promise<void> {
     const result = await post<unknown, DataInfoResponse>(
@@ -35,18 +36,20 @@ class ToolsBehavior extends ViewBehavior<unknown> {
       {}
     );
     if (result && ele) {
-      this.cardIdsToDownloadImagesFor = result.cardsNotHQWithHQAvailable.slice(
-        0,
-        1000
-      );
+      this.cardIdsToDownloadImagesFor = result.cardsNotHQWithHQAvailable
+        .filter((a) => {
+          return !this.cardIdsAlreadyDownloadedImagesFor[a];
+        })
+        .slice(0, 1000);
       if (
         this.cardIdsToDownloadImagesFor.length < 1000 &&
         result.cardsMissingWithLQAvailable
       ) {
-        const lqCards = result.cardsMissingWithLQAvailable.slice(
-          0,
-          1000 - this.cardIdsToDownloadImagesFor.length
-        );
+        const lqCards = result.cardsMissingWithLQAvailable
+          .filter((a) => {
+            return !this.cardIdsAlreadyDownloadedImagesFor[a];
+          })
+          .slice(0, 1000 - this.cardIdsToDownloadImagesFor.length);
         for (const cardId of lqCards) {
           this.cardIdsToDownloadImagesFor.push(cardId);
         }
@@ -331,6 +334,11 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     if (btnDownloadSomeCards) {
       btnDownloadSomeCards.setAttribute("disabled", "true");
       btnDownloadSomeCards.addEventListener("click", () => {
+        if (this.cardIdsToDownloadImagesFor) {
+          for (const cardId of this.cardIdsToDownloadImagesFor) {
+            this.cardIdsAlreadyDownloadedImagesFor[cardId] = true;
+          }
+        }
         post("/tools/start_image_update", {
           allMissingCards: false,
           cardIds: this.cardIdsToDownloadImagesFor,

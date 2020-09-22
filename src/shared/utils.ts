@@ -151,6 +151,14 @@ export function dateToMySQL(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
+export function timeout(millis: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, millis);
+  });
+}
+
 export function httpsGetMessage(path: string): Promise<http.IncomingMessage> {
   return new Promise((resolve) => {
     https.get(path, async (msg) => {

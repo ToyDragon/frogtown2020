@@ -1,34 +1,42 @@
 import { logCritical, logInfo, logWarning } from "./log";
 import Services from "./services";
-import * as os from "os";
 import { dateToMySQL } from "../shared/utils";
 import {
   ServerStatus,
   ServerStatusRow,
 } from "./database/dbinfos/db_info_server_status";
 import { getVersion } from "./version";
+import { getName } from "./name";
 
 let initialized = false;
 const status = ServerStatus.Waiting;
 
-function getName(label: string): string {
-  return label + ":" + os.hostname();
+export async function logGracefulDeath(services: Services): Promise<void> {
+  const connection = await services.dbManager.getConnection();
+  if (!connection) {
+    return;
+  }
+  await connection.query("UPDATE server_status SET status=? WHERE name=?;", [
+    ServerStatus.Shutdown,
+    getName(),
+  ]);
+  connection.release();
 }
 
-async function heartbeat(label: string, services: Services): Promise<void> {
+async function heartbeat(services: Services): Promise<void> {
   const connection = await services.dbManager.getConnection();
   if (!connection) {
     return;
   }
   await connection.query("UPDATE server_status SET heartbeat=? WHERE name=?;", [
     dateToMySQL(new Date()),
-    getName(label),
+    getName(),
   ]);
 
   // Check for explicit shutdown request.
   const result = await connection.query<ServerStatusRow[]>(
     "SELECT * FROM server_status WHERE name=?;",
-    [getName(label)]
+    [getName()]
   );
   let shouldShutdown = false;
   if (result?.value && result.value.length > 0) {
@@ -42,7 +50,7 @@ async function heartbeat(label: string, services: Services): Promise<void> {
   if (shouldShutdown) {
     await connection.query("UPDATE server_status SET status=? WHERE name=?;", [
       ServerStatus.Shutdown,
-      getName(label),
+      getName(),
     ]);
     connection.release();
     //TODO can we do this more gracefully?
@@ -54,10 +62,7 @@ async function heartbeat(label: string, services: Services): Promise<void> {
   }
 }
 
-export async function initStatusManagement(
-  label: string,
-  services: Services
-): Promise<void> {
+export async function initStatusManagement(services: Services): Promise<void> {
   if (initialized) {
     logCritical("Tried to initialize status manager more than once.");
     return;
@@ -72,12 +77,12 @@ export async function initStatusManagement(
 
   await connection.query(
     "REPLACE INTO server_status (name, heartbeat, version, status, target_status) VALUES (?,?,?,?,?);",
-    [getName(label), dateToMySQL(new Date()), getVersion(), status, status]
+    [getName(), dateToMySQL(new Date()), getVersion(), status, status]
   );
   connection.release();
 
-  heartbeat(label, services);
+  heartbeat(services);
   setInterval(() => {
-    heartbeat(label, services);
+    heartbeat(services);
   }, 60000);
 }

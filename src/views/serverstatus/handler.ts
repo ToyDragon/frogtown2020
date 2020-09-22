@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { ServerStatus } from "../../server/database/dbinfos/db_info_server_status";
 import { logWarning } from "../../server/log";
+import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {
@@ -47,6 +48,7 @@ export default function handler(services: Services): express.Router {
     async (_user) => {
       const servers: Server[] = [];
       const connection = await services.dbManager.getConnection();
+      let activeBatch = "";
       if (connection) {
         const result = await connection.query<
           {
@@ -75,11 +77,20 @@ export default function handler(services: Services): express.Router {
           }
         }
 
+        const batchResult = await connection.query<BatchStatusRow[]>(
+          "SELECT * FROM batch_status WHERE name=?;",
+          ["batch_owner_name"]
+        );
+        if (batchResult?.value && batchResult.value.length > 0) {
+          activeBatch = batchResult.value[0].value;
+        }
+
         connection.release();
       }
 
       return {
         servers: servers,
+        batch_server: activeBatch,
       };
     }
   );

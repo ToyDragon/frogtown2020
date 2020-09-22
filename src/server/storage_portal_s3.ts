@@ -83,7 +83,7 @@ export default class S3StoragePortal implements StoragePortal {
     // Get date
     return await new Promise<string>((resolve) => {
       this.s3.headObject(headObjectRequest, (_err, data) => {
-        resolve(data?.LastModified?.toLocaleString() || "");
+        resolve(data?.LastModified?.toString() || "");
       });
     });
   }

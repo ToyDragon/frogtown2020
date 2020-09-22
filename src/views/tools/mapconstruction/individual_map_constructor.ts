@@ -14,6 +14,7 @@ export default class IndividualMapConstructor {
   private streamBuffer: string;
   private cardCount: number;
   public mapTemplate: MapFile | null = null;
+  public errorCount = 0;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data: any;
@@ -141,6 +142,7 @@ export default class IndividualMapConstructor {
       logError("Error parsing card with range: " + JSON.stringify(range));
       logError(e);
       logError(rawData);
+      this.errorCount += 1;
     }
   }
 

@@ -2,6 +2,7 @@ import express from "express";
 import * as fs from "fs";
 import * as https from "https";
 import * as http from "http";
+import * as os from "os";
 import * as bodyParser from "body-parser";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -20,10 +21,27 @@ import * as Logs from "./log";
 import DatabaseManager from "./database/db_manager";
 import ScryfallManager from "./scryfall_manager";
 import ImagesHandler from "./handler_images";
-import { initStatusManagement } from "./status_manager";
+import { initStatusManagement, logGracefulDeath } from "./status_manager";
+import { setServerName } from "./name";
+import { timeout } from "../shared/utils";
 
 export default class Server {
   public run(serverLabel: string): void {
+    // Setup shutdown procedure
+    let onDie: (() => Promise<void>) | null = null;
+    process.on("SIGINT", async () => {
+      Logs.logWarning("SIGINT recieved.");
+      //TODO theres gotta be a better way to support dying.
+      // Let long running jobs know so they can die gracefully.
+      if (onDie) {
+        await onDie();
+      }
+      Logs.logInfo("about to wait more");
+      await timeout(2000);
+      // eslint-disable-next-line no-process-exit
+      process.exit(0);
+    });
+
     // Setup command line params
     const options = commandLineArgs([
       {
@@ -96,15 +114,26 @@ export default class Server {
       await services.dbManager.ensureDatabaseAndTablesExist(config);
 
       // Heartbeats and server status managment
-      initStatusManagement(serverLabel, services);
+      setServerName(serverLabel + ":" + os.hostname());
+      initStatusManagement(services);
+
+      const toCloseOnDie: http.Server[] = [];
+      onDie = async () => {
+        await logGracefulDeath(services);
+        for (const dier of toCloseOnDie) {
+          dier.close();
+        }
+      };
 
       // Listen for traffic
       if (config.nohttps) {
         // HTTP mode for ease of debugging
-        http
-          .createServer(app)
-          .listen(config.network.unsecurePort)
-          .on("error", HandleServerError);
+        toCloseOnDie.push(
+          http
+            .createServer(app)
+            .listen(config.network.unsecurePort)
+            .on("error", HandleServerError)
+        );
         Logs.logCritical(
           "Started non-HTTPs server on port " +
             config.network.unsecurePort +
@@ -120,18 +149,22 @@ export default class Server {
         Logs.logCritical("==========================================");
       } else {
         // HTTPS mode intended for production
-        https
-          .createServer(serverOptions, app)
-          .listen(config.network.securePort)
-          .on("error", HandleServerError);
+        toCloseOnDie.push(
+          https
+            .createServer(serverOptions, app)
+            .listen(config.network.securePort)
+            .on("error", HandleServerError)
+        );
         Logs.logInfo("Server listening on port " + config.network.securePort);
 
         const httpApp = express();
         httpApp.get("*", HTTPSRedirectionHandler);
-        http
-          .createServer(httpApp)
-          .listen(config.network.unsecurePort)
-          .on("error", HandleServerError);
+        toCloseOnDie.push(
+          http
+            .createServer(httpApp)
+            .listen(config.network.unsecurePort)
+            .on("error", HandleServerError)
+        );
       }
     });
   }

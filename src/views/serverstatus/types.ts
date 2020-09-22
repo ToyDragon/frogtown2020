@@ -7,6 +7,7 @@ export interface Server {
 }
 
 export interface ServerStatusResponse {
+  batch_server: string;
   servers: Server[];
 }
 

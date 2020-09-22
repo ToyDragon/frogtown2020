@@ -10,16 +10,6 @@ class ServerStatusViewBehavior extends ViewBehavior<unknown> {
     setInterval(() => {
       this.refreshServerStatus();
     }, 30000);
-
-    const cbHeartbeatFilter = document.querySelector(
-      "#cbHeartbeatFilter"
-    ) as HTMLInputElement;
-    if (cbHeartbeatFilter) {
-      cbHeartbeatFilter.addEventListener("change", () => {
-        console.log(cbHeartbeatFilter.checked);
-        this.refreshServerStatus();
-      });
-    }
   }
 
   private async refreshServerStatus(): Promise<void> {
@@ -27,54 +17,104 @@ class ServerStatusViewBehavior extends ViewBehavior<unknown> {
       "/serverstatus/get_server_status",
       {}
     );
-    let filterOld = false;
-    const cbHeartbeatFilter = document.querySelector(
-      "#cbHeartbeatFilter"
-    ) as HTMLInputElement;
-    if (cbHeartbeatFilter) {
-      filterOld = cbHeartbeatFilter.checked;
-    }
     const tableEle = document.querySelector("#tblStatus") as HTMLTableElement;
     if (result && tableEle) {
       document.querySelector("#spanLoading")?.classList.add("nodisp");
+      const sortedServers = result.servers.sort((a, b) => {
+        return a.heartbeat > b.heartbeat ? -1 : 1;
+      });
+      const activeServers = sortedServers.filter((server) => {
+        const heart = new Date(server.heartbeat * 1000);
+        const timeSinceDeath = new Date().getTime() - heart.getTime();
+        const fiveMinutes = 5 * 60 * 1000;
+        const isActive = server.status.substr(0, 1) === "0";
+        return isActive && timeSinceDeath < fiveMinutes;
+      });
+      const suspectServers = sortedServers.filter((server) => {
+        const heart = new Date(server.heartbeat * 1000);
+        const fiveMinutes = 5 * 60 * 1000;
+        const thirtyMinutes = 30 * 60 * 1000;
+        const timeSinceDeath = new Date().getTime() - heart.getTime();
+        const isActive = server.status.substr(0, 1) === "0";
+        return (
+          (!isActive || timeSinceDeath > fiveMinutes) &&
+          timeSinceDeath < thirtyMinutes
+        );
+      });
       ReactDom.render(
         <React.Fragment>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Last Heartbeat</th>
-              <th>Version</th>
-              <th>Status</th>
-              <th>Requested Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.servers.map((server, index) => {
-              const heart = new Date(server.heartbeat * 1000);
-              if (
-                filterOld &&
-                new Date().getTime() - heart.getTime() > 5 * 60 * 1000
-              ) {
-                return <React.Fragment></React.Fragment>;
-              }
-              // Super hacky key to be unique with every refresh.
-              return (
-                <tr key={index}>
-                  <td>{server.name}</td>
-                  <td>{heart.toLocaleString()}</td>
-                  <td>{server.version}</td>
-                  <td>{server.status}</td>
-                  <td>{server.targetStatus}</td>
-                  <td>
-                    <button className="btnKill" data-servername={server.name}>
-                      Kill
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+          {(() => {
+            if (result.batch_server) {
+              return <h3>Batch server: {result.batch_server}</h3>;
+            }
+            return <React.Fragment></React.Fragment>;
+          })()}
+          <h3>Active Servers</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Last Heartbeat</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Requested Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeServers.map((server, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{server.name}</td>
+                    <td>
+                      {new Date(server.heartbeat * 1000).toLocaleString()}
+                    </td>
+                    <td>{server.version}</td>
+                    <td>{server.status}</td>
+                    <td>{server.targetStatus}</td>
+                    <td>
+                      <button className="btnKill" data-servername={server.name}>
+                        Kill
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <h3>Recently Shutdown Servers</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Last Heartbeat</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Requested Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {suspectServers.map((server, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{server.name}</td>
+                    <td>
+                      {new Date(server.heartbeat * 1000).toLocaleString()}
+                    </td>
+                    <td>{server.version}</td>
+                    <td>{server.status}</td>
+                    <td>{server.targetStatus}</td>
+                    <td>
+                      <button className="btnKill" data-servername={server.name}>
+                        Kill
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </React.Fragment>,
         tableEle
       );

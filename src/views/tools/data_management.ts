@@ -153,8 +153,10 @@ export async function startConstructingDataMaps(
       );
       logInfo("Insert result: " + JSON.stringify(insertResult));
     }
+  } else {
+    logInfo("Map construction failed.");
   }
-  endBatch(connection);
+  await endBatch(connection);
   connection.release();
 }
 

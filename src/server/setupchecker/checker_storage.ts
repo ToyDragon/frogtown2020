@@ -24,6 +24,7 @@ export default async function CheckForStorageIssue(
     services.config.storage.awsS3HighQualityImageBucket,
     services.config.storage.awsS3FullQualityImageBucket,
     services.config.storage.awsS3CompressedImageBucket,
+    services.config.storage.awsS3SetSVGBucket,
     services.config.storage.awsS3DataMapBucket,
   ];
   for (const bucketName of allBuckets) {

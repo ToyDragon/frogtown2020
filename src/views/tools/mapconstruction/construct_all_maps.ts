@@ -1,7 +1,7 @@
 import Services from "../../../server/services";
 import IndividualMapConstructor from "./individual_map_constructor";
 import * as https from "https";
-import { logInfo } from "../../../server/log";
+import { logInfo, logError } from "../../../server/log";
 import { BatchStatusRow } from "../../../server/database/dbinfos/db_info_batch_status";
 import { DatabaseConnection } from "../../../server/database/db_connection";
 
@@ -18,6 +18,7 @@ export function constructAllMaps(
         ["construct_maps_progress", "0", "construct_maps_in_progress", "true"]
       );
 
+      let aborted = false;
       constructors = [];
       for (const mapFile of services.config.mapFiles) {
         constructors.push(new IndividualMapConstructor(mapFile));
@@ -32,7 +33,7 @@ export function constructAllMaps(
       logInfo("Stream all card data to constructors...");
       let lastUpdate = 0;
       let totalChars = 0;
-      https.get(allCardsURL, (stream) => {
+      const req = https.get(allCardsURL, (stream) => {
         for (const ctor of constructors) {
           ctor.attachStream(stream);
         }
@@ -41,17 +42,31 @@ export function constructAllMaps(
           if (totalChars - lastUpdate > 5000000) {
             lastUpdate = totalChars;
             let cardCount = 0;
+            let errorCount = 0;
             for (const ctor of constructors) {
               cardCount += ctor.getCardCount();
+              errorCount += ctor.errorCount;
             }
             connection.query(
               "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
               ["construct_maps_progress", cardCount]
             );
             logInfo("Map progress: " + cardCount);
+
+            if (errorCount > 20) {
+              aborted = true;
+              logError(
+                "Aborting data map build, errors occurred: " + errorCount
+              );
+              req.end();
+            }
           }
         });
         stream.on("close", async () => {
+          if (aborted) {
+            resolve(false);
+            return;
+          }
           for (const ctor of constructors) {
             if (
               !ctor.mapTemplate ||

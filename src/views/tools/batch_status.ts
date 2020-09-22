@@ -1,5 +1,6 @@
 import { DatabaseConnection } from "../../server/database/db_connection";
 import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
+import { getName } from "../../server/name";
 
 export async function isBatchInProgress(
   connection: DatabaseConnection
@@ -36,8 +37,8 @@ export async function trySetBatchInProgress(
     return false;
   } else {
     result = await connection.query<BatchStatusRow[]>(
-      "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
-      ["in_progress", "true"]
+      "REPLACE INTO batch_status (name, value) VALUES(?, ?), (?, ?);",
+      ["in_progress", "true", "batch_owner_name", getName()]
     );
     await connection.query("UNLOCK TABLES;", []);
     return true;
@@ -47,8 +48,8 @@ export async function trySetBatchInProgress(
 export async function endBatch(connection: DatabaseConnection): Promise<void> {
   await connection.query("LOCK TABLES batch_status WRITE;", []);
   await connection.query(
-    "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
-    ["in_progress", "false"]
+    "REPLACE INTO batch_status (name, value) VALUES(?, ?), (?, ?);",
+    ["in_progress", "false", "batch_owner_name", ""]
   );
   await connection.query("UNLOCK TABLES;", []);
 }
