@@ -234,12 +234,13 @@ export class CardRendererDetails extends BaseCardRenderer {
     if (this.groups.length === 0 || this.groups[0].cardDivs.length === 0) {
       return;
     }
+    const scrollOffset = this.cardArea.parentElement?.scrollTop || 0;
     const parentHeight = this.scrollingParent.clientHeight || 0;
     const cardHeight = this.groups[0].cardDivs[0].clientHeight || 0;
 
     groupLoop: for (const group of this.groups) {
       for (const cardDiv of group.cardDivs) {
-        const y = cardDiv.offsetTop;
+        const y = cardDiv.offsetTop - scrollOffset;
         if (y < -cardHeight) {
           continue;
         }

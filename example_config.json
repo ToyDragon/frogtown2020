@@ -1,6 +1,6 @@
 {
 	"adminId": "TODO",
-	"hostname": "local.frogtown.me",
+	"hostname": "beta.frogtown.me",
     "nohttps": false,
     "network": {
         "securePort": 8443,
