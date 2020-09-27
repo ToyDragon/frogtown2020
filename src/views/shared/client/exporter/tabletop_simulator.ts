@@ -39,12 +39,16 @@ export default class TableTopSimulator {
       return [];
     }
 
+    const TokenIDToTokenStringMap = this.dl.getMapData(
+      "TokenIDToTokenString"
+    ) as Record<string, string>;
+    if (!TokenIDToTokenStringMap) {
+      return [];
+    }
+
     const TokenStringToTokenIDMap: Record<string, string> = {};
-    for (const tokenId in IDToTokenStringMap) {
-      const tokenString = IDToTokenStringMap[tokenId];
-      if (!TokenStringToTokenIDMap[tokenString]) {
-        TokenStringToTokenIDMap[tokenString] = tokenId;
-      }
+    for (const tokenId in TokenIDToTokenStringMap) {
+      TokenStringToTokenIDMap[TokenIDToTokenStringMap[tokenId]] = tokenId;
     }
 
     for (const cardId of allCandidates) {
