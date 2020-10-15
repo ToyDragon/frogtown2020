@@ -46,7 +46,8 @@
     "start": "webpack --config ./bin/webpack.config.js && node ./bin/server/runner.js",
     "test": "jest",
     "lint": "npx eslint \"./src/**/*.ts\"",
-    "startprod": "node ./bin/server/runner.js"
+    "startprod": "node ./bin/server/runner.js",
+    "startupdater": "node ./bin/updater/runner.js"
   },
   "author": "",
   "license": "ISC"

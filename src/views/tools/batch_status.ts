@@ -5,15 +5,16 @@ import { getName } from "../../server/name";
 export async function isBatchInProgress(
   connection: DatabaseConnection
 ): Promise<boolean> {
-  const result = await connection.query<BatchStatusRow>(
-    `
-    LOCK TABLES batch_status READ;
-    SELECT * FROM batch_status WHERE name=?;
-    UNLOCK TABLES;
-    `,
+  await connection.query("LOCK TABLES batch_status WRITE;", []);
+  const result = await connection.query<BatchStatusRow[]>(
+    "SELECT * FROM batch_status WHERE name=?;",
     ["in_progress"]
   );
-  return result?.value?.value === "true";
+  await connection.query("UNLOCK TABLES;", []);
+  if (result?.value?.length !== 1) {
+    return false;
+  }
+  return result.value[0].value === "true";
 }
 
 function getLineZeroValue(result: BatchStatusRow[] | null): string {

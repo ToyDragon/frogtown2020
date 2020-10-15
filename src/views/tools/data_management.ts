@@ -1,6 +1,6 @@
 import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
-import { logInfo } from "../../server/log";
+import { logError, logInfo } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
 import * as https from "https";
 import {
@@ -17,7 +17,7 @@ const allDataKey = "AllData.json";
 let downloadCurBytes = 0;
 let downloadMaxBytes = 0;
 
-interface BulkDataListing {
+export interface BulkDataListing {
   data: {
     type: string;
     updated_at: string;
@@ -230,6 +230,16 @@ export async function startDownloadNewAllCardsFile(
     msg.pipe(awsStream);
     msg.on("close", async () => {
       logInfo("Done at: " + downloadCurBytes + " / " + downloadMaxBytes);
+      const dataUpdated = new Date();
+      const dataChanged = new Date(data_changed);
+      if (downloadCurBytes <= downloadMaxBytes / 2) {
+        // Data file was likely not available, sometimes the scryfall API does this.
+        // Often it's just a JSON file that says no response was available, sometimes it's
+        // a dramatically smaller file than it should be.
+        dataChanged.setFullYear(dataChanged.getFullYear() - 10);
+        dataUpdated.setFullYear(dataUpdated.getFullYear() - 10);
+        logError("Scryfall all_cards file was incomplete.");
+      }
       downloadCurBytes = downloadMaxBytes;
       awsStream.end();
       await connection.query(
@@ -243,11 +253,7 @@ export async function startDownloadNewAllCardsFile(
       );
       const insertResult = await connection.query(
         "REPLACE INTO data_files (name, update_time, change_time) VALUES (?, ?, ?);",
-        [
-          "all_cards",
-          dateToMySQL(new Date()),
-          dateToMySQL(new Date(data_changed)),
-        ]
+        ["all_cards", dateToMySQL(dataUpdated), dateToMySQL(dataChanged)]
       );
       logInfo("Insert result: " + JSON.stringify(insertResult));
       await endBatch(connection);

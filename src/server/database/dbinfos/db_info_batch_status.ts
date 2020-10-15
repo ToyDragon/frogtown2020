@@ -13,6 +13,6 @@ export class DBInfoBatchStatus extends DBInfo {
 }
 
 export interface BatchStatusRow {
-  key: string;
+  name: string;
   value: string;
 }
