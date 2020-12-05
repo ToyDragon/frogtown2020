@@ -85,7 +85,7 @@ export default class Updater {
 
       setInterval(() => {
         this.checkForAction();
-      }, 60 * 60 * 1000); //1 hour
+      }, 15 * 60 * 1000); // 15 minutes
       this.checkForAction();
     });
   }
@@ -165,32 +165,41 @@ export default class Updater {
     if (allDataRows?.value?.length !== 1) {
       return true;
     }
-    const dataFileChanged = new Date(allDataRows.value[0].update_time);
+    const dataFileChanged = new Date(allDataRows.value[0].change_time + " UTC");
     allDataRows = await connection.query<DataFilesRow[]>(
       "SELECT * FROM data_files WHERE name=?;",
       ["all_cards"]
     );
     if (allDataRows?.value?.length !== 1) {
+      Logs.logInfo("No need to update data maps, because no all_cards date available.");
       return false;
     }
-    const allCardsFileChanged = new Date(allDataRows.value[0].update_time);
-    if (
-      dataFileChanged < s3UpdateDate &&
-      allCardsFileChanged < s3UpdateDate &&
-      allCardsFileChanged > dataFileChanged
-    ) {
-      Logs.logInfo(
-        "Data maps should update. Built " +
-          dataFileChanged +
-          ", with S3 available " +
-          s3UpdateDate +
-          ", with all cards update " +
-          allCardsFileChanged
-      );
-      return true;
-    } else {
+    const allCardsFileChanged = new Date(allDataRows.value[0].change_time + " UTC");
+    if (dataFileChanged > allCardsFileChanged) {
+      Logs.logInfo("Data maps should not update, they are newer than the all_cards file.");
       return false;
     }
+    if (allCardsFileChanged > s3UpdateDate) {
+      Logs.logInfo("Data maps should not update, waiting on s3 to update the all_cards object.");
+      Logs.logInfo("all_cards downloaded: " + allCardsFileChanged);
+      Logs.logInfo("s3 update date: " + s3UpdateDate);
+      return false;
+    }
+    if (allCardsFileChanged > s3UpdateDate) {
+      Logs.logInfo("Data maps should not update, waiting on s3 to update the all_cards object.");
+      Logs.logInfo("all_cards downloaded: " + allCardsFileChanged);
+      Logs.logInfo("s3 update date: " + s3UpdateDate);
+      return false;
+    }
+    Logs.logInfo(
+      "Data maps should update. Built " +
+        dataFileChanged +
+        ", with S3 available " +
+        s3UpdateDate +
+        ", with all cards update " +
+        allCardsFileChanged
+    );
+    return true;
   }
 
   private async shouldUpdateAllCards(
@@ -203,16 +212,17 @@ export default class Updater {
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     if (allCardsUpdateDate && allCardsUpdateDate < oneDayAgo) {
       const scryfallUpdateDate = await this.getScryfallAllCardsUpdateDate();
-      const twelveHoursAgo = new Date();
-      twelveHoursAgo.setHours(oneDayAgo.getHours() - 12);
+      const twoHoursAgo = new Date();
+      twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
       if (
         scryfallUpdateDate &&
         scryfallUpdateDate > allCardsUpdateDate // Newer than what we have
       ) {
-        if (scryfallUpdateDate < twelveHoursAgo) {
+        if (scryfallUpdateDate < twoHoursAgo) {
           return true;
         } else {
-          Logs.logInfo("Scryfall all cards too new, letting it stabilize");
+          const hours = (new Date().getTime() - scryfallUpdateDate.getTime()) / (1000 * 60 * 60);
+          Logs.logInfo("Scryfall all cards too new, letting it stabilize. It's only been " + hours + " hours.");
         }
       } else {
         Logs.logInfo("Scryfall all cards version not newer than ours");

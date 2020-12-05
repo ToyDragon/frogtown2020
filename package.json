@@ -47,7 +47,8 @@
     "test": "jest",
     "lint": "npx eslint \"./src/**/*.ts\"",
     "startprod": "node ./bin/server/runner.js",
-    "startupdater": "node ./bin/updater/runner.js"
+    "startupdater": "node ./bin/updater/runner.js",
+    "ssl": "node ./bin/sslupdater/runner.js"
   },
   "author": "",
   "license": "ISC"

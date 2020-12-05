@@ -199,6 +199,7 @@ export async function startDownloadNewAllCardsFile(
   );
 
   let lastUpdate = 0;
+  let lastUpdateTime = new Date();
   const MB = 1000000;
   downloadCurBytes = 0;
 
@@ -212,13 +213,14 @@ export async function startDownloadNewAllCardsFile(
     ]
   );
 
-  logInfo("Starting all cards file update.");
+  logInfo("Starting all cards file update from url: " + data_url);
   https.get(data_url, (msg) => {
     msg.on("data", (chunk: { length: number }) => {
       if (chunk && chunk.length) {
         downloadCurBytes += chunk.length;
-        if (downloadCurBytes - lastUpdate > 2 * MB) {
+        if ((downloadCurBytes - lastUpdate > 2 * MB) || (lastUpdateTime.getTime() - new Date().getTime() > 15000)) {
           lastUpdate = downloadCurBytes;
+          lastUpdateTime = new Date();
           //Update the database every 2MB
           connection.query(
             "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
@@ -228,8 +230,28 @@ export async function startDownloadNewAllCardsFile(
       }
     });
     msg.pipe(awsStream);
+    awsStream.on("error", () => {
+      logError("Upload message error occurred.");
+    });
+    awsStream.on("aborted", () => {
+      logError("Upload message abort occurred.");
+    });
+    awsStream.on("close", () => {
+      logError("Upload message abort occurred.");
+      logInfo("Upload status code: " + msg.statusCode);
+      logInfo("Upload status message: " + msg.statusMessage);
+    });
+    msg.on("error", () => {
+      logError("Request message error occurred.");
+    });
+    msg.on("aborted", () => {
+      logError("Request message abort occurred.");
+    });
     msg.on("close", async () => {
       logInfo("Done at: " + downloadCurBytes + " / " + downloadMaxBytes);
+      logInfo("Status code: " + msg.statusCode);
+      logInfo("Status message: " + msg.statusMessage);
+      logInfo("Status message: " + JSON.stringify(msg.headers));
       const dataUpdated = new Date();
       const dataChanged = new Date(data_changed);
       if (downloadCurBytes <= downloadMaxBytes / 2) {

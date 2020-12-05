@@ -23,7 +23,8 @@
         "awsS3HighQualityImageBucket": "frogtown.apricot.images.compressed.hq",
         "awsS3CompressedImageBucket": "frogtown.apricot.images.compressed.lq",
         "awsS3SetSVGBucket": "frogtown.apricot.setsvgs",
-        "awsS3DataMapBucket": "frogtown.apricot.data"
+        "awsS3DataMapBucket": "frogtown.apricot.data",
+        "awsS3WellKnownBucket": "frogtown.apricot.wellknown"
     },
     "database": {
         "host": "35.222.178.187",

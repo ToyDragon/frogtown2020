@@ -3,6 +3,7 @@ import { ScryfallFullCard } from "../../shared/scryfall_types";
 import { logError } from "../../../server/log";
 import MapFile, { MapFilterOperator } from "./map_file";
 import getItem from "./item_parsing";
+import checkForCard from "./check_for_card";
 
 interface Range {
   start: number;
@@ -15,6 +16,8 @@ export default class IndividualMapConstructor {
   private cardCount: number;
   public mapTemplate: MapFile | null = null;
   public errorCount = 0;
+
+  private lastParseData: string = "";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data: any;
@@ -37,30 +40,6 @@ export default class IndividualMapConstructor {
 
   public getCardCount(): number {
     return this.cardCount;
-  }
-
-  private checkForCard(): Range | null {
-    let brackets = 0;
-    let start = -1;
-    for (let i = 0; i < this.streamBuffer.length; i++) {
-      const char = this.streamBuffer.charAt(i);
-      if (char === "{") {
-        if (start === -1) {
-          start = i;
-        }
-        brackets++;
-      }
-      if (char === "}") {
-        brackets--;
-        if (brackets === 0) {
-          return {
-            start: start,
-            end: i,
-          };
-        }
-      }
-    }
-    return null;
   }
 
   private cardMeetsFilter(card: ScryfallFullCard): boolean {
@@ -128,21 +107,24 @@ export default class IndividualMapConstructor {
     return false;
   }
 
-  private parseOneCard(range: Range): void {
+  private parseOneCard(range: Range): boolean {
     const rawData = this.streamBuffer.substr(
       range.start,
       range.end - range.start + 1
     );
+    this.lastParseData = "Buffer: " + rawData + "\nRange: " + JSON.stringify(range);
     try {
       const cardData = JSON.parse(rawData) as ScryfallFullCard;
       if (this.cardMeetsFilter(cardData)) {
         this.addToMaps(cardData);
       }
+      return true;
     } catch (e) {
-      logError("Error parsing card with range: " + JSON.stringify(range));
-      logError(e);
-      logError(rawData);
+      if(this.errorCount <= 3) {
+        logError("Error parsing card with range: " + JSON.stringify(range) + "\n" + e + "\n" + this.streamBuffer + "\nPrevious card----\n" + this.lastParseData);
+      }
       this.errorCount += 1;
+      return false;
     }
   }
 
@@ -183,13 +165,14 @@ export default class IndividualMapConstructor {
     this.streamBuffer += data;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const result = this.checkForCard();
+      const result = checkForCard(this.streamBuffer);
       if (!result) {
         break;
       }
-      this.parseOneCard(result);
-      this.streamBuffer = this.streamBuffer.substr(result.end + 1);
-      this.cardCount++;
+      if(this.parseOneCard(result)) {
+        this.streamBuffer = this.streamBuffer.substr(result.end + 1);
+        this.cardCount++;
+      }
     }
   }
 }

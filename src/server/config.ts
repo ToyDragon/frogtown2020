@@ -20,6 +20,7 @@ export default class Config {
     awsS3CompressedImageBucket: "",
     awsS3SetSVGBucket: "",
     awsS3DataMapBucket: "",
+    awsS3WellKnownBucket: "",
   };
   public database = {
     host: "",

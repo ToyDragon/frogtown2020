@@ -83,7 +83,28 @@ export default class S3StoragePortal implements StoragePortal {
     // Get date
     return await new Promise<string>((resolve) => {
       this.s3.headObject(headObjectRequest, (_err, data) => {
+        logInfo("Size: " + data?.ContentLength);
         resolve(data?.LastModified?.toString() || "");
+      });
+    });
+  }
+
+  public async getObjectAsString(
+    bucket: string,
+    objectKey: string
+  ): Promise<string> {
+    // Set up request
+    const getObjectRequest = {
+      Bucket: bucket,
+      Key: objectKey,
+    };
+
+    // Get date
+    return await new Promise<string>((resolve) => {
+      this.s3.getObject(getObjectRequest, (_err, data) => {
+        logInfo("Size: " + data?.ContentLength);
+        logInfo("Contents: " + data?.Body?.toString());
+        resolve(data?.Body?.toString() || "");
       });
     });
   }
@@ -93,12 +114,21 @@ export default class S3StoragePortal implements StoragePortal {
     objectKey: string,
     data: string
   ): Promise<boolean> {
+      return this.uploadStringToBucketACL(bucket, objectKey, data, "public-read");
+  }
+
+  public async uploadStringToBucketACL(
+    bucket: string,
+    objectKey: string,
+    data: string,
+    acl: string
+  ): Promise<boolean> {
     // Set up request
     const putObjectRequest = {
       Bucket: bucket,
       Key: objectKey,
       Body: data,
-      ACL: "public-read",
+      ACL: acl,
     };
 
     // Attempt upload

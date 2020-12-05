@@ -24,6 +24,7 @@ import ImagesHandler from "./handler_images";
 import { initStatusManagement, logGracefulDeath } from "./status_manager";
 import { setServerName } from "./name";
 import { timeout } from "../shared/utils";
+import WellKnownHandler from "./handler_wellknown";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -95,6 +96,7 @@ export default class Server {
       app.use(ErrorHandler); // Trigger on unhandled errors
       app.use(SetupRequiredHandler(services));
       app.use(ViewHandler(services));
+      app.use(WellKnownHandler(services));
       app.use("/CardBack.jpg", express.static("./static/CardBack.jpg"));
       for (const path of config.cardImageRoutes) {
         app.use(path, imageHandler);
