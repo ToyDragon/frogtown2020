@@ -172,12 +172,12 @@ export function httpsGetMessage(path: string): Promise<http.IncomingMessage> {
   });
 }
 
-export function httpsGetRaw<T>(path: string): Promise<string> {
+export function httpsGetRaw(path: string): Promise<string> {
   return new Promise((resolve) => {
     https.get(path, async (msg) => {
       if (msg.statusCode === 301) {
         const newUrl = msg.headers.location || "";
-        resolve(await httpsGetRaw<T>(newUrl));
+        resolve(await httpsGetRaw(newUrl));
       } else {
         let data = "";
         msg.on("data", (chunk) => {

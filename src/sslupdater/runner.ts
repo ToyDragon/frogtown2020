@@ -14,9 +14,28 @@ import {
   logGracefulDeath,
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
-import { timeout } from "../shared/utils";
+import { httpsGetRaw, timeout } from "../shared/utils";
 import * as fs from "fs";
-import { spawn } from "child_process";
+import { spawn, exec } from "child_process";
+
+/*
+
+Updating SSL Keys
+=================
+
+Run this script as admin:
+
+$> sudo npm run ssl
+
+It should operate certbot to get a new cert, store it in ./secrets/ssl, and then
+upload it as a secret to the cluster. Pods in the cluster should consume the
+secret and have updated certs the next time they restart. They should restart on
+their own in a reasonable amount of time, but if not you can force them to
+restart from frogtown.me/serverstatus.html
+
+Certificates only last 3 months, set this up in a chron job ideally.
+
+*/
 
 export default class SSLUpdater {
   private services!: Services;
@@ -69,29 +88,55 @@ export default class SSLUpdater {
 
       this.updateCerts();
     });
-}
-
-  private deleteAndRemake(name: string): void {
-    if(fs.existsSync(name)) {
-      fs.rmdirSync(name, {recursive: true});
-    }
-    fs.mkdirSync(name);
   }
 
   private async updateCerts(): Promise<void> {
-    this.deleteAndRemake("./ssl_tmp");
-
-    const process = spawn("certbot", ["certonly", "--manual", "-d", "beta.frogtown.me"]);
-    process.stderr.on("data", (chunk) => {
+    const certprocess = spawn("certbot", ["certonly", "--manual", "-d", "beta.frogtown.me"]);
+    certprocess.stderr.on("data", (chunk) => {
       Logs.logWarning("err: " + chunk);
     });
-    process.stdout.on("data", async (chunk) => {
+    certprocess.stdout.on("data", async (chunk: string) => {
       Logs.logWarning("data: " + chunk);
       const result = /Create a file containing just this data:\n\n(.*)\n\n.*\n\n.*\.well-known\/acme-challenge\/(.*)\n/.exec(chunk);
       if (result) {
         Logs.logInfo("Uploading \"" + result[1] + "\" to \"" + result[2] + "\"")
         await this.services.storagePortal.uploadStringToBucketACL(this.services.config.storage.awsS3WellKnownBucket, result[2], result[1], "private");
-        Logs.logInfo("done");
+        Logs.logInfo("Waiting for data to be available...");
+        while(true) {
+          const getData = await httpsGetRaw("https://beta.frogtown.me/.well-known/acme-challenge/" + result[2]);
+          Logs.logInfo("Data: " + getData);
+          if (getData) {
+            break;
+          }
+          await timeout(3000);
+        }
+        certprocess.stdin.write("\n"); // New line to trigger validation
+      } else if ((chunk.indexOf("Your certificate and chain have been saved at:") >= 0) || (chunk.indexOf("You have an existing certificate that has exactly") >= 0)) {
+
+        if (chunk.indexOf("You have an existing certificate that has exactly") >= 0) {
+          certprocess.stdin.write("c\n");
+          await timeout(3000);
+        }
+
+        try{
+          fs.mkdirSync("./secrets/ssl");
+        }catch{}
+        const dateStr = new Date().toISOString();
+        try{
+          fs.mkdirSync("./secrets/ssl/" + dateStr);
+        }catch{}
+
+        fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem", "./secrets/ssl/" + dateStr + "/fullchain.pem");
+        fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/privkey.pem", "./secrets/ssl/" + dateStr + "/privkey.pem");
+
+        Logs.logInfo("Uploading secret: sslkeys");
+        exec("kubectl create secret generic sslkeys --from-file ./secrets/ssl/" + dateStr + "/fullchain.pem --from-file ./secrets/ssl/" + dateStr + "/privkey.pem");
+
+        Logs.logInfo("Done, exiting.");
+        await logGracefulDeath(this.services);
+        await timeout(3000);
+        // eslint-disable-next-line no-process-exit
+        process.exit(0);
       }
     });
   }
