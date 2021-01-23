@@ -6,13 +6,15 @@ import Updater from "./updater";
 const workers: cluster.Worker[] = [];
 const deadWorkers: Record<string, boolean> = {};
 
+let closing = false;
+
 if (cluster.isMaster) {
   // We only use cluster as a fault tolerance layer, we don't actually use any paralellism.
   workers.push(cluster.fork());
 
   cluster.on("exit", (worker, code, _signal) => {
     deadWorkers[worker.id] = true;
-    if (code !== 0 && !worker.exitedAfterDisconnect) {
+    if (code !== 0 && !worker.exitedAfterDisconnect && !closing) {
       console.log("Worker " + worker.id + " crashed. Starting a new worker...");
       cluster.fork();
     }
@@ -37,6 +39,13 @@ if (cluster.isMaster) {
       }
     }
   });
+  
+  console.log("Runner: Will shut down in 3 hours...");
+  setTimeout(() => {
+    closing = true;
+    console.log("Runner: Reached 3 hour limit, shutting down.");
+    process.kill(process.pid, "SIGINT");
+  }, 1000 * 60 * 60 * 3); // 3 hours
 } else {
   new Updater().run();
 }

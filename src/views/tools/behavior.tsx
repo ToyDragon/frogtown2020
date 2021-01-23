@@ -9,6 +9,7 @@ import {
   CardImageUpdateProgressResponse,
   ImageInfo,
   MissingSetSVGsResponse,
+  CardImageClearInfoRequest,
 } from "./types";
 import { post } from "../shared/client/request";
 import { wait } from "../../shared/utils";
@@ -27,6 +28,7 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     this.updateDataMapsFromDataInfo(result);
     this.updateCardImageInfo();
     this.updateImageVersionInfo();
+    this.updateClearImageInfo();
   }
 
   private async updateCardImageInfo(): Promise<void> {
@@ -186,6 +188,22 @@ class ToolsBehavior extends ViewBehavior<unknown> {
 
     await wait(250);
     this.updateAllCardsProgress();
+  }
+
+  private async updateClearImageInfo(): Promise<void> {
+    const btnClearSetImages = document.querySelector<HTMLButtonElement>("#btnClearSetImages");
+    const textareaSets = document.querySelector<HTMLTextAreaElement>("#textareaSetsToClear");
+    if (!textareaSets || !btnClearSetImages ) {
+      return;
+    }
+    btnClearSetImages.addEventListener("click", async () => {
+      const sets = textareaSets.value.split("\n");
+      textareaSets.value = "";
+      await post<CardImageClearInfoRequest, unknown>("/tools/clear_image_info", {
+        sets: sets
+      });
+      console.log("Done clearing image infos.");
+    });
   }
 
   private async updateImageVersionInfo(): Promise<void> {

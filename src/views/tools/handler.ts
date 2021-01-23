@@ -11,6 +11,7 @@ import {
   CardImageUpdateStartRequest,
   CardImageUpdateProgressResponse,
   MissingSetSVGsResponse,
+  CardImageClearInfoRequest,
 } from "./types";
 import {
   getImageVersionDetails,
@@ -125,6 +126,14 @@ export default function handler(services: Services): express.Router {
   addEndpoint(router, "/download_missing_set_svgs", async (_userDetails) => {
     await downloadMissingSVGs(services);
   });
+
+  addEndpointWithParams<CardImageClearInfoRequest, void>(
+    router,
+    "/clear_image_info",
+    async (_userDetails, request) => {
+      return await ImageManagement.clearImageInfo(services, request);
+    }
+  );
 
   return router;
 }

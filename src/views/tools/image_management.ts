@@ -10,6 +10,7 @@ import {
   CardImageInfoResponse,
   CardImageUpdateProgressResponse,
   CardImageUpdateStartRequest,
+  CardImageClearInfoRequest,
 } from "./types";
 import { logInfo, logError, logWarning } from "../../server/log";
 import { DatabaseConnection } from "../../server/database/db_connection";
@@ -198,6 +199,47 @@ export async function getImageUpdateProgress(
 
   connection.release();
   return result;
+}
+
+export async function clearImageInfo(services: Services, clearInfoRequest: CardImageClearInfoRequest) {
+  const connection = await services.dbManager.getConnectionTimeout(
+    20 * 60 * 1000 // 20 minute timeout
+  );
+  if (!connection) {
+    return;
+  }
+  if (!(await trySetBatchInProgress(connection))) {
+    connection.release();
+    return;
+  }
+  const SetCodeToCardID = await httpsGet<Record<string, string>>(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/SetCodeToID.json"
+  );
+
+  if (!SetCodeToCardID) {
+    logError("Unable to load data map from S3.");
+    await endBatch(connection);
+    connection.release();
+    return;
+  }
+
+  let cardCount = 0;
+  for (const set of clearInfoRequest.sets) {
+    if (SetCodeToCardID[set]) {
+      for (const cardId of SetCodeToCardID[set]) {
+        cardCount++;
+        await connection.query("DELETE FROM card_images WHERE card_id=?;", [cardId]);
+      }
+    }
+  }
+
+  logInfo(`Cleared images for ${cardCount} cards.`);
+
+  await endBatch(connection);
+  connection.release();
 }
 
 export async function startUpdatingImages(

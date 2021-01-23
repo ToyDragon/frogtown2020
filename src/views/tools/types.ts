@@ -36,6 +36,10 @@ export interface CardImageUpdateStartRequest {
   cardIds: string[];
 }
 
+export interface CardImageClearInfoRequest {
+  sets: string[];
+}
+
 export interface CardImageInfoResponse {
   lastUpdateDate: string;
   imageTypeByID: Record<string, ImageInfo>;

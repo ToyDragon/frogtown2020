@@ -2,7 +2,6 @@ import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
 import { logError, logInfo } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
-import * as https from "https";
 import {
   constructAllMaps,
   getConstructionProgress,
@@ -11,6 +10,8 @@ import { DataFilesRow } from "../../server/database/dbinfos/db_info_data_files";
 import { endBatch, trySetBatchInProgress } from "./batch_status";
 import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 import { DatabaseConnection } from "../../server/database/db_connection";
+import { spawn } from "child_process";
+import * as fs from "fs";
 
 const allDataKey = "AllData.json";
 
@@ -193,11 +194,6 @@ export async function startDownloadNewAllCardsFile(
     }
   }
 
-  const awsStream = services.storagePortal.uploadStreamToBucket(
-    services.config.storage.awsS3DataMapBucket,
-    allDataKey
-  );
-
   let lastUpdate = 0;
   let lastUpdateTime = new Date();
   const MB = 1000000;
@@ -214,8 +210,28 @@ export async function startDownloadNewAllCardsFile(
   );
 
   logInfo("Starting all cards file update from url: " + data_url);
-  https.get(data_url, (msg) => {
-    msg.on("data", (chunk: { length: number }) => {
+
+  // TODO: This can't run on a pod until I set it up. Add some warning or checking or something? Pod will just crash or something if you click the update all cards button.
+  const tmpFileName = "/tmp/all_cards.json";
+  try{
+    if(fs.existsSync(tmpFileName)) {
+      fs.unlinkSync(tmpFileName);
+    }
+  }catch{}
+  
+  const curlProcess = spawn("curl", [data_url, "-o", tmpFileName]);
+  curlProcess.on("close", () => {
+    logInfo("Uploading to AWS...");
+    const fileStream = fs.createReadStream(tmpFileName);
+
+    const awsStream = services.storagePortal.uploadStreamToBucket(
+      services.config.storage.awsS3DataMapBucket,
+      allDataKey
+    );
+
+    fileStream.pipe(awsStream);
+    
+    fileStream.on("data", (chunk: { length: number }) => {
       if (chunk && chunk.length) {
         downloadCurBytes += chunk.length;
         if ((downloadCurBytes - lastUpdate > 2 * MB) || (lastUpdateTime.getTime() - new Date().getTime() > 15000)) {
@@ -229,7 +245,6 @@ export async function startDownloadNewAllCardsFile(
         }
       }
     });
-    msg.pipe(awsStream);
     awsStream.on("error", () => {
       logError("Upload message error occurred.");
     });
@@ -238,20 +253,17 @@ export async function startDownloadNewAllCardsFile(
     });
     awsStream.on("close", () => {
       logError("Upload message abort occurred.");
-      logInfo("Upload status code: " + msg.statusCode);
-      logInfo("Upload status message: " + msg.statusMessage);
     });
-    msg.on("error", () => {
+    fileStream.on("error", () => {
       logError("Request message error occurred.");
     });
-    msg.on("aborted", () => {
+    fileStream.on("aborted", () => {
       logError("Request message abort occurred.");
     });
-    msg.on("close", async () => {
+    fileStream.on("close", async () => {
       logInfo("Done at: " + downloadCurBytes + " / " + downloadMaxBytes);
-      logInfo("Status code: " + msg.statusCode);
-      logInfo("Status message: " + msg.statusMessage);
-      logInfo("Status message: " + JSON.stringify(msg.headers));
+      // logInfo("Status message: " + curlProcess.statusMessage);
+      // logInfo("Status message: " + JSON.stringify(msg.headers));
       const dataUpdated = new Date();
       const dataChanged = new Date(data_changed);
       if (downloadCurBytes <= downloadMaxBytes / 2) {
@@ -278,8 +290,11 @@ export async function startDownloadNewAllCardsFile(
         ["all_cards", dateToMySQL(dataUpdated), dateToMySQL(dataChanged)]
       );
       logInfo("Insert result: " + JSON.stringify(insertResult));
+      fs.unlinkSync(tmpFileName);
+      logInfo("Deleted temp file.");
       await endBatch(connection);
       connection.release();
     });
   });
 }
+
