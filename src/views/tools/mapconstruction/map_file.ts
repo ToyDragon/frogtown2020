@@ -21,6 +21,7 @@ export enum MapFilterOperator {
   Exists = "exists",
   Contains = "contains",
   NotContains = "notcontains",
+  ContainedIn = "containedin",
 }
 
 export interface RawMapFileData {
@@ -89,7 +90,8 @@ export default class MapFile {
           f.operator !== MapFilterOperator.NotEquals &&
           f.operator !== MapFilterOperator.Exists &&
           f.operator !== MapFilterOperator.Contains &&
-          f.operator !== MapFilterOperator.NotContains
+          f.operator !== MapFilterOperator.NotContains &&
+          f.operator !== MapFilterOperator.ContainedIn
         )
           return "Filter operator inavlid.";
       }

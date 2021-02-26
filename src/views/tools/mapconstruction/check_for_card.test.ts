@@ -1,24 +1,26 @@
+/* eslint-disable max-len */
+/* eslint-disable quotes */
 import checkForCard, { Range } from "./check_for_card";
 
 test("Parses simple card.", () => {
-    const rawCard = `{"object":"card",images: {}}`;
-    expect(checkForCard(rawCard)).toEqual<Range>({
-        start: 0,
-        end: rawCard.length - 1,
-    });
+  const rawCard = '{"object":"card",images: {}}';
+  expect(checkForCard(rawCard)).toEqual<Range>({
+    start: 0,
+    end: rawCard.length - 1,
+  });
 });
 
 test("Identifies missing close bracket.", () => {
-    const rawCard = `{"object":"card",images: {}`;
-    expect(checkForCard(rawCard)).toBe(null);
+  const rawCard = '{"object":"card",images: {}';
+  expect(checkForCard(rawCard)).toBe(null);
 });
 
 test("Preceding close bracket.", () => {
-    const rawCard = `}{"object":"card",images: {}}`;
-    expect(checkForCard(rawCard)).toEqual<Range>({
-        start: 1,
-        end: rawCard.length - 1,
-    });
+  const rawCard = '}{"object":"card",images: {}}';
+  expect(checkForCard(rawCard)).toEqual<Range>({
+    start: 1,
+    end: rawCard.length - 1,
+  });
 });
 
 /*

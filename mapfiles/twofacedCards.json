@@ -7,8 +7,8 @@
       },
       {
           "key": "layout",
-          "operator": "equals",
-          "value": "transform"
+          "operator": "containedin",
+          "value": ",transform,modal_dfc,"
       }
   ],
   "maps": [

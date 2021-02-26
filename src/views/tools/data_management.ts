@@ -211,14 +211,16 @@ export async function startDownloadNewAllCardsFile(
 
   logInfo("Starting all cards file update from url: " + data_url);
 
-  // TODO: This can't run on a pod until I set it up. Add some warning or checking or something? Pod will just crash or something if you click the update all cards button.
+  // TODO: This can't run on a pod until I set it up. Add some warning or checking or something?
+  // Pod will just crash or something if you click the update all cards button.
   const tmpFileName = "/tmp/all_cards.json";
-  try{
-    if(fs.existsSync(tmpFileName)) {
+  try {
+    if (fs.existsSync(tmpFileName)) {
       fs.unlinkSync(tmpFileName);
     }
-  }catch{}
-  
+  } catch {
+    //
+  }
   const curlProcess = spawn("curl", [data_url, "-o", tmpFileName]);
   curlProcess.on("close", () => {
     logInfo("Uploading to AWS...");
@@ -230,11 +232,14 @@ export async function startDownloadNewAllCardsFile(
     );
 
     fileStream.pipe(awsStream);
-    
+
     fileStream.on("data", (chunk: { length: number }) => {
       if (chunk && chunk.length) {
         downloadCurBytes += chunk.length;
-        if ((downloadCurBytes - lastUpdate > 2 * MB) || (lastUpdateTime.getTime() - new Date().getTime() > 15000)) {
+        if (
+          downloadCurBytes - lastUpdate > 2 * MB ||
+          lastUpdateTime.getTime() - new Date().getTime() > 15000
+        ) {
           lastUpdate = downloadCurBytes;
           lastUpdateTime = new Date();
           //Update the database every 2MB
@@ -297,4 +302,3 @@ export async function startDownloadNewAllCardsFile(
     });
   });
 }
-

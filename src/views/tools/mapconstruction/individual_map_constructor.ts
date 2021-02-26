@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import * as stream from "stream";
 import { ScryfallFullCard } from "../../shared/scryfall_types";
 import { logError } from "../../../server/log";
@@ -17,7 +18,7 @@ export default class IndividualMapConstructor {
   public mapTemplate: MapFile | null = null;
   public errorCount = 0;
 
-  private lastParseData: string = "";
+  private lastParseData = "";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data: any;
@@ -104,6 +105,12 @@ export default class IndividualMapConstructor {
       }
     }
 
+    if (operator === MapFilterOperator.ContainedIn) {
+      if (expectedValue.indexOf(realValue as string) === -1) {
+        return true;
+      }
+    }
+
     return false;
   }
 
@@ -112,7 +119,8 @@ export default class IndividualMapConstructor {
       range.start,
       range.end - range.start + 1
     );
-    this.lastParseData = "Buffer: " + rawData + "\nRange: " + JSON.stringify(range);
+    this.lastParseData =
+      "Buffer: " + rawData + "\nRange: " + JSON.stringify(range);
     try {
       const cardData = JSON.parse(rawData) as ScryfallFullCard;
       if (this.cardMeetsFilter(cardData)) {
@@ -120,8 +128,17 @@ export default class IndividualMapConstructor {
       }
       return true;
     } catch (e) {
-      if(this.errorCount <= 3) {
-        logError("Error parsing card with range: " + JSON.stringify(range) + "\n" + e + "\n" + this.streamBuffer + "\nPrevious card----\n" + this.lastParseData);
+      if (this.errorCount <= 3) {
+        logError(
+          "Error parsing card with range: " +
+            JSON.stringify(range) +
+            "\n" +
+            e +
+            "\n" +
+            this.streamBuffer +
+            "\nPrevious card----\n" +
+            this.lastParseData
+        );
       }
       this.errorCount += 1;
       return false;
@@ -169,7 +186,7 @@ export default class IndividualMapConstructor {
       if (!result) {
         break;
       }
-      if(this.parseOneCard(result)) {
+      if (this.parseOneCard(result)) {
         this.streamBuffer = this.streamBuffer.substr(result.end + 1);
         this.cardCount++;
       }
