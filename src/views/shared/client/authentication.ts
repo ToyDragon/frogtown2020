@@ -25,6 +25,15 @@ export default class AuthSession {
       this.user.privateId === "" ||
       errorOccurred
     ) {
+      // TODO: Remove this after fully transitioned to prod. It's only necessary to keep IDs
+      // around incase they aren't recognized for some reason by the server.
+      const oldPublic = getCookie("publicId");
+      const oldPrivate = getCookie("privateId");
+      if (oldPublic !== "" || oldPrivate !== "") {
+        let badIds = getCookie("previousBadIds");
+        badIds += ".publicId: " + oldPublic + ",privateId: " + oldPrivate;
+        setCookie("previousBadIds", badIds);
+      }
       const response = await post<unknown, NewUserResponse>(
         "/authentication/newuser",
         undefined
