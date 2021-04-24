@@ -26,6 +26,7 @@ export default class DatabaseManager {
       user: config.database.user,
       password: pw,
       database: "frogtown",
+      multipleStatements: true,
     };
 
     this.connectionPool = mysql.createPool(connectionOptions);
@@ -95,7 +96,7 @@ export default class DatabaseManager {
     }
 
     // Verify we can establish a connection to the database.
-    const connection = await this.getConnection();
+    const connection = await this.getConnectionTimeout(1000 * 60 * 60);
     if (!connection) {
       logCritical("Unable to ensure required database tables exist.");
       return;
@@ -117,6 +118,16 @@ export default class DatabaseManager {
       if (!(await info.ensureTableExists(connection))) {
         connection.release();
         return;
+      }
+    }
+
+    for (const info of tablesInfos) {
+      const cmds = info.getUpdateCommands();
+      for (const cmd of cmds) {
+        if (!(await cmd(connection))) {
+          connection.release();
+          return;
+        }
       }
     }
 

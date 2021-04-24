@@ -1,4 +1,3 @@
-
 import * as os from "os";
 import commandLineArgs from "command-line-args";
 
@@ -15,8 +14,8 @@ import {
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
 import { httpsGetRaw, timeout } from "../shared/utils";
-import * as fs from "fs";
-import { spawn, exec } from "child_process";
+import { spawn, execSync } from "child_process";
+import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
 
 /*
 
@@ -69,6 +68,7 @@ export default class SSLUpdater {
         dbManager: new DatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
+        perfMon: new PerformanceMonitor(),
       };
 
       process.on("SIGINT", async () => {
@@ -91,7 +91,14 @@ export default class SSLUpdater {
   }
 
   private async updateCerts(): Promise<void> {
-    const certprocess = spawn("certbot", ["certonly", "--manual", "-d", "beta.frogtown.me"]);
+    Logs.logInfo("running 'sudo certbot'");
+    const certprocess = spawn("sudo", [
+      "certbot",
+      "certonly",
+      "--manual",
+      "-d",
+      "beta.frogtown.me",
+    ]);
     certprocess.stderr.on("data", (chunk) => {
       Logs.logWarning("err: " + chunk);
     });
@@ -102,6 +109,7 @@ export default class SSLUpdater {
         Logs.logInfo("Uploading \"" + result[1] + "\" to \"" + result[2] + "\"")
         await this.services.storagePortal.uploadStringToBucketACL(this.services.config.storage.awsS3WellKnownBucket, result[2], result[1], "private");
         Logs.logInfo("Waiting for data to be available...");
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         while(true) {
           const getData = await httpsGetRaw("https://beta.frogtown.me/.well-known/acme-challenge/" + result[2]);
           Logs.logInfo("Data: " + getData);
@@ -110,6 +118,7 @@ export default class SSLUpdater {
           }
           await timeout(3000);
         }
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "1";
         certprocess.stdin.write("\n"); // New line to trigger validation
       } else if ((chunk.indexOf("Your certificate and chain have been saved at:") >= 0) || (chunk.indexOf("You have an existing certificate that has exactly") >= 0)) {
 
@@ -117,28 +126,59 @@ export default class SSLUpdater {
           certprocess.stdin.write("c\n");
           await timeout(3000);
         }
-
-        try{
-          fs.mkdirSync("./secrets/ssl");
-        }catch{}
-        const dateStr = new Date().toISOString();
-        try{
-          fs.mkdirSync("./secrets/ssl/" + dateStr);
-        }catch{}
-
-        fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem", "./secrets/ssl/" + dateStr + "/fullchain.pem");
-        fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/privkey.pem", "./secrets/ssl/" + dateStr + "/privkey.pem");
-
-        Logs.logInfo("Uploading secret: sslkeys");
-        exec("kubectl create secret generic sslkeys --from-file ./secrets/ssl/" + dateStr + "/fullchain.pem --from-file ./secrets/ssl/" + dateStr + "/privkey.pem");
-
-        Logs.logInfo("Done, exiting.");
-        await logGracefulDeath(this.services);
-        await timeout(3000);
-        // eslint-disable-next-line no-process-exit
-        process.exit(0);
+        this.copyAndDeployCerts();
       }
     });
+  }
+
+  private async copyAndDeployCerts(): Promise<void> {
+    const dateStr = new Date().toISOString();
+    // try {
+    //   fs.mkdirSync("./secrets/ssl");
+    // } catch {}
+    // const dateStr = new Date().toISOString();
+    // try {
+    //   fs.mkdirSync("./secrets/ssl/" + dateStr);
+    // } catch {}
+    execSync([
+      "sudo",
+      "mkdir",
+      "-p",
+      "\"" + "./secrets/ssl/" + dateStr + "\"",
+    ].join(" "));
+
+    execSync([
+      "sudo",
+      "cp",
+      "\"" + "/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem" + "\"",
+      "\"" + "./secrets/ssl/" + dateStr + "/fullchain.pem" + "\"",
+    ].join(" "));
+    execSync([
+      "sudo",
+      "cp",
+      "\"" + "/etc/letsencrypt/live/beta.frogtown.me/privkey.pem" + "\"",
+      "\"" + "./secrets/ssl/" + dateStr + "/privkey.pem" + "\"",
+    ].join(" "));
+    // execSync([
+    //   "sudo",
+    //   "chown",
+    //   "frog:frog",
+    //   "./secrets/ssl/" + dateStr + "/*",
+    // ].join(" "));
+    // fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem", "./secrets/ssl/" + dateStr + "/fullchain.pem");
+    // fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/privkey.pem", "./secrets/ssl/" + dateStr + "/privkey.pem");
+
+    Logs.logInfo("Uploading secret: sslkeys");
+    execSync("sudo gcloud container clusters get-credentials website-1 --region=us-central1-c");
+    execSync("sudo kubectl delete secret sslkeys");
+    const result = execSync("sudo kubectl create secret generic sslkeys --from-file ./secrets/ssl/" + dateStr + "/fullchain.pem --from-file ./secrets/ssl/" + dateStr + "/privkey.pem");
+    Logs.logInfo("Upload result: " + JSON.stringify(result));
+
+    Logs.logInfo("Done, exiting.");
+    await logGracefulDeath(this.services);
+    await timeout(3000);
+    // eslint-disable-next-line no-process-exit
+    process.exit(0);
   }
 }
 

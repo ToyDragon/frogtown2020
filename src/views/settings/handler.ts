@@ -26,14 +26,13 @@ export default function handler(services: Services): express.Router {
       "SELECT * FROM user_quality WHERE ip_address=?;",
       [user.ipAddress]
     );
+    connection.release();
     if (!result || !result.value || result.value.length === 0) {
-      connection.release();
       return {
         isHQ: false,
       };
     }
 
-    connection.release();
     return {
       isHQ: true,
     };
@@ -77,6 +76,7 @@ export default function handler(services: Services): express.Router {
         "SELECT * FROM user_keys WHERE private_id=?;",
         [params.id]
       );
+      connection.release();
       if (!result || !result.value || result.value.length === 0) {
         return null;
       }

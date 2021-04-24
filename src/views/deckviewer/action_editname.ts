@@ -1,6 +1,6 @@
 import { Deck } from "../shared/deck_types";
 import { post } from "../shared/client/request";
-import { DeckViewerChangeName } from "./types";
+import { DeckViewerChangeMetadata } from "./types";
 
 let editingName = false;
 
@@ -47,9 +47,10 @@ function saveNameChange(deck: Deck, afterChange: () => void): boolean {
     errorDisplay.classList.add("nodisp");
     deck.name = newName;
     afterChange();
-    post<DeckViewerChangeName, boolean>("/deckViewer/updateName", {
+    post<DeckViewerChangeMetadata, boolean>("/deckViewer/updateMetadata", {
       deckId: deck.id,
       name: deck.name,
+      keyCard: null,
     });
     return true;
   } else {

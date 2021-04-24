@@ -1,3 +1,4 @@
+import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoUserQuality extends DBInfo {
@@ -8,6 +9,12 @@ export class DBInfoUserQuality extends DBInfo {
         INDEX (ip_address)
       ) ENGINE=InnoDB;
     `;
+  }
+
+  public getUpdateCommands(): ((
+    connection: DatabaseConnection
+  ) => Promise<boolean>)[] {
+    return [];
   }
 }
 

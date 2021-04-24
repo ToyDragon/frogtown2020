@@ -1,7 +1,11 @@
 import ViewBehavior from "../shared/client/view_behavior";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
 import { post } from "../shared/client/request";
-import { DeckViewerIncludedData, DeckViewerSaveDeck } from "./types";
+import {
+  DeckViewerChangeMetadata,
+  DeckViewerIncludedData,
+  DeckViewerSaveDeck,
+} from "./types";
 import {
   BaseCardRenderer,
   CardRendererOptions,
@@ -22,6 +26,7 @@ import setupBulkImport from "./action_bulkimport";
 import setupDelete from "./action_delete";
 import setupEditName from "./action_editname";
 import setupSearchArrow from "./search_arrow";
+import { GetImageUrl } from "../shared/client/utils";
 
 class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardSearchUtil: CardSearchBehavior | null = null;
@@ -137,6 +142,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "Action Remove": true,
       "Action To Sideboard": true,
       "Action Similar": true,
+      "Action Star": true,
     };
 
     this.mainboardRenderArea = new CardRenderArea(
@@ -180,6 +186,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       "Action Remove": true,
       "Action To Mainboard": true,
       "Action Similar": true,
+      "Action Star": true,
     };
     this.sideboardRenderArea = new CardRenderArea(
       this.dl,
@@ -233,6 +240,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
         this.updateTitle();
       }
     );
+    this.updateTitle();
 
     // Update immediately in case the user changes the active renderer before the assigned renderer is ready.
     this.mainboardRenderArea.UpdateCardList(
@@ -257,6 +265,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     setupSearchArrow(() => {
       return this.getIncludedData().deckDetails;
     });
+
+    this.updateKeyCardDisplay();
   }
 
   private updateCardDivs(): void {
@@ -302,6 +312,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);
       this.saveDeckChange();
+    } else if (action === "star") {
+      this.updateKeyCard(cardId);
     }
     this.updateTitle();
   }
@@ -316,8 +328,33 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   }
 
   private async saveDeckChange(): Promise<void> {
+    const deetz = this.getIncludedData().deckDetails;
+    deetz.cardCount = deetz.mainboard.length + deetz.sideboard.length;
+    const seenColors: Record<string, boolean> = {};
+    const idToColorMap = this.dl.getMapData("IDToColor");
+    if (!idToColorMap) {
+      return;
+    }
+    for (const cardId of deetz.mainboard) {
+      const colors = idToColorMap[cardId];
+      if (colors) {
+        for (const color of colors) {
+          seenColors[color] = true;
+        }
+      }
+    }
+    deetz.colors = [];
+    seenColors["W"] && deetz.colors.push("white");
+    seenColors["U"] && deetz.colors.push("blue");
+    seenColors["B"] && deetz.colors.push("black");
+    seenColors["R"] && deetz.colors.push("red");
+    seenColors["G"] && deetz.colors.push("green");
+    this.tbController.setDeckCardsAndColors(
+      deetz.id,
+      deetz.cardCount,
+      deetz.colors
+    );
     if (await this.saveDebouncer.waitAndShouldAct()) {
-      const deetz = this.getIncludedData().deckDetails;
       this.updateTTSLink();
       console.log("Saving");
       const response = await post<DeckViewerSaveDeck, string>(
@@ -326,6 +363,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
           deckId: deetz.id,
           mainboard: deetz.mainboard,
           sideboard: deetz.sideboard,
+          cardCount: deetz.cardCount,
+          colors: deetz.colors,
         }
       );
       console.log(response);
@@ -358,8 +397,39 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.onSearchAction("add", cardId);
       this.saveDeckChange();
       this.updateSideboardTitle();
+    } else if (action === "star") {
+      this.updateKeyCard(cardId);
     }
     this.updateTitle();
+  }
+
+  private async updateKeyCardDisplay(): Promise<void> {
+    if (this.dl.dataDetails && this.getIncludedData().deckDetails.keyCard) {
+      document.getElementById("favoriteCard")!.style.backgroundImage =
+        "url(" +
+        GetImageUrl(
+          this.getIncludedData().deckDetails.keyCard,
+          this.dl.dataDetails
+        ) +
+        ")";
+      this.tbController.setDeckKeyCard(
+        this.getIncludedData().deckDetails.id,
+        this.getIncludedData().deckDetails.keyCard
+      );
+    }
+  }
+
+  private async updateKeyCard(cardId: string): Promise<void> {
+    this.getIncludedData().deckDetails.keyCard = cardId;
+    this.updateKeyCardDisplay();
+    await post<DeckViewerChangeMetadata, boolean>(
+      "/deckViewer/updateMetadata",
+      {
+        deckId: this.getIncludedData().deckDetails.id,
+        name: null,
+        keyCard: cardId,
+      }
+    );
   }
 
   private updateSideboardTitle(): void {

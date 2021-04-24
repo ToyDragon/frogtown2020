@@ -3,6 +3,7 @@ import Services from "../../../server/services";
 import ConnectionContainer from "../../../server/database/db_connection_container";
 import { logError, logCritical, logInfo } from "../../../server/log";
 import { NewUserResponse } from "../handler_types";
+import { DatabaseConnection } from "../../../server/database/db_connection";
 
 export async function getPublicKeyFromPrivateKey(
   private_id: string,
@@ -18,12 +19,17 @@ export async function getPublicKeyFromPrivateKey(
   const cmd = `
   SELECT public_id FROM user_keys WHERE private_id=?;
   `;
-  const result = await cContainer.connection.query<string[]>(cmd, [private_id]);
+  const result = await cContainer.connection.query<{ public_id: string }[]>(
+    cmd,
+    [private_id]
+  );
   cContainer.pop();
   if (result.err) {
     return null;
   }
-  return (result.value && result.value.length > 0 && result.value[0]) || "";
+  return (
+    (result.value && result.value.length > 0 && result.value[0].public_id) || ""
+  );
 }
 
 export async function getPublicKeyExists(
@@ -66,7 +72,7 @@ async function getNewPrivateKey(
   return null;
 }
 
-async function getNewPublicKey(
+export async function getNewPublicKey(
   cContainer: ConnectionContainer,
   services: Services
 ): Promise<string | null> {
@@ -87,10 +93,9 @@ export async function createNewUser(
 ): Promise<NewUserResponse | null> {
   const cContainer = new ConnectionContainer();
   cContainer.push(services);
-  let response: NewUserResponse | null = null;
 
   // Get new user IDs
-  let newPrivateId: string | null = await getNewPrivateKey(
+  const newPrivateId: string | null = await getNewPrivateKey(
     cContainer,
     services
   );
@@ -99,6 +104,21 @@ export async function createNewUser(
     services
   );
 
+  const result = await createNewUserWithIds(
+    cContainer.connection,
+    newPrivateId,
+    newPublicId
+  );
+  cContainer.pop();
+  return result;
+}
+
+export async function createNewUserWithIds(
+  connection: DatabaseConnection,
+  newPrivateId: string | null,
+  newPublicId: string | null
+): Promise<NewUserResponse | null> {
+  let response: NewUserResponse | null = null;
   if (newPrivateId === null || newPublicId === null) {
     // If public ID is null we need to make sure private is also
     // null, because it is returned.
@@ -108,7 +128,7 @@ export async function createNewUser(
     const cmd = `
     INSERT INTO user_keys (private_id, public_id, back_url, name) VALUES (?, ?, ?, ?);
     `;
-    const result = await cContainer.connection.query<void>(cmd, [
+    const result = await connection.query<void>(cmd, [
       newPrivateId,
       newPublicId,
       "",
@@ -127,7 +147,5 @@ export async function createNewUser(
       };
     }
   }
-
-  cContainer.pop();
   return response;
 }

@@ -32,6 +32,7 @@ import {
   getImageVersionDetails,
   setImageVersion,
 } from "../views/shared/server/image_version";
+import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
 
 export default class Updater {
   private services!: Services;
@@ -66,6 +67,7 @@ export default class Updater {
         dbManager: new DatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
+        perfMon: new PerformanceMonitor(),
       };
 
       process.on("SIGINT", async () => {

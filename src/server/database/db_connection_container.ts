@@ -19,6 +19,7 @@ export default class ConnectionContainer {
       this.connectionPromise = new Promise((resolve) => {
         resolver = resolve;
       });
+
       const tempConnection = await services.dbManager.getConnection();
       if (tempConnection === null) {
         return false;

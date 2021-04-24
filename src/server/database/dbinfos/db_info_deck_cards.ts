@@ -1,3 +1,4 @@
+import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoDeckCards extends DBInfo {
@@ -11,6 +12,12 @@ export class DBInfoDeckCards extends DBInfo {
         PRIMARY KEY (deck_id, card_id, board)
       ) ENGINE=InnoDB;
     `;
+  }
+
+  public getUpdateCommands(): ((
+    connection: DatabaseConnection
+  ) => Promise<boolean>)[] {
+    return [];
   }
 }
 

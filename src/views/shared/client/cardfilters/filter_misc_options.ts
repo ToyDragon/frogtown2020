@@ -9,6 +9,7 @@ export interface MiscOptions {
   "Action Similar"?: boolean;
   "Action To Sideboard"?: boolean;
   "Action To Mainboard"?: boolean;
+  "Action Star"?: boolean;
   "Sort By Release"?: boolean;
   "Group Map"?: keyof MapData;
 }

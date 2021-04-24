@@ -25,14 +25,19 @@ import { initStatusManagement, logGracefulDeath } from "./status_manager";
 import { setServerName } from "./name";
 import { timeout } from "../shared/utils";
 import WellKnownHandler from "./handler_wellknown";
+import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
+import { PerformanceLogger } from "./performance_monitor/performance_logger";
 
 export default class Server {
   public run(serverLabel: string): void {
+    const perfMon = new PerformanceMonitor();
+    const perfStartup = perfMon.StartSession("server startup");
+
     // Setup shutdown procedure
     let onDie: (() => Promise<void>) | null = null;
     process.on("SIGINT", async () => {
       Logs.logWarning("SIGINT recieved.");
-      //TODO theres gotta be a better way to support dying.
+      // TODO: theres gotta be a better way to support dying.
       // Let long running jobs know so they can die gracefully.
       if (onDie) {
         await onDie();
@@ -70,6 +75,9 @@ export default class Server {
     app.set("views", "./views");
     app.set("view engine", "ejs");
 
+    // Performance monitoring middleware
+    app.use(PerformanceLogger(perfMon));
+
     // Third-party middleware setup
     app.use(compression());
     app.use(cookieParser());
@@ -89,6 +97,7 @@ export default class Server {
         dbManager: new DatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
+        perfMon: perfMon,
       };
 
       // Handlers
@@ -106,6 +115,9 @@ export default class Server {
       // Server options
       let serverOptions: https.ServerOptions = {};
       if (!config.nohttps) {
+        Logs.logInfo(
+          "SSL Key File Size: " + fs.statSync(config.sslOptions.keyFile).size
+        );
         serverOptions = {
           key: fs.readFileSync(config.sslOptions.keyFile),
           cert: fs.readFileSync(config.sslOptions.certFile),
@@ -168,6 +180,7 @@ export default class Server {
             .on("error", HandleServerError)
         );
       }
+      perfStartup.Pop();
     });
   }
 }

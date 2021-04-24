@@ -9,4 +9,7 @@ export interface Deck {
   sideboard: string[];
   name: string;
   subsets?: MapData;
+  keyCard: string;
+  colors: string[];
+  cardCount: number;
 }

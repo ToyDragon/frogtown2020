@@ -41,7 +41,15 @@
         </div>
       </div>
     </div>
-    <div class="boardTitle mainboard">Mainboard - <span id="mainNameDisplay" class="deckName"></span><input type="text" id="nameEntry" class="nodisp"/><div id="divNameErr" class="error nodisp">Invalid Name</div></div>
+    <div id="deckTitle">
+      <div class="horizontalCardStack">
+        <div class="cardSprite cardBack"></div>
+        <div class="cardSprite cardBack"></div>
+        <div class="cardSprite cardBack" id="favoriteCard"></div>
+      </div>
+      <span id="mainNameDisplay" class="deckName"></span><input type="text" id="nameEntry" class="nodisp"/><div id="divNameErr" class="error nodisp">Invalid Name</div>
+    </div>
+    <div class="boardTitle mainboard">Mainboard</div>
     <div id="mainboard" class="cardDisplay"></div>
     <div class="boardTitle sideboard nodisp">Sideboard</div>
     <div id="sideboard" class="cardDisplay"></div>

@@ -8,11 +8,14 @@ export interface DeckViewerSaveDeck {
   deckId: string;
   mainboard: string[];
   sideboard: string[];
+  cardCount: number;
+  colors: string[];
 }
 
-export interface DeckViewerChangeName {
+export interface DeckViewerChangeMetadata {
   deckId: string;
-  name: string;
+  name: string | null;
+  keyCard: string | null;
 }
 
 export interface DeckViewerDelete {

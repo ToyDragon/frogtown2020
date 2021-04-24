@@ -18,20 +18,19 @@ export class Group {
     const setCodeToRelease = dl.getMapData("SetCodeToRelease");
 
     cardsWithData = this.cardIds.map((x) => {
-      if (idToSetCode && idToName && setCodeToRelease) {
+      const data = {
+        id: x,
+        name: x,
+        release: "",
+      };
+      if (idToSetCode && setCodeToRelease) {
         const setCode = idToSetCode[x] || "";
-        return {
-          id: x,
-          name: idToName[x],
-          release: setCodeToRelease[setCode] || "dummy",
-        };
-      } else {
-        return {
-          id: x,
-          name: x,
-          release: "",
-        };
+        data.release = setCodeToRelease[setCode] || "dummy";
       }
+      if (idToName) {
+        data.name = idToName[x];
+      }
+      return data;
     });
     return cardsWithData;
   }
@@ -71,6 +70,7 @@ export interface ActionList {
   similar: boolean;
   tomainboard: boolean;
   tosideboard: boolean;
+  star: boolean;
 }
 
 export type ActionHandler = (action: keyof ActionList, cardId: string) => void;
@@ -123,6 +123,7 @@ export abstract class BaseCardRenderer {
       similar: !!miscOptions["Action Similar"],
       tomainboard: !!miscOptions["Action To Mainboard"] && this.allowEdit,
       tosideboard: !!miscOptions["Action To Sideboard"] && this.allowEdit,
+      star: !!miscOptions["Action Star"] && this.allowEdit,
     };
     return actions;
   }
@@ -212,6 +213,24 @@ export abstract class BaseCardRenderer {
             key="actionSideboard"
             data-action="tosideboard"
             title="Move card to sideboard"
+            ref={ref}
+          >
+            <a href="#"></a>
+          </div>
+        ),
+      });
+    }
+    if (actions.star) {
+      const ref = React.createRef<HTMLDivElement>();
+      data.push({
+        key: "star",
+        ref: ref,
+        element: (
+          <div
+            className="action star"
+            key="actionStar"
+            data-action="star"
+            title="Mark as the key card to this deck"
             ref={ref}
           >
             <a href="#"></a>

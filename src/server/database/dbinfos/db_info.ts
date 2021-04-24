@@ -17,4 +17,8 @@ export abstract class DBInfo {
   }
 
   public abstract getCreateCommand(): string;
+
+  public abstract getUpdateCommands(): ((
+    connection: DatabaseConnection
+  ) => void)[];
 }

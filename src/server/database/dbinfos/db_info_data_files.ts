@@ -1,3 +1,4 @@
+import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoDataFiles extends DBInfo {
@@ -10,6 +11,12 @@ export class DBInfoDataFiles extends DBInfo {
         PRIMARY KEY (name)
       ) ENGINE=InnoDB;
     `;
+  }
+
+  public getUpdateCommands(): ((
+    connection: DatabaseConnection
+  ) => Promise<boolean>)[] {
+    return [];
   }
 }
 

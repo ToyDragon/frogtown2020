@@ -8,6 +8,7 @@ import DeckViewerRouteHandler, {
 } from "../views/deckviewer/handler";
 import ToolsRouteHandler from "../views/tools/handler";
 import ServerStatusRouteHandler from "../views/serverstatus/handler";
+import PerformanceMonitorRouteHandler from "../views/perfmon/handler";
 import HelpRouteHandler from "../views/help/handler";
 import PrivacyRouteHandler from "../views/privacy/handler";
 import InternshipRouteHandler from "../views/internship/handler";
@@ -101,6 +102,14 @@ export function GetAllPages(services: Services): PageData[] {
       hidden: true,
       description: "",
       routeHandler: ServerStatusRouteHandler(services),
+    },
+    {
+      routes: ["perfmon"],
+      view: "perfmon",
+      title: "Perf Monitor",
+      hidden: true,
+      description: "",
+      routeHandler: PerformanceMonitorRouteHandler(services),
     },
   ];
 }

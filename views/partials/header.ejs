@@ -11,18 +11,7 @@
       <% if(allViews[i].view === "deckviewer") { %>
         <div class="btn-group" style="margin-top: -8px;">
           <div class="btn dropdown-toggle btn-mydecks <%= ("Deck Viewer" === (typeof(view) !== "undefined" && view.title)) ? "active" : "" %>" data-toggle="dropdown" aria-expanded="false"><%= allViews[i].title %><span class="caret" style="margin-left: 5px;"></span></div>
-          <ul class="dropdown-menu">
-            <% if (typeof(includedData) !== "undefined") { %>
-              <% var decks = JSON.parse(includedData).decks || []; %>
-              <% for(var deckI = 0; deckI < decks.length; deckI++){ %>
-                <li><a href="/deckviewer/<%= decks[deckI].id %>/edit.html"><%- decks[deckI].name -%></a></li>
-              <% } %>
-              <% if(decks.length) { %>
-                <li role="separator" class="divider"></li>
-              <% } %>
-            <% } %>
-            <li><a href="#" id="tbNewDeck">New Deck</a></li>
-          </ul>
+          <div class="dropdown-menu"><div id="deckDropdown"></div></div>
         </div>
       <% } else { %>
         <a href="/<%= allViews[i].routes[0] %>.html" class="<%= (allViews[i].title === (typeof(view) !== "undefined" && view.title)) ? "active" : "" %>"><%= allViews[i].title %></a>

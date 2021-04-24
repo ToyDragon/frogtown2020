@@ -2,6 +2,7 @@ import StoragePortal from "./storage_portal";
 import Config from "./config";
 import DatabaseManager from "./database/db_manager";
 import ScryfallManager from "./scryfall_manager";
+import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
 
 /**
  * Global services configured for the server. These are passed around in a
@@ -12,4 +13,5 @@ export default interface Services {
   dbManager: DatabaseManager;
   config: Config;
   scryfallManager: ScryfallManager;
+  perfMon: PerformanceMonitor;
 }

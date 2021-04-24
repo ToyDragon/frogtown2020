@@ -31,20 +31,30 @@ const delayedExampleData: IncludedData = {
   },
 };
 
+const fakePerfSession = {
+  Push(_label: string) {},
+  Pop() {},
+};
+
 test("Gathers nothing", (done) => {
-  retrieveAllData({} as Services, {} as express.Request, []).then(
-    (gatheredData) => {
-      expect(Object.keys(gatheredData).length).toBe(0);
-      done();
-    }
-  );
+  retrieveAllData(
+    {} as Services,
+    {} as express.Request,
+    [],
+    fakePerfSession
+  ).then((gatheredData) => {
+    expect(Object.keys(gatheredData).length).toBe(0);
+    done();
+  });
 });
 
 test("Gathers simple data", (done) => {
-  retrieveAllData({} as Services, {} as express.Request, [
-    simpleExampleStringData,
-    simpleExampleNumberData,
-  ]).then((gatheredData) => {
+  retrieveAllData(
+    {} as Services,
+    {} as express.Request,
+    [simpleExampleStringData, simpleExampleNumberData],
+    fakePerfSession
+  ).then((gatheredData) => {
     expect(Object.keys(gatheredData).length).toBe(2);
     expect(gatheredData[simpleExampleStringData.var]).toBe("Data A");
     expect(gatheredData[simpleExampleNumberData.var]).toBe(5);
@@ -53,9 +63,12 @@ test("Gathers simple data", (done) => {
 });
 
 test("Gathers async data", (done) => {
-  retrieveAllData({} as Services, {} as express.Request, [
-    delayedExampleData,
-  ]).then((gatheredData) => {
+  retrieveAllData(
+    {} as Services,
+    {} as express.Request,
+    [delayedExampleData],
+    fakePerfSession
+  ).then((gatheredData) => {
     expect(Object.keys(gatheredData).length).toBe(1);
     expect(gatheredData[delayedExampleData.var]).toBe("Data C");
     done();

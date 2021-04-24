@@ -1,3 +1,4 @@
+import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoCardImages extends DBInfo {
@@ -11,6 +12,12 @@ export class DBInfoCardImages extends DBInfo {
       INDEX (quality)
     ) ENGINE=InnoDB;
     `;
+  }
+
+  public getUpdateCommands(): ((
+    connection: DatabaseConnection
+  ) => Promise<boolean>)[] {
+    return [];
   }
 }
 

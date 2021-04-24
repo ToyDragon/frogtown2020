@@ -301,6 +301,10 @@
     background-image: url("/Icons/add card32.png");
 }
 
+.cardDisplay .action.star{
+    background-image: url("/Icons/star card32.png");
+}
+
 .cardDisplay .action:nth-last-child(2){
     right: 23px;
 }

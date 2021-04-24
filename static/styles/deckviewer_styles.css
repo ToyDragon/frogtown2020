@@ -1,20 +1,48 @@
-body{
+body.frogtown {
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
+  
+  background: repeating-conic-gradient(#d3dce8 0% 25%, #cdd6e4 0% 50%) 50% / 80px 20px;
+  
+  animation-name: bg_move_boxes;
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes bg_move_boxes {
+   from {
+     background-position: 0 0;
+   }
+   to {
+     background-position: 160px 20px;
+   }
+}
+
+.cardSprite {
+  width: 96px;
+  height: 134px;
+  background-size: 96px 134px;
+  display: inline-block;
+}
+
+.cardBack {
+  background-image: url("https://www.frogtown.me/Images/CardBack.jpg");
 }
 
 #root{
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: calc(100% - 64px);
 }
 
 #deckArea{
   width: 550px;
   flex-grow: 1;
   overflow-y: scroll;
-  background-color: #cdd6e4;
+  background-color: transparent;
 }
 
 #deckDetails{
@@ -29,15 +57,26 @@ body{
   flex-grow: 0;
   height: 100%;
   overflow-y: scroll;
-  background-color: #cdd6e4;
+  background-color: transparent;
 }
 
 #cardArea{
   margin-top: 100px;
 }
 
-.boardTitle.mainboard{
+#deckTitle {
   margin-top: 60px;
+  margin-left: 48px;
+  font-size: 44px;
+}
+
+.deckName {
+  position: relative;
+  top: -45px;
+}
+
+.boardTitle.mainboard{
+  margin-top: 10px;
 }
 
 .boardTitle{

@@ -1,7 +1,7 @@
 import Services from "../../../server/services";
 import { ToolbarNewDeckResponse } from "../handler_types";
 import { randomString, randomName, UserDetails } from "../../../shared/utils";
-import { logInfo } from "../../../server/log";
+import { logError, logInfo } from "../../../server/log";
 
 export default async function createNewDeck(
   userDetails: UserDetails,
@@ -25,10 +25,15 @@ export default async function createNewDeck(
     return null;
   }
 
-  await connection.query(
-    "INSERT INTO deck_keys (id, owner_id, name) VALUES (?,?,?);",
-    [newId, ownerRows.value[0].public_id, newName]
+  const deckResult = await connection.query(
+    "INSERT INTO deck_keys (id, owner_id, name, star_card_id, colors, card_count) VALUES (?,?,?,?,?,?);",
+    [newId, ownerRows.value[0].public_id, newName, "", "", 0]
   );
+  if (deckResult.err) {
+    logError("Error creating deck.");
+    logError(deckResult.err.name);
+    logError(deckResult.err.message);
+  }
   connection.release();
   return {
     deckId: newId,
