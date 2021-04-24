@@ -1,5 +1,5 @@
 secrets
 bin
-config.json
+config.*json
 node_modules
 .vscode
