@@ -36,6 +36,8 @@ Certificates only last 3 months, set this up in a chron job ideally.
 
 */
 
+// TODO have this update beta and prod
+
 export default class SSLUpdater {
   private services!: Services;
 
@@ -104,14 +106,24 @@ export default class SSLUpdater {
     });
     certprocess.stdout.on("data", async (chunk: string) => {
       Logs.logWarning("data: " + chunk);
-      const result = /Create a file containing just this data:\n\n(.*)\n\n.*\n\n.*\.well-known\/acme-challenge\/(.*)\n/.exec(chunk);
+      const result = /Create a file containing just this data:\n\n(.*)\n\n.*\n\n.*\.well-known\/acme-challenge\/(.*)\n/.exec(
+        chunk
+      );
       if (result) {
-        Logs.logInfo("Uploading \"" + result[1] + "\" to \"" + result[2] + "\"")
-        await this.services.storagePortal.uploadStringToBucketACL(this.services.config.storage.awsS3WellKnownBucket, result[2], result[1], "private");
+        Logs.logInfo($`Uploading "${result[1]}" to "${result[2]}"`);
+        await this.services.storagePortal.uploadStringToBucketACL(
+          this.services.config.storage.awsS3WellKnownBucket,
+          result[2],
+          result[1],
+          "private"
+        );
         Logs.logInfo("Waiting for data to be available...");
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-        while(true) {
-          const getData = await httpsGetRaw("https://beta.frogtown.me/.well-known/acme-challenge/" + result[2]);
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const getData = await httpsGetRaw(
+            "https://beta.frogtown.me/.well-known/acme-challenge/" + result[2]
+          );
           Logs.logInfo("Data: " + getData);
           if (getData) {
             break;
@@ -120,9 +132,14 @@ export default class SSLUpdater {
         }
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "1";
         certprocess.stdin.write("\n"); // New line to trigger validation
-      } else if ((chunk.indexOf("Your certificate and chain have been saved at:") >= 0) || (chunk.indexOf("You have an existing certificate that has exactly") >= 0)) {
-
-        if (chunk.indexOf("You have an existing certificate that has exactly") >= 0) {
+      } else if (
+        chunk.indexOf("Your certificate and chain have been saved at:") >= 0 ||
+        chunk.indexOf("You have an existing certificate that has exactly") >= 0
+      ) {
+        if (
+          chunk.indexOf("You have an existing certificate that has exactly") >=
+          0
+        ) {
           certprocess.stdin.write("c\n");
           await timeout(3000);
         }
@@ -140,25 +157,24 @@ export default class SSLUpdater {
     // try {
     //   fs.mkdirSync("./secrets/ssl/" + dateStr);
     // } catch {}
-    execSync([
-      "sudo",
-      "mkdir",
-      "-p",
-      "\"" + "./secrets/ssl/" + dateStr + "\"",
-    ].join(" "));
+    execSync(["sudo", "mkdir", "-p", `"./secrets/ssl/${dateStr}"`].join(" "));
 
-    execSync([
-      "sudo",
-      "cp",
-      "\"" + "/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem" + "\"",
-      "\"" + "./secrets/ssl/" + dateStr + "/fullchain.pem" + "\"",
-    ].join(" "));
-    execSync([
-      "sudo",
-      "cp",
-      "\"" + "/etc/letsencrypt/live/beta.frogtown.me/privkey.pem" + "\"",
-      "\"" + "./secrets/ssl/" + dateStr + "/privkey.pem" + "\"",
-    ].join(" "));
+    execSync(
+      [
+        "sudo",
+        "cp",
+        `"${"/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem"}"`,
+        `"./secrets/ssl/${dateStr}/fullchain.pem"`,
+      ].join(" ")
+    );
+    execSync(
+      [
+        "sudo",
+        "cp",
+        `"${"/etc/letsencrypt/live/beta.frogtown.me/privkey.pem"}"`,
+        `"./secrets/ssl/${dateStr}/privkey.pem"`,
+      ].join(" ")
+    );
     // execSync([
     //   "sudo",
     //   "chown",
@@ -169,9 +185,17 @@ export default class SSLUpdater {
     // fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/privkey.pem", "./secrets/ssl/" + dateStr + "/privkey.pem");
 
     Logs.logInfo("Uploading secret: sslkeys");
-    execSync("sudo gcloud container clusters get-credentials website-1 --region=us-central1-c");
+    execSync(
+      "sudo gcloud container clusters get-credentials website-1 --region=us-central1-c"
+    );
     execSync("sudo kubectl delete secret sslkeys");
-    const result = execSync("sudo kubectl create secret generic sslkeys --from-file ./secrets/ssl/" + dateStr + "/fullchain.pem --from-file ./secrets/ssl/" + dateStr + "/privkey.pem");
+    const result = execSync(
+      "sudo kubectl create secret generic sslkeys --from-file ./secrets/ssl/" +
+        dateStr +
+        "/fullchain.pem --from-file ./secrets/ssl/" +
+        dateStr +
+        "/privkey.pem"
+    );
     Logs.logInfo("Upload result: " + JSON.stringify(result));
 
     Logs.logInfo("Done, exiting.");
