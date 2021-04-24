@@ -110,7 +110,7 @@ export default class SSLUpdater {
         chunk
       );
       if (result) {
-        Logs.logInfo($`Uploading "${result[1]}" to "${result[2]}"`);
+        Logs.logInfo(`Uploading "${result[1]}" to "${result[2]}"`);
         await this.services.storagePortal.uploadStringToBucketACL(
           this.services.config.storage.awsS3WellKnownBucket,
           result[2],
