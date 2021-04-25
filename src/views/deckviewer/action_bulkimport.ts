@@ -5,10 +5,63 @@ export default function setupBulkImport(
   dl: DataLoader,
   addAction: (cardId: string) => void
 ): void {
+  const inputArea = document.querySelector(
+    "#bulkInputArea"
+  ) as HTMLTextAreaElement;
+  if (!inputArea) {
+    return;
+  }
+  inputArea.addEventListener("drop", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const files = e.dataTransfer?.files;
+    if (files) {
+      for (const file of files) {
+        if (file.type === "application/json") {
+          const reader = new FileReader();
+          reader.onload = (read_event) => {
+            const card_url_reg = /https:\/\/[a-z]+\.frogtown\.me\/Images\/[V0-9]+\/([a-zA-Z0-9-]{36})\.jpg/;
+            try {
+              let ids = "";
+              const deck = JSON.parse(
+                read_event.target?.result?.toString() || "{}"
+              );
+              const objs = deck["ObjectStates"];
+              if (objs) {
+                for (const obj of objs) {
+                  const ix_to_count: Record<string, number> = {};
+                  for (const card_obj of obj["ContainedObjects"]) {
+                    const img_ix = Math.floor(card_obj.CardID / 100);
+                    ix_to_count[img_ix.toString()] =
+                      ix_to_count[img_ix.toString()] || 0;
+                    ix_to_count[img_ix.toString()]++;
+                  }
+                  const deck_images = obj["CustomDeck"];
+                  if (deck_images) {
+                    for (const i in deck_images) {
+                      const img = deck_images[i];
+                      if (img["BackIsHidden"]) {
+                        const result = card_url_reg.exec(img["FaceURL"]);
+                        if (result && ix_to_count[i]) {
+                          ids += ix_to_count[i] + " " + result[1] + "\n";
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              inputArea.value = ids;
+            } catch (_) {
+              //
+            }
+          };
+          reader.readAsText(file);
+        }
+      }
+    }
+  });
+
   document.querySelector("#actionBulkImport")?.addEventListener("click", () => {
-    const inputArea = document.querySelector(
-      "#bulkInputArea"
-    ) as HTMLTextAreaElement;
     inputArea.value = "";
     const inputAreaError = document.querySelector(
       "#bulkInputErr"
@@ -17,10 +70,6 @@ export default function setupBulkImport(
     showPopup(document.querySelector("#importOverlay"));
   });
   document.querySelector("#btnConfirmImport")?.addEventListener("click", () => {
-    const inputArea = document.querySelector(
-      "#bulkInputArea"
-    ) as HTMLTextAreaElement;
-
     const nameToID = dl.getMapData("NameToID");
     if (!nameToID) {
       return;
@@ -49,7 +98,7 @@ export function getCardsByName(
   bulkName: string,
   nameToID: Record<string, string[]>
 ): { ids: string[]; errors: string[] } {
-  const parseRegex = /([0-9]+)?x?\s*([a-zA-Z, '`-]+)/;
+  const parseRegex = /([0-9]+)?x?\s*([a-zA-Z0-9, '`-]+)/;
   const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
   const rawLines = (bulkName + "").split("\n");
   const cleanNameMap: { [name: string]: string } = {};
@@ -67,12 +116,18 @@ export function getCardsByName(
     cleanNameMap[cname] = id;
   }
 
+  const id_regex = /[a-z0-9-]{36}/;
   for (const rawLine of rawLines) {
     const res = parseRegex.exec(rawLine);
     if (res) {
+      let cardId = "";
       const count = res[1] || 1;
-      const name = cleanName(res[2]);
-      const cardId = cleanNameMap[name];
+      if (res[2].match(id_regex)) {
+        cardId = res[2];
+      } else {
+        const name = cleanName(res[2]);
+        cardId = cleanNameMap[name];
+      }
       if (!cardId) {
         result.errors.push(res[2]);
       } else {
