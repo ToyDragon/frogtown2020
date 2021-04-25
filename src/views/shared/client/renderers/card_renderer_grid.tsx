@@ -54,7 +54,9 @@ export class CardRendererGrid extends BaseCardRenderer {
     stackDuplicates: boolean,
     actions: ActionList
   ): void {
-    const nameToTitleDiv: { [name: string]: JQuery } = {};
+    const nameToTitleDivAndCount: {
+      [name: string]: { div: JQuery; child_count: number };
+    } = {};
     const usedNames: { [name: string]: boolean } = {};
     let count = 0;
     group.cardDivs = [];
@@ -71,15 +73,16 @@ export class CardRendererGrid extends BaseCardRenderer {
         }
         usedNames[name] = true;
       } else {
-        if (stackDuplicates && nameToTitleDiv[name]) {
+        if (stackDuplicates && nameToTitleDivAndCount[name]) {
           // eslint-disable-next-line prettier/prettier
           const cardDiv = document.createElement("div");
           cardDiv.classList.add("card");
           cardDiv.setAttribute("data-id", cardId);
-          nameToTitleDiv[name].prepend(cardDiv);
+          nameToTitleDivAndCount[name].div.prepend(cardDiv);
+          nameToTitleDivAndCount[name].child_count++;
           group.cardDivs.push(cardDiv);
-          if (nameToTitleDiv[name].children().length === 8) {
-            delete nameToTitleDiv[name];
+          if (nameToTitleDivAndCount[name].child_count === 4) {
+            delete nameToTitleDivAndCount[name];
           }
           continue;
         }
@@ -124,7 +127,10 @@ export class CardRendererGrid extends BaseCardRenderer {
 
       group.cardDivs.push(cardRef.current);
       if (stackDuplicates) {
-        nameToTitleDiv[name] = $(containerRef.current);
+        nameToTitleDivAndCount[name] = {
+          div: $(containerRef.current),
+          child_count: 1,
+        };
       }
       this.SetupActions(actionDetails, cardId);
 
