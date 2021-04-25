@@ -303,3 +303,16 @@ button[disabled] {
   text-overflow: ellipsis;
   pointer-events: none;
 }
+
+.infoBubble{
+  display: inline-block;
+  font-size: 18px;
+  background-color: lightgray;
+  border: 1px solid gray;
+  border-radius: 22px;
+  padding-left: 7px;
+  padding-right: 7px;
+  margin-right: 5px;
+  position: relative;
+  top: 2px;
+}
