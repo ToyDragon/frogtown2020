@@ -7,8 +7,18 @@ import {
 } from "../../shared/scryfall_types";
 
 // Lol good luck understanding or maintaining these regexes.
-// eslint-disable-next-line max-len
+/* eslint-disable max-len */
 const tokenRegex = /([0-9]+\/[0-9]+)? ?((?:(?:blue|black|white|red|green|colorless)(?:,? and )?)+) ?((?:[A-Za-z]+ )+) ?((?:creature|artifact ?)+) tokens?(?: with ((?:[a-z]+)(?: and [a-z]{2,})?))?(?: named ([A-Za-z]+))?/;
+//                   [power/toughness] [color]                                                      ???                [type]                     token      [attributes, e.g. trample]
+
+// Tokens that don't fit neatly into the above regex.
+const problematicTokens: { expression: RegExp; tokenstring: string }[] = [
+  {
+    expression: / Treasure token/,
+    tokenstring: "treasureartifact",
+  },
+];
+/* eslint-enable max-len */
 const cardTypesRegex = /([a-zA-Z ]*)(?:— ([a-zA-Z \n]*)(?:\(((?:[0-9x*+-]*(?:\{1\/2\})?|∞))(?:\/([0-9x*+-]*(?:\{1\/2\})?))?\))?)?/u;
 
 export default function getItem(
@@ -57,6 +67,11 @@ export default function getItem(
   }
 
   if (modifier === "parseTokens") {
+    if (!value && key === "oracle_text" && card.card_faces) {
+      for (const face of card.card_faces) {
+        value += face.oracle_text;
+      }
+    }
     return parseTokens(value);
   }
 
@@ -122,6 +137,7 @@ export default function getItem(
 }
 
 function parseTokens(text: string): string[] {
+  const originalText = text;
   const tokens = [];
   let result = tokenRegex.exec(text);
   while (result) {
@@ -143,6 +159,16 @@ function parseTokens(text: string): string[] {
     tokens.push(tokenstring);
     text = text.substr(result.index + result[0].length);
     result = tokenRegex.exec(text);
+  }
+
+  for (const tokenPair of problematicTokens) {
+    text = originalText;
+    let result = tokenPair.expression.exec(text);
+    while (result) {
+      tokens.push(tokenPair.tokenstring);
+      text = text.substr(result.index + result[0].length);
+      result = tokenRegex.exec(text);
+    }
   }
 
   return tokens;
