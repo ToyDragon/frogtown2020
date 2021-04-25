@@ -74,7 +74,6 @@ export class CardRendererGrid extends BaseCardRenderer {
         usedNames[name] = true;
       } else {
         if (stackDuplicates && nameToTitleDivAndCount[name]) {
-          // eslint-disable-next-line prettier/prettier
           const cardDiv = document.createElement("div");
           cardDiv.classList.add("card");
           cardDiv.setAttribute("data-id", cardId);
@@ -92,7 +91,6 @@ export class CardRendererGrid extends BaseCardRenderer {
         break;
       }
 
-      // eslint-disable-next-line prettier/prettier
       const groupDiv = document.createElement("div");
       groupDiv.classList.add("group");
 
