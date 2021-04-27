@@ -51,7 +51,8 @@
     "startprod": "node ./bin/server/runner.js",
     "startupdater": "node ./bin/updater/runner.js",
     "startconverter": "node ./bin/data_converter/runner.js",
-    "ssl": "node ./bin/sslupdater/runner.js"
+    "sslbeta": "sudo node ./bin/sslupdater/runner.js --ver=beta",
+    "sslprod": "sudo node ./bin/sslupdater/runner.js --ver=prod"
   },
   "author": "",
   "license": "ISC"

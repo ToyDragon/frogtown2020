@@ -40,6 +40,12 @@ Certificates only last 3 months, set this up in a chron job ideally.
 
 export default class SSLUpdater {
   private services!: Services;
+  private serverInfo = {
+    url: "",
+    vLabel: "",
+    gcp: "",
+    secretName: "",
+  };
 
   public run(): void {
     // Setup command line params
@@ -56,7 +62,25 @@ export default class SSLUpdater {
         type: Number,
         defaultValue: Logs.Level.INFO,
       },
+      {
+        name: "ver",
+        alias: "v",
+        type: String,
+        defaultValue: Logs.Level.INFO,
+      },
     ]);
+
+    if (options["ver"] === "prod") {
+      this.serverInfo.url = "www.frogtown.me";
+      this.serverInfo.vLabel = "prod";
+      this.serverInfo.gcp = "frogtown-prod-a";
+      this.serverInfo.secretName = "prodsslkeys";
+    } else {
+      this.serverInfo.url = "beta.frogtown.me";
+      this.serverInfo.vLabel = "beta";
+      this.serverInfo.gcp = "website-1";
+      this.serverInfo.secretName = "sslkeys";
+    }
 
     // Initial some global stuff
     Logs.setLogLevel(options["loglevel"]);
@@ -99,7 +123,7 @@ export default class SSLUpdater {
       "certonly",
       "--manual",
       "-d",
-      "beta.frogtown.me",
+      this.serverInfo.url,
     ]);
     certprocess.stderr.on("data", (chunk) => {
       Logs.logWarning("err: " + chunk);
@@ -122,7 +146,7 @@ export default class SSLUpdater {
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const getData = await httpsGetRaw(
-            "https://beta.frogtown.me/.well-known/acme-challenge/" + result[2]
+            `https://${this.serverInfo.url}/.well-known/acme-challenge/${result[2]}`
           );
           Logs.logInfo("Data: " + getData);
           if (getData) {
@@ -157,22 +181,29 @@ export default class SSLUpdater {
     // try {
     //   fs.mkdirSync("./secrets/ssl/" + dateStr);
     // } catch {}
-    execSync(["sudo", "mkdir", "-p", `"./secrets/ssl/${dateStr}"`].join(" "));
+    execSync(
+      [
+        "sudo",
+        "mkdir",
+        "-p",
+        `"./secrets/ssl/${this.serverInfo.vLabel}/${dateStr}"`,
+      ].join(" ")
+    );
 
     execSync(
       [
         "sudo",
         "cp",
-        `"${"/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem"}"`,
-        `"./secrets/ssl/${dateStr}/fullchain.pem"`,
+        `"/etc/letsencrypt/live/${this.serverInfo.url}/fullchain.pem"`,
+        `"./secrets/ssl/${this.serverInfo.vLabel}/${dateStr}/fullchain.pem"`,
       ].join(" ")
     );
     execSync(
       [
         "sudo",
         "cp",
-        `"${"/etc/letsencrypt/live/beta.frogtown.me/privkey.pem"}"`,
-        `"./secrets/ssl/${dateStr}/privkey.pem"`,
+        `"/etc/letsencrypt/live/${this.serverInfo.url}/privkey.pem"`,
+        `"./secrets/ssl/${this.serverInfo.vLabel}/${dateStr}/privkey.pem"`,
       ].join(" ")
     );
     // execSync([
@@ -184,15 +215,15 @@ export default class SSLUpdater {
     // fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/fullchain.pem", "./secrets/ssl/" + dateStr + "/fullchain.pem");
     // fs.copyFileSync("/etc/letsencrypt/live/beta.frogtown.me/privkey.pem", "./secrets/ssl/" + dateStr + "/privkey.pem");
 
-    Logs.logInfo("Uploading secret: sslkeys");
+    Logs.logInfo(`Uploading secret: ${this.serverInfo.secretName}`);
     execSync(
-      "sudo gcloud container clusters get-credentials website-1 --region=us-central1-c"
+      `sudo gcloud container clusters get-credentials ${this.serverInfo.gcp} --region=us-central1-c`
     );
-    execSync("sudo kubectl delete secret sslkeys");
+    execSync(`sudo kubectl delete secret ${this.serverInfo.secretName}`);
     const result = execSync(
-      "sudo kubectl create secret generic sslkeys --from-file ./secrets/ssl/" +
+      `sudo kubectl create secret generic ${this.serverInfo.secretName} --from-file ./secrets/ssl/${this.serverInfo.vLabel}/` +
         dateStr +
-        "/fullchain.pem --from-file ./secrets/ssl/" +
+        `/fullchain.pem --from-file ./secrets/ssl/${this.serverInfo.vLabel}/` +
         dateStr +
         "/privkey.pem"
     );
