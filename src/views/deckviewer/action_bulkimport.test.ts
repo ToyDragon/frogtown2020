@@ -62,10 +62,10 @@ test("Detects errors", () => {
 });
 
 test("Wasteland Waste Land", () => {
-  // Currently fails :(
   const result = getCardsByName("1 wasteland\n2 waste land", idToName);
   expect(result.errors.length).toBe(0);
-  expect(result.ids.length).toBe(2);
+  expect(result.ids.length).toBe(3);
   expect(result.ids[0]).toBe("5");
+  expect(result.ids[1]).toBe("6");
   expect(result.ids[1]).toBe("6");
 });
