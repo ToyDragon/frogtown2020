@@ -43,11 +43,12 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-react": "^7.24.0",
     "jest": "^26.6.3",
+    "ts-loader": "^9.2.3",
     "webpack": "^5.39.1",
     "webpack-cli": "^3.3.12"
   },
   "scripts": {
-    "start": "webpack --config ./bin/webpack.config.js && node ./bin/server/runner.js",
+    "start": "node ./bin/server/runner.js",
     "test": "jest",
     "lint": "npx eslint \"./src/**/*.ts\"",
     "startprod": "node ./bin/server/runner.js",
