@@ -12,10 +12,10 @@ export default class S3StoragePortal implements StoragePortal {
   private s3: AWS.S3;
 
   public constructor(config: Config) {
-    const key = fs.readFileSync(config.storage.awsAccessKeyIdFile).toString();
+    const key = fs.readFileSync(config.storage.awsAccessKeyIdFile).toString().trim();
     const secret = fs
       .readFileSync(config.storage.awsSecretAccessKeyFile)
-      .toString();
+      .toString().trim();
     this.s3 = new AWS.S3({
       accessKeyId: key,
       secretAccessKey: secret,

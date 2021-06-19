@@ -19,7 +19,7 @@ export default class DatabaseManager {
   private connectionPool: mysql.Pool;
 
   public constructor(config: Config) {
-    const pw = fs.readFileSync(config.database.passwordFile).toString();
+    const pw = fs.readFileSync(config.database.passwordFile).toString().trim();
     const connectionOptions = {
       connectionLimit: 50,
       host: config.database.host,
