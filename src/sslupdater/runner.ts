@@ -158,7 +158,9 @@ export default class SSLUpdater {
         certprocess.stdin.write("\n"); // New line to trigger validation
       } else if (
         chunk.indexOf("Your certificate and chain have been saved at:") >= 0 ||
-        chunk.indexOf("You have an existing certificate that has exactly") >= 0
+        chunk.indexOf("You have an existing certificate that has exactly") >=
+          0 ||
+        chunk.indexOf("Certificate is saved at:") >= 0
       ) {
         if (
           chunk.indexOf("You have an existing certificate that has exactly") >=
