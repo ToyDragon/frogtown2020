@@ -66,7 +66,7 @@ export default class SSLUpdater {
         name: "ver",
         alias: "v",
         type: String,
-        defaultValue: Logs.Level.INFO,
+        defaultValue: "beta",
       },
     ]);
 
