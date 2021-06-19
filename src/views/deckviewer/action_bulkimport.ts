@@ -102,6 +102,7 @@ export function getCardsByName(
   const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
   const rawLines = (bulkName + "").split("\n");
   const cleanNameMap: { [name: string]: string } = {};
+  const lowerNameMap: { [name: string]: string } = {};
 
   const cleanName = (name?: string) => {
     return (name + "")
@@ -114,19 +115,25 @@ export function getCardsByName(
     const id = nameToID[name][0];
     const cname = cleanName(name);
     cleanNameMap[cname] = id;
+
+    const lname = name.toLowerCase();
+    lowerNameMap[lname] = id;
   }
 
   const id_regex = /[a-z0-9-]{36}/;
   for (const rawLine of rawLines) {
     const res = parseRegex.exec(rawLine);
     if (res) {
+      const lower_name = res[2].toLowerCase();
+      const clean_name = cleanName(res[2]);
       let cardId = "";
       const count = res[1] || 1;
       if (res[2].match(id_regex)) {
         cardId = res[2];
+      } else if (lowerNameMap[lower_name]) {
+        cardId = lowerNameMap[lower_name];
       } else {
-        const name = cleanName(res[2]);
-        cardId = cleanNameMap[name];
+        cardId = cleanNameMap[clean_name];
       }
       if (!cardId) {
         result.errors.push(res[2]);
