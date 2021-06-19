@@ -16,11 +16,26 @@ module.exports = ViewData.GetAllPages(fakeServices).map((view) => {
       libraryTarget: "commonjs",
     },
     name: view.view,
-    entry: Path.resolve(__dirname, "views", view.view, "behavior.js"),
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: [
+            {
+              loader: "ts-loader",
+              options: { transpileOnly: true },
+            },
+          ],
+          exclude: /node_modules/,
+        },
+      ],
+    },
+    entry: `./src/views/${view.view}/behavior.tsx`,
     mode: "development",
     devtool: "source-map",
     watch: true,
     resolve: {
+      extensions: [".tsx", ".ts", ".js"],
       fallback: {
         https: require.resolve("https-browserify"),
         http: require.resolve("stream-http"),
