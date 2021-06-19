@@ -19,6 +19,7 @@ module.exports = ViewData.GetAllPages(fakeServices).map((view) => {
     entry: Path.resolve(__dirname, "views", view.view, "behavior.js"),
     mode: "development",
     devtool: "source-map",
+    watch: true,
     resolve: {
       fallback: {
         https: require.resolve("https-browserify"),
