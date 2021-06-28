@@ -1,51 +1,59 @@
 import { getCardsByName } from "./action_bulkimport";
 
-const idToName: Record<string, string[]> = {};
-idToName["a"] = ["1", "2"];
-idToName["b"] = ["3"];
-idToName["c"] = ["4"];
-idToName["wasteland"] = ["5"];
-idToName["waste land"] = ["6"];
+const nameToID: Record<string, string[]> = {};
+nameToID["a"] = ["1", "2"];
+nameToID["b"] = ["3"];
+nameToID["c"] = ["4"];
+nameToID["Wasteland"] = ["5"];
+nameToID["Waste land"] = ["6"];
+
+const idToName: Record<string, string> = {};
+idToName["1"] = "a";
+idToName["2"] = "a";
+idToName["3"] = "b";
+idToName["4"] = "c";
+idToName["5"] = "Wasteland";
+idToName["6"] = "Waste land";
 
 test("Handles simple single line.", () => {
-  let result = getCardsByName("2 a", idToName);
+  let result = getCardsByName("2 a", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("2xa", idToName);
+  result = getCardsByName("2xa", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("2x a", idToName);
+  result = getCardsByName("2x a", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("a", idToName);
+  result = getCardsByName("a", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1"]);
 });
 
 test("Handles multiple lines.", () => {
-  const result = getCardsByName("2 a\nb", idToName);
+  const result = getCardsByName("2 a\nb", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1", "3"]);
 });
 
 test("Handles whitespace gracefully", () => {
-  const result = getCardsByName("\t2 a\n\t\tb", idToName);
+  const result = getCardsByName("\t2 a\n\t\tb", nameToID, idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "3"]);
 });
 
 test("Detects errors", () => {
-  const result = getCardsByName("\t2 a\n\t\tb\nx\nz\nb\nc", idToName);
+  const result = getCardsByName("\t2 a\n\t\tb\nx\nz\nb\nc", nameToID, idToName);
   expect(result.errors).toEqual(["x", "z"]);
   expect(result.ids).toEqual(["1", "3", "3", "4"]);
 });
 
 test("Wasteland Waste Land", () => {
   // Currently fails :(
-  const result = getCardsByName("1 wasteland\n2 waste land", idToName);
+  const result = getCardsByName("1 Wasteland\n2 Waste land\n2 wasteland\n1 waste land", nameToID, idToName);
   expect(result.errors).toEqual([]);
-  expect(result.ids).toEqual(["5", "6", "6"]);
+  expect(result.ids).toEqual(["5", "6", "6", "5", "5", "6"]);
 });
