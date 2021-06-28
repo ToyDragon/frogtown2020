@@ -44,6 +44,7 @@ test("Detects errors", () => {
 });
 
 test("Wasteland Waste Land", () => {
+  // Currently fails :(
   const result = getCardsByName("1 wasteland\n2 waste land", idToName);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["5", "6", "6"]);
