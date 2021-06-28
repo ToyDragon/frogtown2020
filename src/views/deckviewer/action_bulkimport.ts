@@ -71,10 +71,11 @@ export default function setupBulkImport(
   });
   document.querySelector("#btnConfirmImport")?.addEventListener("click", () => {
     const nameToID = dl.getMapData("NameToID");
-    if (!nameToID) {
+    const idToName = dl.getMapData("IDToName");
+    if (!nameToID || !idToName) {
       return;
     }
-    const result = getCardsByName(inputArea.value, nameToID);
+    const result = getCardsByName(inputArea.value, nameToID, idToName);
     const inputAreaError = document.querySelector(
       "#bulkInputErr"
     ) as HTMLHeadingElement;
@@ -96,12 +97,13 @@ export default function setupBulkImport(
 
 export function getCardsByName(
   bulkName: string,
-  nameToID: Record<string, string[]>
+  nameToID: Record<string, string[]>,
+  idToName: Record<string, string>
 ): { ids: string[]; errors: string[] } {
   const parseRegex = /([0-9]+)?x?\s*([a-zA-Z0-9, '`-]+)/;
   const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
   const rawLines = (bulkName + "").split("\n");
-  const cleanNameMap: { [name: string]: string } = {};
+  const cleanNameMap: { [name: string]: string[] } = {};
 
   const cleanName = (name?: string) => {
     return (name + "")
@@ -113,7 +115,8 @@ export function getCardsByName(
   for (const name in nameToID) {
     const id = nameToID[name][0];
     const cname = cleanName(name);
-    cleanNameMap[cname] = id;
+    cleanNameMap[cname] = cleanNameMap[cname] || [];
+    cleanNameMap[cname].push(id);
   }
 
   const id_regex = /[a-z0-9-]{36}/;
@@ -126,7 +129,15 @@ export function getCardsByName(
         cardId = res[2];
       } else {
         const name = cleanName(res[2]);
-        cardId = cleanNameMap[name];
+        if(cleanNameMap[name]) {
+          cardId = cleanNameMap[name][0];
+          for(const id of cleanNameMap[name]) {
+            if(idToName[id].toLowerCase() === res[2].toLowerCase()) {
+              cardId = id;
+              break;
+            }
+          }
+        }
       }
       if (!cardId) {
         result.errors.push(res[2]);
