@@ -51,6 +51,7 @@
     "start": "node ./bin/server/runner.js",
     "test": "jest",
     "lint": "npx eslint \"./src/**/*.ts\"",
+    "build": "tsc && npx webpack --config ./bin/webpack.config.js",
     "startprod": "node ./bin/server/runner.js",
     "startupdater": "node ./bin/updater/runner.js",
     "startconverter": "node ./bin/data_converter/runner.js",
