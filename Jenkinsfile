@@ -20,7 +20,7 @@ pipeline {
         }
         stage('Destroy') {
             steps {
-                sh 'container=$(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins); sleep 180; echo "Stopping container $container"; docker stop $container'
+                sh 'container=$(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins); sleep 7200; echo "Stopping container $container"; docker stop $container'
             }
         }
     }
