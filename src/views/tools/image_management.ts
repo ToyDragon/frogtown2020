@@ -204,7 +204,7 @@ export async function getImageUpdateProgress(
 export async function clearImageInfo(
   services: Services,
   clearInfoRequest: CardImageClearInfoRequest
-) {
+): Promise<void> {
   const connection = await services.dbManager.getConnectionTimeout(
     20 * 60 * 1000 // 20 minute timeout
   );
