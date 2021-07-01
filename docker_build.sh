@@ -4,6 +4,9 @@ then
   exit 1
 fi
 
+echo "Copying in secrets..."
+cp -r "/home/jenkins/frogtown/secrets" .;
+
 echo "Building beta version..."
 cp "config.beta.json" "config.json" || cp "/home/jenkins/frogtown/config/config.beta.json" "config.json";
 docker build -t gcr.io/frogtown/frogtown2020/beta:$1 .
