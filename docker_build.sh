@@ -20,8 +20,11 @@ then
   docker push gcr.io/frogtown/frogtown2020/prod:$1
 fi
 
-echo "Building local version..."
-cp "config.local.json" "config.json" || cp "/home/jenkins/frogtown/config/config.local.json" "config.json";
-docker build -t gcr.io/frogtown/frogtown2020/local:$1 .
+if [ "$2" != "betaprod" ]
+then
+  echo "Building local version..."
+  cp "config.local.json" "config.json" || cp "/home/jenkins/frogtown/config/config.local.json" "config.json";
+  docker build -t gcr.io/frogtown/frogtown2020/local:$1 .
+fi
 
 echo "Done building and restored local config."

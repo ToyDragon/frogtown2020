@@ -42,6 +42,11 @@ pipeline {
                 }
             }
         }
+        stage('Build Beta/Prod Images') {
+            steps {
+                sh './docker_build.sh jenkins_${BUILD_ID} betaprod'
+            }
+        }
     }
     post {
         failure {
