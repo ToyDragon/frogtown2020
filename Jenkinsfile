@@ -24,4 +24,14 @@ pipeline {
             }
         }
     }
+    post {
+        failure {
+            script {
+                // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
+                if (env.CHANGE_ID) {
+                    pullRequest.comment('[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/job/jenkins_v2/)')
+                }
+            }
+        }
+    }
 }
