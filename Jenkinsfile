@@ -8,6 +8,7 @@ pipeline {
                   if (env.CHANGE_ID) {
                       echo 'Building with PR.'
                       currentBuild.result = 'ABORTED'
+                      error('Building with PR.')
                   } else {
                       echo 'Building without PR.'
                   }
