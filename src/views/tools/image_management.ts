@@ -201,7 +201,10 @@ export async function getImageUpdateProgress(
   return result;
 }
 
-export async function clearImageInfo(services: Services, clearInfoRequest: CardImageClearInfoRequest) {
+export async function clearImageInfo(
+  services: Services,
+  clearInfoRequest: CardImageClearInfoRequest
+) {
   const connection = await services.dbManager.getConnectionTimeout(
     20 * 60 * 1000 // 20 minute timeout
   );
@@ -231,7 +234,9 @@ export async function clearImageInfo(services: Services, clearInfoRequest: CardI
     if (SetCodeToCardID[set]) {
       for (const cardId of SetCodeToCardID[set]) {
         cardCount++;
-        await connection.query("DELETE FROM card_images WHERE card_id=?;", [cardId]);
+        await connection.query("DELETE FROM card_images WHERE card_id=?;", [
+          cardId,
+        ]);
       }
     }
   }

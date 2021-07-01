@@ -3,7 +3,10 @@ import Services from "./services";
 import { IncludedData, GetAllPages } from "./view_data";
 import { logInfo } from "./log";
 import SharedHandler from "../views/shared/server/handler";
-import { ColorStringToArray, DeckKeysRow } from "./database/dbinfos/db_info_deck_keys";
+import {
+  ColorStringToArray,
+  DeckKeysRow,
+} from "./database/dbinfos/db_info_deck_keys";
 import { UserKeysRow } from "./database/dbinfos/db_info_user_keys";
 import { GetSession } from "./performance_monitor/performance_logger";
 import { PerformanceSession } from "./performance_monitor/performance_monitor";

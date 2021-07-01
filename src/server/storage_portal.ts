@@ -9,7 +9,12 @@ export default interface StoragePortal {
     objectKey: string,
     data: string
   ): Promise<boolean>;
-  uploadStringToBucketACL(bucket: string, objectKey: string, data: string, acl: string): Promise<boolean> 
+  uploadStringToBucketACL(
+    bucket: string,
+    objectKey: string,
+    data: string,
+    acl: string
+  ): Promise<boolean>;
   deleteObjectFromBucket(bucket: string, objectKey: string): Promise<boolean>;
   uploadStreamToBucket(bucket: string, objectKey: string): stream.PassThrough;
   getObjectChangedDate(bucket: string, objectKey: string): Promise<string>;
