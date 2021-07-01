@@ -4,15 +4,6 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                script {
-                    // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
-                    if (env.CHANGE_ID) {
-                        pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:8543/)')
-                        echo 'Submitted build comment'
-                    } else {
-                      echo 'Not in a pull request?'
-                    }
-                }
                 sh 'npm install && npm run-script build && ./docker_build.sh jenkins local'
             }
         }
