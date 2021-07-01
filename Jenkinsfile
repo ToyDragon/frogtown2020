@@ -37,6 +37,8 @@ pipeline {
                   docker run -d -l jenkins -p $PORT:8443 gcr.io/frogtown/frogtown2020/local:jenkins;
                 '''
                 script {
+                    echo 'About to try the thing'
+                    pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID + 5)) + ' for asdasdasd ' + env.CHANGE_ID)
                     pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID % 5)) + ' for change ' + env.CHANGE_ID)
                     echo 'Submitted comment with test server link.'
                 }
