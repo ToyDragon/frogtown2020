@@ -8,7 +8,8 @@ pipeline {
                   // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
                   if (env.CHANGE_ID) {
                       echo 'Building with PR.'
-                      def comment=pullRequest.comment('Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)')
+                      def body='Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)'
+                      def comment=pullRequest.comment(body)
                   } else {
                       echo 'Aborting, can\'t build without a PR.'
                       currentBuild.result = 'ABORTED'
@@ -30,7 +31,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    comment.body += '\n\n Cleaning up old container...'
+                    body += '\n\n Cleaning up old container...'
+                    comment.body = body
                 }
                 sh '''
                   PORT=$(expr 8543 + ${BUILD_ID} % 5);
@@ -41,7 +43,8 @@ pipeline {
                   docker run -d -l jenkins -p $PORT:8443 gcr.io/frogtown/frogtown2020/local:jenkins;
                 '''
                 script {
-                    comment.body += '\n\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
+                    body += '\n\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
+                    comment.body = body
                     echo 'Submitted comment with test server link.'
                 }
             }
@@ -55,7 +58,8 @@ pipeline {
     post {
         failure {
             script {
-                comment.body += '\n\n[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)';
+                body += '\n\n[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)';
+                comment.body = body
                 echo 'Submitted comment about failed build.'
             }
         }
