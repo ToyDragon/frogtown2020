@@ -17,6 +17,8 @@ pipeline {
                 sh 'docker stop $(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins) || true'
                 sh 'docker run -d -p 8543:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
                 script {
+                    echo 'change id:'
+                    echo env.CHANGE_ID
                     // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
                     if (env.CHANGE_ID) {
                         pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:8543/)')
