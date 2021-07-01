@@ -14,7 +14,12 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying....'
+                sh 'docker run gcr.io/frogtown/frogtown2020/local:${BUILD_TAG}'
+            }
+        }
+        stage('Destroy') {
+            steps {
+                echo 'destroy.'
             }
         }
     }
