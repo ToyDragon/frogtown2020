@@ -8,7 +8,7 @@ pipeline {
                   // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
                   if (env.CHANGE_ID) {
                       echo 'Building with PR.'
-                      def comment=pullRequest.comment('Build started...')
+                      def comment=pullRequest.comment('Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/job/jenkins_v2/)')
                   } else {
                       echo 'Aborting, can\'t build without a PR.'
                       currentBuild.result = 'ABORTED'
