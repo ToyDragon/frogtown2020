@@ -53,10 +53,19 @@ pipeline {
         }
         stage('Build Beta/Prod Images') {
             steps {
-                sh './docker_build.sh jenkins_${BUILD_ID} betaprod'
                 script {
-                    body += '\nBuilt and uploaded images for beta and prod.'
-                    pullRequest.editComment(comment.id, body)
+                    if (pullRequest.body.contains('[BETAPROD]')) {
+                      body += '\nBuilding beta/prod images.'
+                      pullRequest.editComment(comment.id, body)
+
+                      sh './docker_build.sh jenkins_${BUILD_ID} betaprod'
+                      
+                      body += '\nBuilt and uploaded images for beta and prod.'
+                      pullRequest.editComment(comment.id, body)
+                    } else {
+                      body += '\nSkipping beta/prod images. Include "[BETAPROD]" in the pull request body to have them built.'
+                      pullRequest.editComment(comment.id, body)
+                    }
                 }
             }
         }
