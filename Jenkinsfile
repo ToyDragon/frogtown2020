@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'npm install && npm run-script build && ./docker_build.sh ${BUILD_ID}'
+                sh 'npm install && npm run-script build && ./docker_build.sh ${BUILD_TAG}'
             }
         }
         stage('Test') {
