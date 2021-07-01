@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'npm install && npm run-script build && ./docker_build.sh ${BUILD_TAG} local'
+                sh 'npm install && npm run-script build && ./docker_build.sh jenkins local'
             }
         }
         stage('Test') {
@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker run gcr.io/frogtown/frogtown2020/local:${BUILD_TAG}'
+                sh 'docker run gcr.io/frogtown/frogtown2020/local:jenkins'
             }
         }
         stage('Destroy') {
