@@ -33,7 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    body += '\n\n Cleaning up old container...'
+                    body += '\nCleaning up old container.'
                     pullRequest.editComment(comment.id, body)
                 }
                 sh '''
@@ -45,7 +45,7 @@ pipeline {
                   docker run -d -l jenkins -p $PORT:8443 gcr.io/frogtown/frogtown2020/local:jenkins;
                 '''
                 script {
-                    body += '\n\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
+                    body += '\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
                     pullRequest.editComment(comment.id, body)
                     echo 'Submitted comment with test server link.'
                 }
@@ -54,6 +54,10 @@ pipeline {
         stage('Build Beta/Prod Images') {
             steps {
                 sh './docker_build.sh jenkins_${BUILD_ID} betaprod'
+                script {
+                    body += '\nBuilt and uploaded images for beta and prod.'
+                    pullRequest.editComment(comment.id, body)
+                }
             }
         }
     }
