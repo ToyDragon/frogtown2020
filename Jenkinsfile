@@ -36,7 +36,7 @@ pipeline {
         }
         stage('Destroy') {
             steps {
-                sh 'container=$(docker ps -q --filter label=jenkins); echo ""Stopping container $container in 3 hours""; bash -c "sleep 7200; docker stop $container &"'
+                sh 'container=$(docker ps -q --filter label=jenkins); echo ""Stopping container $container in 3 hours""; bash -c \'sleep 7200; docker stop $container &\''
             }
         }
     }
