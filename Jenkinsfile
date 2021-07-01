@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'npm install && npm run-script build && ./docker_build.sh jenkins local'
+                sh 'npm install && npm run-script build && ./docker_build.sh jenkins_${CHANGE_ID}_${BUILD_ID} local'
             }
         }
         stage('Test') {
@@ -58,7 +58,7 @@ pipeline {
                       body += '\nBuilding beta/prod images.'
                       pullRequest.editComment(comment.id, body)
 
-                      sh './docker_build.sh jenkins_${BUILD_ID} betaprod'
+                      sh './docker_build.sh jenkins_${CHANGE_ID}_${BUILD_ID} betaprod'
                       
                       body += '\nBuilt and uploaded images for beta and prod.'
                       pullRequest.editComment(comment.id, body)
