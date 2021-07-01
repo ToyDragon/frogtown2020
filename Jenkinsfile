@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker stop $(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins)'
+                sh 'docker stop $(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins) || true'
                 sh 'docker run -d -p 8543:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
             }
         }
