@@ -12,8 +12,6 @@ pipeline {
                       echo 'Building with PR.'
                       body='Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)'
                       comment=pullRequest.comment(body)
-                      body += '\n\n test line'
-                      pullRequest.editComment(comment.id, body)
                   } else {
                       echo 'Aborting, can\'t build without a PR.'
                       currentBuild.result = 'ABORTED'
