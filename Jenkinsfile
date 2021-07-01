@@ -14,8 +14,8 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker stop $(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins) || true'
-                sh 'docker run -d -p 8543:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
+                sh 'docker stop $(docker ps -q --filter label=jenkins) || true'
+                sh 'docker run -d -l jenkins -p 8543:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
                 script {
                     echo 'change id:'
                     echo env.CHANGE_ID
@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Destroy') {
             steps {
-                sh 'container=$(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins); sleep 7200; echo "Stopping container $container"; docker stop $container'
+                sh 'container=$(docker ps -q --filter label=jenkins); sleep 7200; echo "Stopping container $container"; docker stop $container'
             }
         }
     }
