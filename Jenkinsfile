@@ -8,7 +8,7 @@ pipeline {
                   // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
                   if (env.CHANGE_ID) {
                       echo 'Building with PR.'
-                      def comment=pullRequest.comment('Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/job/jenkins_v2/)')
+                      def comment=pullRequest.comment('Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)')
                   } else {
                       echo 'Aborting, can\'t build without a PR.'
                       currentBuild.result = 'ABORTED'
@@ -55,7 +55,7 @@ pipeline {
     post {
         failure {
             script {
-                comment.body += '\n\n[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/job/jenkins_v2/)';
+                comment.body += '\n\n[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)';
                 echo 'Submitted comment about failed build.'
             }
         }
