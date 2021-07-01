@@ -2,6 +2,18 @@ pipeline {
     agent any
 
     stages {
+        stage('PR Check') {
+            steps {
+                script {
+                  if (env.CHANGE_ID) {
+                      echo 'Building with PR.'
+                      currentBuild.result = 'ABORTED'
+                  } else {
+                      echo 'Building without PR.'
+                  }
+                }
+            }
+        }
         stage('Build') {
             steps {
                 sh 'npm install && npm run-script build && ./docker_build.sh jenkins local'
@@ -14,6 +26,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                sh 'echo Using port $(expr 8543 + ${BUILD_ID} % 5)'
                 sh 'docker stop $(docker ps -q --filter publish=$(expr 8543 + ${BUILD_ID} % 5)) || true'
                 sh 'docker run -d -l jenkins -p $(expr 8543 + ${BUILD_ID} % 5):8443 gcr.io/frogtown/frogtown2020/local:jenkins'
                 script {
@@ -21,6 +34,8 @@ pipeline {
                     if (env.CHANGE_ID) {
                         pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID % 5)) + ' for change ' + env.CHANGE_ID)
                         echo 'Submitted comment with test server link.'
+                    } else {
+                        echo 'Cant submit comment because no pull request :(.'
                     }
                 }
             }
