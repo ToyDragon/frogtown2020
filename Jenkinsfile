@@ -14,12 +14,13 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker run -d gcr.io/frogtown/frogtown2020/local:jenkins'
+                sh 'docker stop $(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins)'
+                sh 'docker run -d -p 8543:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
             }
         }
         stage('Destroy') {
             steps {
-                echo 'destroy.'
+                sh 'container=$(docker ps -q --filter ancestor=gcr.io/frogtown/frogtown2020/local:jenkins); sleep 180; echo "Stopping container $container"; docker stop $container'
             }
         }
     }
