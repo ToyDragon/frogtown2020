@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker run gcr.io/frogtown/frogtown2020/local:jenkins'
+                sh 'docker run -d gcr.io/frogtown/frogtown2020/local:jenkins'
             }
         }
         stage('Destroy') {
