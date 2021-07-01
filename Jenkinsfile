@@ -10,6 +10,8 @@ pipeline {
                       echo 'Building with PR.'
                       def body='Build started. [Details](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)'
                       def comment=pullRequest.comment(body)
+                      body += '\n\n test line'
+                      pullRequest.editComment(comment.id, body)
                   } else {
                       echo 'Aborting, can\'t build without a PR.'
                       currentBuild.result = 'ABORTED'
@@ -32,7 +34,7 @@ pipeline {
             steps {
                 script {
                     body += '\n\n Cleaning up old container...'
-                    comment.body = body
+                    pullRequest.editComment(comment.id, body)
                 }
                 sh '''
                   PORT=$(expr 8543 + ${BUILD_ID} % 5);
@@ -44,7 +46,7 @@ pipeline {
                 '''
                 script {
                     body += '\n\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
-                    comment.body = body
+                    pullRequest.editComment(comment.id, body)
                     echo 'Submitted comment with test server link.'
                 }
             }
@@ -59,7 +61,7 @@ pipeline {
         failure {
             script {
                 body += '\n\n[Failed build.](http://kismarton.frogtown.me:8079/job/PullRequestBuilds/view/change-requests/job/PR-' + env.CHANGE_ID + '/)';
-                comment.body = body
+                pullRequest.editComment(comment.id, body)
                 echo 'Submitted comment about failed build.'
             }
         }
