@@ -28,12 +28,15 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'PORT=$(expr 8543 + ${BUILD_ID} % 5)'
-                sh 'echo Using port $PORT'
-                sh 'CONTAINERID=$(docker ps -q --filter publish=$PORT)'
-                sh 'echo Found existing container: $CONTAINERID'
-                sh '[ -z "$CONTAINERID" ] || docker stop $(docker ps -q --filter publish=$PORT)'
-                sh 'docker run -d -l jenkins -p $PORT:8443 gcr.io/frogtown/frogtown2020/local:jenkins'
+                def 
+                sh '''
+                  PORT=$(expr 8543 + ${BUILD_ID} % 5);
+                  echo Using port $PORT;
+                  CONTAINERID=$(docker ps -q --filter publish=$PORT);
+                  echo Found existing container: $CONTAINERID;
+                  [ -z "$CONTAINERID" ] || docker stop $(docker ps -q --filter publish=$PORT);
+                  docker run -d -l jenkins -p $PORT:8443 gcr.io/frogtown/frogtown2020/local:jenkins;
+                '''
                 script {
                     pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID % 5)) + ' for change ' + env.CHANGE_ID)
                     echo 'Submitted comment with test server link.'
