@@ -38,8 +38,8 @@ pipeline {
                 '''
                 script {
                     echo 'About to try the thing'
-                    pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID + 5)) + ' for asdasdasd ' + env.CHANGE_ID)
-                    pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + (env.BUILD_ID % 5)) + ' for change ' + env.CHANGE_ID)
+                    pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) + 5)) + ' for asdasdasd ' + env.CHANGE_ID)
+                    pullRequest.comment('Deployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ' for change ' + env.CHANGE_ID)
                     echo 'Submitted comment with test server link.'
                 }
             }
