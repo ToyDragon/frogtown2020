@@ -129,10 +129,10 @@ export function getCardsByName(
         cardId = res[2];
       } else {
         const name = cleanName(res[2]);
-        if(cleanNameMap[name]) {
+        if (cleanNameMap[name]) {
           cardId = cleanNameMap[name][0];
-          for(const id of cleanNameMap[name]) {
-            if(idToName[id].toLowerCase() === res[2].toLowerCase()) {
+          for (const id of cleanNameMap[name]) {
+            if (idToName[id].toLowerCase() === res[2].toLowerCase()) {
               cardId = id;
               break;
             }

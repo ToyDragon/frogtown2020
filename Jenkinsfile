@@ -28,6 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'npm test'
+                sh 'npx eslint src'
             }
         }
         stage('Deploy') {

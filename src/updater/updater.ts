@@ -173,22 +173,32 @@ export default class Updater {
       ["all_cards"]
     );
     if (allDataRows?.value?.length !== 1) {
-      Logs.logInfo("No need to update data maps, because no all_cards date available.");
+      Logs.logInfo(
+        "No need to update data maps, because no all_cards date available."
+      );
       return false;
     }
-    const allCardsFileChanged = new Date(allDataRows.value[0].change_time + " UTC");
+    const allCardsFileChanged = new Date(
+      allDataRows.value[0].change_time + " UTC"
+    );
     if (dataFileChanged > allCardsFileChanged) {
-      Logs.logInfo("Data maps should not update, they are newer than the all_cards file.");
+      Logs.logInfo(
+        "Data maps should not update, they are newer than the all_cards file."
+      );
       return false;
     }
     if (allCardsFileChanged > s3UpdateDate) {
-      Logs.logInfo("Data maps should not update, waiting on s3 to update the all_cards object.");
+      Logs.logInfo(
+        "Data maps should not update, waiting on s3 to update the all_cards object."
+      );
       Logs.logInfo("all_cards downloaded: " + allCardsFileChanged);
       Logs.logInfo("s3 update date: " + s3UpdateDate);
       return false;
     }
     if (allCardsFileChanged > s3UpdateDate) {
-      Logs.logInfo("Data maps should not update, waiting on s3 to update the all_cards object.");
+      Logs.logInfo(
+        "Data maps should not update, waiting on s3 to update the all_cards object."
+      );
       Logs.logInfo("all_cards downloaded: " + allCardsFileChanged);
       Logs.logInfo("s3 update date: " + s3UpdateDate);
       return false;
@@ -223,8 +233,14 @@ export default class Updater {
         if (scryfallUpdateDate < twoHoursAgo) {
           return true;
         } else {
-          const hours = (new Date().getTime() - scryfallUpdateDate.getTime()) / (1000 * 60 * 60);
-          Logs.logInfo("Scryfall all cards too new, letting it stabilize. It's only been " + hours + " hours.");
+          const hours =
+            (new Date().getTime() - scryfallUpdateDate.getTime()) /
+            (1000 * 60 * 60);
+          Logs.logInfo(
+            "Scryfall all cards too new, letting it stabilize. It's only been " +
+              hours +
+              " hours."
+          );
         }
       } else {
         Logs.logInfo("Scryfall all cards version not newer than ours");

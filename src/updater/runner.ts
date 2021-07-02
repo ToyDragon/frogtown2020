@@ -39,7 +39,7 @@ if (cluster.isMaster) {
       }
     }
   });
-  
+
   console.log("Runner: Will shut down in 3 hours...");
   setTimeout(() => {
     closing = true;

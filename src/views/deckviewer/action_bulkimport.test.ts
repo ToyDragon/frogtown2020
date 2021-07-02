@@ -53,7 +53,11 @@ test("Detects errors", () => {
 
 test("Wasteland Waste Land", () => {
   // Currently fails :(
-  const result = getCardsByName("1 Wasteland\n2 Waste land\n2 wasteland\n1 waste land", nameToID, idToName);
+  const result = getCardsByName(
+    "1 Wasteland\n2 Waste land\n2 wasteland\n1 waste land",
+    nameToID,
+    idToName
+  );
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["5", "6", "6", "5", "5", "6"]);
 });
