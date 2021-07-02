@@ -115,7 +115,10 @@ const includedDataUserDetails: IncludedData = {
 };
 
 // Creates route handler to serve views
-export default function ViewHandler(services: Services, debugBanner: string): express.Router {
+export default function ViewHandler(
+  services: Services,
+  debugBanner: string
+): express.Router {
   const router = express.Router();
   const allPages = GetAllPages(services);
   const viewDir = __dirname + "/../views/";
