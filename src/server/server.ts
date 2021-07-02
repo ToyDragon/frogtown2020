@@ -102,9 +102,7 @@ export default class Server {
 
       // Load debug banner variable.
       const debugBanner = process.env["FROGTOWN_DEBUG_BANNER"] || "";
-      if (debugBanner) {
-        Logs.logInfo(`Displaying debug banner: ${debugBanner}`);
-      }
+      Logs.logInfo(`Displaying debug banner: ${debugBanner}`);
 
       // Handlers
       const imageHandler = ImagesHandler(services);
