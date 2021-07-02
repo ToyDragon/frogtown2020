@@ -303,7 +303,7 @@ export abstract class BaseCardRenderer {
           return aTitle > bTitle ? 1 : -1;
         });
         for (const group of groups) {
-          group.title += " (" + group.cardIds.length + ")";
+          group.title += ` (${group.cardIds.length})`;
         }
       }
     } else {
@@ -337,13 +337,7 @@ export abstract class BaseCardRenderer {
         console.log("Trying to show set svg before details loaded.");
         return;
       }
-      const svgURL =
-        this.dl.dataDetails.baseURL +
-        "/" +
-        this.dl.dataDetails.awsS3SetSVGBucket +
-        "/" +
-        setCode +
-        ".svg";
+      const svgURL = `${this.dl.dataDetails.baseURL}/${this.dl.dataDetails.awsS3SetSVGBucket}/${setCode}.svg`;
       if (this.pendingSetSVGs[setCode]) {
         this.pendingSetSVGs[setCode].push(svg);
       } else {

@@ -110,7 +110,7 @@ export default class Converter {
       await this.cols.users.find({}).forEach((user) => {
         all_users.push(user);
       });
-      Logs.logInfo("Considering " + all_users.length + " users");
+      Logs.logInfo(`Considering ${all_users.length} users`);
       let users_with_non_empty_decks = 0;
       let skipping = true;
       let skip_count = 0;
@@ -136,7 +136,7 @@ export default class Converter {
         if (skipping) {
           if (user.privateId === skipId) {
             skipping = false;
-            Logs.logInfo("Skipped " + skip_count + " users to catch up.");
+            Logs.logInfo(`Skipped ${skip_count} users to catch up.`);
 
             const decks = await connection.query<DeckKeysRow[]>(
               "SELECT * FROM deck_keys WHERE owner_id=?;",
@@ -172,10 +172,7 @@ export default class Converter {
         }
 
         Logs.logInfo(
-          "Trying to create user with private id: " +
-            user.privateId +
-            " and public " +
-            public_id
+          `Trying to create user with private id: ${user.privateId} and public ${public_id}`
         );
         const existing = await Authentication.getPublicKeyFromPrivateKey(
           user.privateId,
@@ -233,7 +230,7 @@ export default class Converter {
         await Promise.all(all_promises);
       }
       Logs.logInfo(
-        "Processed " + users_with_non_empty_decks + " users with nonempty deck"
+        `Processed ${users_with_non_empty_decks} users with nonempty deck`
       );
       Logs.logInfo("Done, shutting down in 2 seconds...");
       await logGracefulDeath(this.services);

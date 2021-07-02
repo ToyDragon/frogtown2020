@@ -228,7 +228,7 @@ export class FilterDropdown extends BaseFilter {
     });
     for (const key of value) {
       (menu?.querySelector(
-        "li[data-value=" + key.replace(/ /g, "\\ ") + "]"
+        `li[data-value=${key.replace(/ /g, "\\ ")}]`
       ) as HTMLElement)?.click();
     }
     this.isClearing = false;

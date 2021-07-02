@@ -119,9 +119,6 @@ export default class Server {
       // Server options
       let serverOptions: https.ServerOptions = {};
       if (!config.nohttps) {
-        Logs.logInfo(
-          "SSL Key File Size: " + fs.statSync(config.sslOptions.keyFile).size
-        );
         serverOptions = {
           key: fs.readFileSync(config.sslOptions.keyFile),
           cert: fs.readFileSync(config.sslOptions.certFile),
@@ -153,9 +150,7 @@ export default class Server {
             .on("error", HandleServerError)
         );
         Logs.logCritical(
-          "Started non-HTTPs server on port " +
-            config.network.unsecurePort +
-            "."
+          `Started non-HTTPs server on port ${config.network.unsecurePort}.`
         );
         Logs.logCritical("==========================================");
         Logs.logCritical(
@@ -173,7 +168,7 @@ export default class Server {
             .listen(config.network.securePort)
             .on("error", HandleServerError)
         );
-        Logs.logInfo("Server listening on port " + config.network.securePort);
+        Logs.logInfo(`Server listening on port ${config.network.securePort}`);
 
         const httpApp = express();
         httpApp.get("*", HTTPSRedirectionHandler);

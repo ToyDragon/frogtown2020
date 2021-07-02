@@ -65,7 +65,7 @@ export default class TableTopSimulator {
     }
 
     if (tokens.length) {
-      console.log("Added tokens " + tokens.length + " tokens");
+      console.log(`Added tokens ${tokens.length} tokens`);
     }
     return tokens;
   }
