@@ -57,23 +57,6 @@ span.glyphicon.TrueWhite, span.caret.TrueWhite{color: white;}
   color: white;
 }
 
-.internshipBanner{
-  position: fixed;
-  bottom: -48px;
-  left: -130px;
-  height: 150px;
-  font-size: 24px;
-  background-color: darkred;
-  padding: 16px 100px;
-  border-top: 10px solid white;
-  transform: rotate(45deg);
-}
-
-.internshipBanner > a{
-  color: white;
-  text-decoration: none;
-}
-
 .centeredContent{
   width: 800px;
   margin: auto;
