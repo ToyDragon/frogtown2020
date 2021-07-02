@@ -100,11 +100,15 @@ export default class Server {
         perfMon: perfMon,
       };
 
+      // Load debug banner variable.
+      const debugBanner = process.env["FROGTOWN_DEBUG_BANNER"] || "";
+      Logs.logInfo(`Displaying debug banner: ${debugBanner}`);
+
       // Handlers
       const imageHandler = ImagesHandler(services);
       app.use(ErrorHandler); // Trigger on unhandled errors
       app.use(SetupRequiredHandler(services));
-      app.use(ViewHandler(services));
+      app.use(ViewHandler(services, debugBanner));
       app.use(WellKnownHandler(services));
       app.use("/CardBack.jpg", express.static("./static/CardBack.jpg"));
       for (const path of config.cardImageRoutes) {
