@@ -43,7 +43,7 @@ pipeline {
                   CONTAINERID=$(docker ps -q --filter publish=$PORT);
                   echo Found existing container: $CONTAINERID;
                   [ -z "$CONTAINERID" ] || docker stop $(docker ps -q --filter publish=$PORT);
-                  docker run -d -l jenkins -p $PORT:8443 -e FROGTOWN_DEBUG_BANNER=\\"\<a href=\\\\"https://github.com/ToyDragon/frogtown2020/pull/$CHANGE_ID\\\\">PR $CHANGE_ID VERSION $BUILD_ID\</a>\\" gcr.io/frogtown/frogtown2020/local:jenkins;
+                  docker run -d -l jenkins -p $PORT:8443 -e FROGTOWN_DEBUG_BANNER=\\"\\<a href=\\\\"https://github.com/ToyDragon/frogtown2020/pull/$CHANGE_ID\\\\">PR $CHANGE_ID VERSION $BUILD_ID\\</a>\\" gcr.io/frogtown/frogtown2020/local:jenkins;
                 '''
                 script {
                     body += '\nDeployed [test server](https://kismarton.frogtown.me:' + (8543 + ((env.BUILD_ID as Integer) % 5)) + ') for change ' + env.CHANGE_ID + '/' + env.BUILD_ID
