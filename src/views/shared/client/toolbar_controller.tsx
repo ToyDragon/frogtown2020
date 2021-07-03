@@ -203,11 +203,9 @@ export default class ToolbarController {
             "/toolbar/newdeck",
             undefined
           );
-          window.location.replace(
-            "/deckViewer/" + deckData?.deckId + "/edit.html"
-          );
+          window.location.replace(`/deckViewer/${deckData?.deckId}/edit.html`);
         } else {
-          window.location.replace("/deckViewer/" + deckId + "/edit.html");
+          window.location.replace(`/deckViewer/${deckId}/edit.html`);
         }
       });
 

@@ -36,7 +36,7 @@ export default function handler(services: Services): express.Router {
         [params.targetStatus, params.name]
       );
       logWarning(
-        "Set target status of " + params.name + " to " + params.targetStatus
+        `Set target status of ${params.name} to ${params.targetStatus}`
       );
       connection.release();
     }

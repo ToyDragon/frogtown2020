@@ -266,7 +266,7 @@ export async function startDownloadNewAllCardsFile(
       logError("Request message abort occurred.");
     });
     fileStream.on("close", async () => {
-      logInfo("Done at: " + downloadCurBytes + " / " + downloadMaxBytes);
+      logInfo(`Done at: ${downloadCurBytes} / ${downloadMaxBytes}`);
       // logInfo("Status message: " + curlProcess.statusMessage);
       // logInfo("Status message: " + JSON.stringify(msg.headers));
       const dataUpdated = new Date();

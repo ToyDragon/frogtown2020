@@ -158,7 +158,7 @@ export default function ViewHandler(
 
     // The main way the page is accessed
     for (const route of view.routes) {
-      router.get("/" + route + ".html", (req, res) => {
+      router.get(`/${route}.html`, (req, res) => {
         renderCallback(req, res);
       });
     }
@@ -172,8 +172,8 @@ export default function ViewHandler(
     // the behavior.ts file and it's dependencies into this bundle file.
     router.use("/" + view.routes[0], express.static(viewDir + view.view + "/"));
     router.use(
-      "/" + view.routes[0] + "/styles.css",
-      express.static("./static/styles/" + view.view + "_styles.css")
+      `/${view.routes[0]}/styles.css`,
+      express.static(`./static/styles/${view.view}_styles.css`)
     );
 
     // Add handler for page specific requests

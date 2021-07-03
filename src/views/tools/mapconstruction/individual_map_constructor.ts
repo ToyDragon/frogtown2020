@@ -120,7 +120,7 @@ export default class IndividualMapConstructor {
       range.end - range.start + 1
     );
     this.lastParseData =
-      "Buffer: " + rawData + "\nRange: " + JSON.stringify(range);
+      `Buffer: ${rawData}\nRange: ${JSON.stringify(range)}`;
     try {
       const cardData = JSON.parse(rawData) as ScryfallFullCard;
       if (this.cardMeetsFilter(cardData)) {
@@ -130,14 +130,11 @@ export default class IndividualMapConstructor {
     } catch (e) {
       if (this.errorCount <= 3) {
         logError(
-          "Error parsing card with range: " +
-            JSON.stringify(range) +
-            "\n" +
-            e +
-            "\n" +
-            this.streamBuffer +
-            "\nPrevious card----\n" +
-            this.lastParseData
+          `Error parsing card with range: ${JSON.stringify(range)}` +
+            `\n${e}` +
+            `\n${this.streamBuffer}` +
+            "\nPrevious card----" +
+            `\n${this.lastParseData}`
         );
       }
       this.errorCount += 1;

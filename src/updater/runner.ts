@@ -15,7 +15,7 @@ if (cluster.isMaster) {
   cluster.on("exit", (worker, code, _signal) => {
     deadWorkers[worker.id] = true;
     if (code !== 0 && !worker.exitedAfterDisconnect && !closing) {
-      console.log("Worker " + worker.id + " crashed. Starting a new worker...");
+      console.log(`Worker ${worker.id} crashed. Starting a new worker...`);
       cluster.fork();
     }
   });
@@ -32,9 +32,7 @@ if (cluster.isMaster) {
         // eslint-disable-next-line no-process-exit
         process.exit(0);
       } else {
-        console.log(
-          "Runner: Waiting for " + aliveCount + " servers to close..."
-        );
+        console.log(`Runner: Waiting for ${aliveCount} servers to close...`);
         await timeout(2500);
       }
     }

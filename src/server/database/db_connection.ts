@@ -31,7 +31,7 @@ export class DatabaseConnection {
 
     setTimeout(() => {
       if (this.connectionOpen) {
-        logError("Connection open for " + timeoutMillis + " milliseconds.");
+        logError(`Connection open for ${timeoutMillis} milliseconds.`);
         logError(this.debugStack);
       }
     }, timeoutMillis);

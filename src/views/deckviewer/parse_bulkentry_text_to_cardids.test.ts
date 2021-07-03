@@ -1,4 +1,4 @@
-import { getCardsByName } from "./action_bulkimport";
+import { parseBulkEntryTextToCardIDs } from "./parse_bulkentry_text_to_cardids";
 
 const nameToID: Record<string, string[]> = {};
 nameToID["a"] = ["1", "2"];
@@ -7,56 +7,50 @@ nameToID["c"] = ["4"];
 nameToID["Wasteland"] = ["5"];
 nameToID["Waste land"] = ["6"];
 
-const idToName: Record<string, string> = {};
-idToName["1"] = "a";
-idToName["2"] = "a";
-idToName["3"] = "b";
-idToName["4"] = "c";
-idToName["5"] = "Wasteland";
-idToName["6"] = "Waste land";
-
 test("Handles simple single line.", () => {
-  let result = getCardsByName("2 a", nameToID, idToName);
+  let result = parseBulkEntryTextToCardIDs("2 a", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("2xa", nameToID, idToName);
+  result = parseBulkEntryTextToCardIDs("2xa", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("2x a", nameToID, idToName);
+  result = parseBulkEntryTextToCardIDs("2x a", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1"]);
 
-  result = getCardsByName("a", nameToID, idToName);
+  result = parseBulkEntryTextToCardIDs("a", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1"]);
 });
 
 test("Handles multiple lines.", () => {
-  const result = getCardsByName("2 a\nb", nameToID, idToName);
+  const result = parseBulkEntryTextToCardIDs("2 a\nb", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "1", "3"]);
 });
 
 test("Handles whitespace gracefully", () => {
-  const result = getCardsByName("\t2 a\n\t\tb", nameToID, idToName);
+  const result = parseBulkEntryTextToCardIDs("\t2 a\n\t\tb", nameToID);
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["1", "3"]);
 });
 
 test("Detects errors", () => {
-  const result = getCardsByName("\t2 a\n\t\tb\nx\nz\nb\nc", nameToID, idToName);
+  const result = parseBulkEntryTextToCardIDs(
+    "\t2 a\n\t\tb\nx\nz\nb\nc",
+    nameToID
+  );
   expect(result.errors).toEqual(["x", "z"]);
   expect(result.ids).toEqual(["1", "3", "3", "4"]);
 });
 
 test("Wasteland Waste Land", () => {
   // Currently fails :(
-  const result = getCardsByName(
+  const result = parseBulkEntryTextToCardIDs(
     "1 Wasteland\n2 Waste land\n2 wasteland\n1 waste land",
-    nameToID,
-    idToName
+    nameToID
   );
   expect(result.errors).toEqual([]);
   expect(result.ids).toEqual(["5", "6", "6", "5", "5", "6"]);
