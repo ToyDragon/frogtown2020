@@ -71,11 +71,10 @@ export default function setupBulkImport(
   });
   document.querySelector("#btnConfirmImport")?.addEventListener("click", () => {
     const nameToID = dl.getMapData("NameToID");
-    const idToName = dl.getMapData("IDToName");
-    if (!nameToID || !idToName) {
+    if (!nameToID) {
       return;
     }
-    const result = getCardsByName(inputArea.value, nameToID, idToName);
+    const result = getCardsByName(inputArea.value, nameToID);
     const inputAreaError = document.querySelector(
       "#bulkInputErr"
     ) as HTMLHeadingElement;
@@ -95,57 +94,96 @@ export default function setupBulkImport(
     });
 }
 
-export function getCardsByName(
-  bulkName: string,
-  nameToID: Record<string, string[]>,
-  idToName: Record<string, string>
-): { ids: string[]; errors: string[] } {
-  const parseRegex = /([0-9]+)?x?\s*([a-zA-Z0-9, '`-]+)/;
-  const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
-  const rawLines = (bulkName + "").split("\n");
-  const cleanNameMap: { [name: string]: string[] } = {};
+// Remove a bunch of entropy from a card name. For example, turns "Waste Land" into "wasteland".
+// This is used later for comparing card names, so it should retain enough information so that the intended cards can be matched.
+function lowEntropyName(original_name: string): string {
+  return original_name
+    .toLowerCase()
+    .split("/")[0]
+    .replace(/[^a-zA-Z]/g, "");
+}
 
-  const cleanName = (name?: string) => {
-    return (name + "")
-      .toLowerCase()
-      .split("/")[0]
-      .replace(/[^a-zA-Z]/g, "");
-  };
-
+function constructLowEntropyNameMap(
+  nameToID: Record<string, string[]>
+): { [name: string]: string } {
+  const lowEntropyNameToID: { [name: string]: string } = {};
   for (const name in nameToID) {
     const id = nameToID[name][0];
-    const cname = cleanName(name);
-    cleanNameMap[cname] = cleanNameMap[cname] || [];
-    cleanNameMap[cname].push(id);
+    const leName = lowEntropyName(name);
+    lowEntropyNameToID[leName] = id;
+  }
+  return lowEntropyNameToID;
+}
+
+function constructLowercaseNameMap(
+  nameToID: Record<string, string[]>
+): { [name: string]: string } {
+  const lowercaseNameToID: { [name: string]: string } = {};
+  for (const name in nameToID) {
+    const id = nameToID[name][0];
+    lowercaseNameToID[name.toLowerCase()] = id;
+  }
+  return lowercaseNameToID;
+}
+
+interface BulkEntryLinePieces {
+  count: number;
+  text: string;
+}
+
+function splitBulkEntryLine(line: string): BulkEntryLinePieces | null {
+  const splitRegex = /([0-9]+)?x?\s*([a-zA-Z0-9, '`-]+)/;
+  const result = splitRegex.exec(line);
+  if (!result) {
+    return null;
   }
 
-  const id_regex = /[a-z0-9-]{36}/;
+  return {
+    count: Number(result[1] || "1"),
+    text: result[2],
+  };
+}
+
+function checkForExactCardId(pieces: BulkEntryLinePieces): string | null {
+  const idRegex = /[a-z0-9-]{36}/;
+  if (!pieces.text.match(idRegex)) {
+    return null;
+  }
+  return pieces.text;
+}
+
+export function getCardsByName(
+  bulkName: string,
+  nameToID: Record<string, string[]>
+): { ids: string[]; errors: string[] } {
+  const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
+  const rawLines = (bulkName + "").split("\n");
+
+  // These maps are very expensive to construct, but we do it anyways because this only happens once when performing a bulk import.
+  // Bulk imports are typically slow, and this contributes to that, but it's an intended trade off for legible code.
+  const lowEntropyNameToID = constructLowEntropyNameMap(nameToID);
+  const lowercaseNameToID = constructLowercaseNameMap(nameToID);
+
   for (const rawLine of rawLines) {
-    const res = parseRegex.exec(rawLine);
-    if (res) {
-      let cardId = "";
-      const count = res[1] || 1;
-      if (res[2].match(id_regex)) {
-        cardId = res[2];
-      } else {
-        const name = cleanName(res[2]);
-        if (cleanNameMap[name]) {
-          cardId = cleanNameMap[name][0];
-          for (const id of cleanNameMap[name]) {
-            if (idToName[id].toLowerCase() === res[2].toLowerCase()) {
-              cardId = id;
-              break;
-            }
-          }
-        }
-      }
-      if (!cardId) {
-        result.errors.push(res[2]);
-      } else {
-        for (let i = 0; i < count; i++) {
-          result.ids.push(cardId);
-        }
-      }
+    const pieces = splitBulkEntryLine(rawLine);
+    if (!pieces) {
+      // The line was likely empty, ignore it.
+      continue;
+    }
+    let cardId: string | null = checkForExactCardId(pieces);
+    if (!cardId) {
+      cardId = lowercaseNameToID[pieces.text.toLowerCase()];
+    }
+    if (!cardId) {
+      cardId = lowEntropyNameToID[lowEntropyName(pieces.text)];
+    }
+    if (!cardId) {
+      result.errors.push(pieces.text);
+      continue;
+    }
+
+    for (let i = 0; i < pieces.count; i++) {
+      result.ids.push(cardId);
     }
   }
   return result;
