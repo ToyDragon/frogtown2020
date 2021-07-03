@@ -99,7 +99,7 @@ export default function setupBulkImport(
 function lowEntropyName(original_name: string): string {
   return original_name
     .toLowerCase()
-    .split("/")[0]
+    .split("/")[0] // Some cards with multiple names on the face have this character, such as "Breaking // Entering".
     .replace(/[^a-zA-Z]/g, "");
 }
 
@@ -157,24 +157,26 @@ export function getCardsByName(
   nameToID: Record<string, string[]>
 ): { ids: string[]; errors: string[] } {
   const result: { ids: string[]; errors: string[] } = { ids: [], errors: [] };
-  const rawLines = (bulkName + "").split("\n");
 
   // These maps are very expensive to construct, but we do it anyways because this only happens once when performing a bulk import.
   // Bulk imports are typically slow, and this contributes to that, but it's an intended trade off for legible code.
   const lowEntropyNameToID = constructLowEntropyNameMap(nameToID);
   const lowercaseNameToID = constructLowercaseNameMap(nameToID);
 
-  for (const rawLine of rawLines) {
-    const pieces = splitBulkEntryLine(rawLine);
+  const bulkLines = (bulkName + "").split("\n");
+  for (const line of bulkLines) {
+    const pieces = splitBulkEntryLine(line);
     if (!pieces) {
       // The line was likely empty, ignore it.
       continue;
     }
     let cardId: string | null = checkForExactCardId(pieces);
     if (!cardId) {
+      // Start with a case-insensitive match on name, to catch near-perfectly entered cards.
       cardId = lowercaseNameToID[pieces.text.toLowerCase()];
     }
     if (!cardId) {
+      // Then try matching on a low entropy version of the card name, that removes symbols and spaces.
       cardId = lowEntropyNameToID[lowEntropyName(pieces.text)];
     }
     if (!cardId) {
