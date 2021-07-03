@@ -27,6 +27,8 @@ export default function setupBulkImport(
   if (!inputArea) {
     return;
   }
+
+  // Support for dropping existing deck files on the bulk import text area.
   inputArea.addEventListener("drop", async (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -46,6 +48,7 @@ export default function setupBulkImport(
     }
   });
 
+  // Clicking the import button brings up the import popup.
   document.querySelector("#actionBulkImport")?.addEventListener("click", () => {
     inputArea.value = "";
     const inputAreaError = document.querySelector(
@@ -54,6 +57,8 @@ export default function setupBulkImport(
     inputAreaError.textContent = "";
     showPopup(document.querySelector("#importOverlay"));
   });
+
+  // Clicking confirm in the import popup shows errors, or performs the import.
   document.querySelector("#btnConfirmImport")?.addEventListener("click", () => {
     const nameToID = dl.getMapData("NameToID");
     if (!nameToID) {
@@ -72,6 +77,8 @@ export default function setupBulkImport(
       document.querySelector("#importOverlay")?.classList.add("nodisp");
     }
   });
+
+  // Close button in the popup.
   document
     .querySelector("#btnCloseImportPopup")
     ?.addEventListener("click", () => {
