@@ -26,6 +26,7 @@
     "express": "^4.17.1",
     "gts": "^2.0.2",
     "https-browserify": "^1.0.0",
+    "i": "^0.3.6",
     "imagemagick-stream": "^4.1.1",
     "mongodb": "^3.6.9",
     "mysql": "^2.18.1",
