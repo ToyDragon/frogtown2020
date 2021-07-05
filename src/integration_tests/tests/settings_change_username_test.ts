@@ -25,11 +25,12 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
     );
 
     // Change the name in the input.
+    // page.type is required to trigger the keyboard events, but it consistently types the wrong text. Maybe a bug with puppeteer?
+    // We get around that by forcing the input to have the correct value after a waiting period.
     await page.type("#inputName", testName, {
       delay: 25,
     });
-    // Force the input to have the correct value, because puppeteer can't type correctly.
-    // We still need to call page.type to trigger the keyboard events.
+    await timeout(75);
     await page.evaluate((testName) => {
       (document.querySelector(
         "#inputName"
@@ -55,7 +56,7 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
 
     // Verify that the name change persists after reloading the page.
     await page.reload();
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(1500);
     await assertValueSatisfies(
       page,
       "#inputName",
