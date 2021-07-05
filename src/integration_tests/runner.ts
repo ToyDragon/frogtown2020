@@ -60,22 +60,29 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
     config: config,
   };
   let failed = false;
-  const tests: IntegrationTest[] = [
-    new CardsearchLoadsTest(),
-    new SettingsChangeUsernameTest(),
-    new SettingsQualityTest(),
+  const testSets: IntegrationTest[][] = [
+    [new CardsearchLoadsTest()],
+    [new SettingsChangeUsernameTest()],
+    [new SettingsQualityTest()],
   ];
-  for (const test of tests) {
-    process.stdout.write("Running test " + test.name() + "... ");
-    try {
-      await test.run(runParams);
-      process.stdout.write("Passed!\n");
-    } catch (e) {
-      process.stdout.write("Failed!\n");
-      console.error(e);
-      failed = true;
-    }
+  const testRunPromises: Promise<void>[] = [];
+  for (const set of testSets) {
+    testRunPromises.push(
+      (async () => {
+        for (const test of set) {
+          try {
+            await test.run(runParams);
+            console.log(`Test ${test.name()} passed!`);
+          } catch (e) {
+            console.log(`Test ${test.name()} failed!`);
+            console.error(e);
+            failed = true;
+          }
+        }
+      })()
+    );
   }
+  await Promise.all(testRunPromises);
   await browser.close();
 
   if (failed) {
