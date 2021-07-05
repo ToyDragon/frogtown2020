@@ -103,6 +103,7 @@ const includedDataUserDetails: IncludedData = {
       "SELECT * FROM user_keys WHERE public_id=?;",
       [req.cookies["publicId"]]
     );
+    console.log("Public id: " + JSON.stringify(req.cookies));
     if (userRows?.value && userRows?.value.length > 0) {
       userDetails.name = userRows.value[0].name;
       userDetails.backUrl = userRows.value[0].back_url;

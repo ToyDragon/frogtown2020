@@ -1,10 +1,10 @@
 import commandLineArgs from "command-line-args";
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
+import { IntegrationTest, RunParams } from "./integration_test";
+import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 
 (async () => {
-  console.log("Running.");
-
   // Setup command line params
   const options = commandLineArgs([
     {
@@ -29,41 +29,41 @@ import puppeteer from "puppeteer";
   if (!port) {
     throw new Error("Server port required.");
   }
-
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  page.setCookie({
-    domain: serverUrl,
-    value: "4rsvvuw12bm4o1p7bo81bvbp",
-    name: "publicId",
-    path: "/",
-  });
-  page.setCookie({
-    domain: serverUrl,
-    value: "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh",
-    name: "privateId",
-    path: "/",
-  });
-
-  page.on("error", (e) => {
-    console.error(e);
-  });
-  page.on("console", (e) => {
-    console.log(e.text());
-  });
-  await page.goto(`https://${serverUrl}:${port}/cardsearch.html`);
-  await page.mainFrame().waitForTimeout(100);
-  await page.mainFrame().click(".btn-mydecks");
-  const includedData: { decks: unknown[] } = await page.evaluate(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (window as any).includedData;
-  });
-  const cookies: string = await page.evaluate(() => {
-    return document.cookie;
-  });
-  console.log(
-    `Loaded ${includedData.decks.length} decks. ${JSON.stringify(includedData)}`
-  );
-  console.log(`Cookies: ${cookies}`);
+  const runParams: RunParams = {
+    authCookies: [
+      {
+        domain: serverUrl,
+        value: "4rsvvuw12bm4o1p7bo81bvbp",
+        name: "publicId",
+      },
+      {
+        domain: serverUrl,
+        value:
+          "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh",
+        name: "privateId",
+      },
+    ],
+    browser: browser,
+    serverUrl: serverUrl,
+    port: port,
+  };
+  let failed = false;
+  const tests: IntegrationTest[] = [new CardsearchLoadsTest()];
+  for (const test of tests) {
+    console.log("Running test " + test.name());
+    if (!(await test.run(runParams))) {
+      failed = true;
+      console.log("... Failed");
+    } else {
+      console.log("... Passed!");
+    }
+  }
   await browser.close();
+
+  if (failed) {
+    throw new Error("Integration tests failed.");
+  } else {
+    console.log("All tests passed.");
+  }
 })();
