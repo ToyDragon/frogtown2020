@@ -57,6 +57,7 @@ pipeline {
         stage('Integration Test') {
             steps {
                 sh '''
+                  SLEEP 10
                   PORT=$(expr 8543 + ${BUILD_ID} % 5);
                   curl https://kismarton.frogtown.me:$PORT/
                 '''
