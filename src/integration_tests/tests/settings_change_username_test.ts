@@ -1,30 +1,28 @@
 import { timeout } from "../../shared/utils";
-import { IntegrationTest, RunParams } from "../integration_test";
+import {
+  assertValueSatisfies,
+  IntegrationTest,
+  RunParams,
+} from "../integration_test";
 
 export default class SettingsChangeUsernameTest extends IntegrationTest {
   name(): string {
     return "SettingsChangeUsernameTest";
   }
 
-  async run(params: RunParams): Promise<boolean> {
+  async run(params: RunParams): Promise<void> {
     const page = await params.browser.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     const testName = "Kanye West " + Math.trunc(Math.random() * 100000);
 
     // Verify that the checkmark is visible.
-    let okClass = await page.$eval<string>(
+    await assertValueSatisfies(
+      page,
       "#inputName + .refresh + .ok",
-      (e) => e.className
+      "className",
+      (className: string) => className.indexOf("nodisp") === -1
     );
-    if (!okClass) {
-      console.log("No checkmark icon element.");
-      return false;
-    }
-    if (okClass.indexOf("nodisp") >= 0) {
-      console.log("Checkmark hidden initially.");
-      return false;
-    }
 
     // Change the name in the input.
     await page.type("#inputName", testName, {
@@ -39,50 +37,30 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
     }, testName);
 
     // Verify that the checkmark has disappeared while the change is pending.
-    okClass = await page.$eval<string>(
+    await assertValueSatisfies(
+      page,
       "#inputName + .refresh + .ok",
-      (e) => e.className
+      "className",
+      (className: string) => className.indexOf("nodisp") >= 0
     );
-    if (!okClass) {
-      console.log("No checkmark icon element.");
-      return false;
-    }
-    if (okClass.indexOf("nodisp") === -1) {
-      console.log("Checkmark not hidden while change pending.");
-      return false;
-    }
 
     // Verify that the checkmark is back after some time.
     await timeout(1500);
-    okClass = await page.$eval<string>(
+    await assertValueSatisfies(
+      page,
       "#inputName + .refresh + .ok",
-      (e) => e.className
+      "className",
+      (className: string) => className.indexOf("nodisp") === -1
     );
-    if (!okClass) {
-      console.log("No checkmark icon element.");
-      return false;
-    }
-    if (okClass.indexOf("nodisp") >= 0) {
-      console.log("Checkmark hidden after change should have submitted.");
-      return false;
-    }
 
     // Verify that the name change persists after reloading the page.
     await page.reload();
     await page.waitForTimeout(250);
-    const inputValue = await page.$eval<string>(
+    await assertValueSatisfies(
+      page,
       "#inputName",
-      (e) => (e as HTMLInputElement).value
+      "value",
+      (value: string) => value === testName
     );
-    if (!inputValue) {
-      console.log("No name input element.");
-      return false;
-    }
-    if (inputValue !== testName) {
-      console.log("Name input doesn't have test name after reload.");
-      return false;
-    }
-
-    return true;
   }
 }

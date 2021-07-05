@@ -55,12 +55,14 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
     new SettingsChangeUsernameTest(),
   ];
   for (const test of tests) {
-    console.log("Running test " + test.name());
-    if (!(await test.run(runParams))) {
+    process.stdout.write("Running test " + test.name() + "... ");
+    try {
+      await test.run(runParams);
+      process.stdout.write("Passed!\n");
+    } catch (e) {
+      process.stdout.write("Failed!\n");
+      console.error(e);
       failed = true;
-      console.log("... Failed");
-    } else {
-      console.log("... Passed!");
     }
   }
   await browser.close();
