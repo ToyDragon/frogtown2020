@@ -6,6 +6,7 @@ import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
+import SettingsCardbackTest from "./tests/settings_cardback_test";
 
 (async () => {
   // Setup command line params
@@ -64,6 +65,7 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
   const testSets: IntegrationTest[][] = [
     [new CardsearchLoadsTest()],
     [new SettingsChangeUsernameTest()],
+    [new SettingsCardbackTest()],
     [new SettingsQualityTest()],
   ];
   const testRunPromises: Promise<void>[] = [];

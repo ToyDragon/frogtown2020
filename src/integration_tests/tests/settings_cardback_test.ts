@@ -6,32 +6,33 @@ import {
   type,
 } from "../integration_test";
 
-export default class SettingsChangeUsernameTest extends IntegrationTest {
+export default class SettingsCardbackTest extends IntegrationTest {
   name(): string {
-    return "SettingsChangeUsernameTest";
+    return "SettingsCardbackTest";
   }
 
   async run(params: RunParams): Promise<void> {
     const page = await params.browser.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
-    const testName = "Kanye West " + Math.trunc(Math.random() * 100000);
+    const version = Math.trunc(Math.random() * 100000);
+    const testUrl = `https://${params.serverUrl}:${params.port}/Images/V${version}/CardBack.jpg`;
 
     // Verify that the checkmark is visible.
     await assertValueSatisfies(
       page,
-      "#inputName + .refresh + .ok",
+      "#ttsBackInput + .refresh + .ok",
       "className",
       (className: string) => className.indexOf("nodisp") === -1
     );
 
-    // Change the name in the input.
-    await type(page, "#inputName", testName);
+    // Change the url in the input.
+    await type(page, "#ttsBackInput", testUrl);
 
     // Verify that the checkmark has disappeared while the change is pending.
     await assertValueSatisfies(
       page,
-      "#inputName + .refresh + .ok",
+      "#ttsBackInput + .refresh + .ok",
       "className",
       (className: string) => className.indexOf("nodisp") >= 0
     );
@@ -40,19 +41,19 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
     await timeout(1500);
     await assertValueSatisfies(
       page,
-      "#inputName + .refresh + .ok",
+      "#ttsBackInput + .refresh + .ok",
       "className",
       (className: string) => className.indexOf("nodisp") === -1
     );
 
-    // Verify that the name change persists after reloading the page.
+    // Verify that the url change persists after reloading the page.
     await page.reload();
     await page.waitForTimeout(1500);
     await assertValueSatisfies(
       page,
-      "#inputName",
+      "#ttsBackInput",
       "value",
-      (value: string) => value === testName
+      (value: string) => value === testUrl
     );
   }
 }
