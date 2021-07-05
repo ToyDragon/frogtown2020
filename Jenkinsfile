@@ -57,7 +57,7 @@ pipeline {
         stage('Integration Test') {
             steps {
                 script {
-                    body += '\Running integration tests...';
+                    body += '\nRunning integration tests...';
                     pullRequest.editComment(comment.id, body)
                 }
                 sh '''
