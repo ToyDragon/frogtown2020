@@ -6,6 +6,7 @@ import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
+import { httpsGet, httpsGetRaw } from "../shared/utils";
 
 (async () => {
   // Setup command line params
@@ -59,6 +60,13 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
     port: port,
     config: config,
   };
+
+  try {
+    console.log("Trying to load / page");
+    console.log(await httpsGetRaw(`https://${serverUrl}:${port}/`));
+  } catch (e) {
+    console.error(e);
+  }
   let failed = false;
   const testSets: IntegrationTest[][] = [
     [new CardsearchLoadsTest()],
