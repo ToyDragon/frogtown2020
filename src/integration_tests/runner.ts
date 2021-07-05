@@ -4,6 +4,7 @@ import puppeteer from "puppeteer";
 import LoadConfigFromFile from "../server/config_loader";
 import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
+import SettingsQualityTest from "./tests/settings_quality_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 
 (async () => {
@@ -62,6 +63,7 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
   const tests: IntegrationTest[] = [
     new CardsearchLoadsTest(),
     new SettingsChangeUsernameTest(),
+    new SettingsQualityTest(),
   ];
   for (const test of tests) {
     process.stdout.write("Running test " + test.name() + "... ");
