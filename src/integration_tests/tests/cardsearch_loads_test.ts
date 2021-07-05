@@ -21,4 +21,4 @@ export default class CardsearchLoadsTest extends IntegrationTest {
     }
     return true;
   }
-};
+}
