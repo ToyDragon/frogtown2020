@@ -3,6 +3,7 @@ import commandLineArgs from "command-line-args";
 import puppeteer from "puppeteer";
 import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
+import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 
 (async () => {
   // Setup command line params
@@ -49,7 +50,10 @@ import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
     port: port,
   };
   let failed = false;
-  const tests: IntegrationTest[] = [new CardsearchLoadsTest()];
+  const tests: IntegrationTest[] = [
+    new CardsearchLoadsTest(),
+    new SettingsChangeUsernameTest(),
+  ];
   for (const test of tests) {
     console.log("Running test " + test.name());
     if (!(await test.run(runParams))) {
@@ -62,7 +66,9 @@ import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
   await browser.close();
 
   if (failed) {
-    throw new Error("Integration tests failed.");
+    console.error("Integration tests failed.");
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
   } else {
     console.log("All tests passed.");
   }
