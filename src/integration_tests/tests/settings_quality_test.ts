@@ -45,7 +45,9 @@ export default class SettingsQualityTest extends IntegrationTest {
 
     // Change the quality.
     await page.click("#btnToggleHQ");
-    await timeout(500);
+
+    // There is cache for image quality, so wait for it to expire.
+    await timeout((params.config.imageQualityCacheDuration + 1) * 1000);
 
     // Verify quality display changed.
     qualityTextContent = await verifyExistsAndGetValue(
@@ -87,5 +89,8 @@ export default class SettingsQualityTest extends IntegrationTest {
     if (reloadHQ !== newHQ) {
       throw new Error("Quality change didn't persist after reloading page.");
     }
+
+    // Wait for the cache to expire again, so this doesn't impact future tests.
+    await timeout((params.config.imageQualityCacheDuration + 1) * 1000);
   }
 }
