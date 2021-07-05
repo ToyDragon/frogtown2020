@@ -7,7 +7,7 @@ export default function ImagesHandler(
   services: Services
 ): express.RequestHandler {
   const hqCacher = new AsyncCacher<boolean>(
-    60 * 1000, // 60 second timeout
+    services.config.imageQualityCacheDuration * 1000,
     async (ipAddress: string) => {
       const connection = await services.dbManager.getConnection();
       if (!connection) {

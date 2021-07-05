@@ -27,5 +27,6 @@ export default class Config {
     user: "",
     passwordFile: "",
   };
+  public imageQualityCacheDuration = 0;
   public cardImageRoutes: string[] = [];
 }
