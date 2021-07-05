@@ -5,7 +5,7 @@ export default class CardsearchLoadsTest extends IntegrationTest {
     return "CardsearchLoadsTest";
   }
 
-  async run(params: RunParams): Promise<boolean> {
+  async run(params: RunParams): Promise<void> {
     const page = await params.browser.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(
@@ -16,9 +16,7 @@ export default class CardsearchLoadsTest extends IntegrationTest {
       return (window as any).includedData;
     });
     if (!includedData) {
-      console.log("No includedData on cardsearch.html");
-      return false;
+      throw new Error("No includedData on cardsearch.html");
     }
-    return true;
   }
 }
