@@ -56,6 +56,10 @@ pipeline {
         }
         stage('Integration Test') {
             steps {
+                sh '''
+                  PORT=$(expr 8543 + ${BUILD_ID} % 5);
+                  curl https://kismarton.frogtown.me:$PORT/
+                '''
                 script {
                     body += '\nRunning integration tests...';
                     pullRequest.editComment(comment.id, body)
