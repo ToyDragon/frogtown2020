@@ -54,6 +54,22 @@ pipeline {
                 }
             }
         }
+        stage('Integration Test') {
+            steps {
+                script {
+                    body += '\nRunning integration tests...';
+                    pullRequest.editComment(comment.id, body)
+                }
+                sh '''
+                  PORT=$(expr 8543 + ${BUILD_ID} % 5);
+                  node ./bin/integration_tests/runner.js -s "kismarton.frogtown.me" -p $PORT
+                '''
+                script {
+                    body += '\nIntegration tests complete.'
+                    pullRequest.editComment(comment.id, body)
+                }
+            }
+        }
         stage('Build Beta/Prod Images') {
             steps {
                 script {
