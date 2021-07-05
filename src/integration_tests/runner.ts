@@ -1,6 +1,7 @@
 import commandLineArgs from "command-line-args";
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
+import LoadConfigFromFile from "../server/config_loader";
 import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
@@ -20,6 +21,12 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
       type: Number,
       defaultValue: -1,
     },
+    {
+      name: "config",
+      alias: "c",
+      type: String,
+      defaultValue: "./config.json",
+    },
   ]);
 
   const serverUrl: string | null = options["server"];
@@ -30,6 +37,7 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
   if (!port) {
     throw new Error("Server port required.");
   }
+  const config = await LoadConfigFromFile(options["config"]);
   const browser = await puppeteer.launch();
   const runParams: RunParams = {
     authCookies: [
@@ -48,6 +56,7 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
     browser: browser,
     serverUrl: serverUrl,
     port: port,
+    config: config,
   };
   let failed = false;
   const tests: IntegrationTest[] = [

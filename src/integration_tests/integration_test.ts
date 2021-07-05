@@ -1,5 +1,6 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
+import Config from "../server/config";
 
 export async function verifyExistsAndGetValue(
   page: puppeteer.Page,
@@ -42,6 +43,7 @@ export interface RunParams {
   authCookies: puppeteer.Protocol.Network.CookieParam[];
   serverUrl: string;
   port: number;
+  config: Config;
 }
 
 export abstract class IntegrationTest {
