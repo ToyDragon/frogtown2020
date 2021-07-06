@@ -2,8 +2,9 @@
 import puppeteer from "puppeteer";
 import Assert from "./assertions";
 
+let browser: puppeteer.Browser | null = null;
 const pageGetter = (async () => {
-  const browser = await puppeteer.launch();
+  browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setContent(`
     <html>
@@ -123,4 +124,8 @@ test("Assert.valueSatisfies", async () => {
       (className: string) => className === "wrong input content"
     )
   ).rejects.toThrow();
+});
+
+afterAll(async () => {
+  await browser!.close();
 });
