@@ -29,8 +29,9 @@ export default class SettingsChangeUserTest extends IntegrationTest {
     // Verify the input is now visible.
     await Assert.visible(page, "#divPrivateId");
 
-    // Verify that the checkmark is visible.
+    // Verify that the checkmark is visible, and the refresh icon hidden.
     await Assert.visible(page, "#inputId + .error + .refresh + .ok");
+    await Assert.notVisible(page, "#inputId + .error + .refresh");
 
     // Verify that the input shows the current ID.
     await Assert.valueSatisfies(
@@ -46,10 +47,12 @@ export default class SettingsChangeUserTest extends IntegrationTest {
 
       // Verify that the checkmark has disappeared while the change is pending.
       await Assert.notVisible(page, "#inputId + .error + .refresh + .ok");
+      await Assert.visible(page, "#inputId + .error + .refresh");
 
       // Verify that the checkmark is back after some time.
       await timeout(1500);
       await Assert.visible(page, "#inputId + .error + .refresh + .ok");
+      await Assert.notVisible(page, "#inputId + .error + .refresh");
 
       // Verify that the ID change persists after reloading the page.
       await page.reload();
