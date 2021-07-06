@@ -6,6 +6,7 @@ import {
 } from "../integration_test";
 import * as https from "https";
 
+// This test validates that the user can change their preferred quality, and that images redirect based on the setting correctly.
 export default class SettingsQualityTest extends IntegrationTest {
   name(): string {
     return "SettingsQualityTest";
@@ -45,6 +46,8 @@ export default class SettingsQualityTest extends IntegrationTest {
 
     // Change the quality.
     await page.click("#btnToggleHQ");
+
+    // TODO: Test that the old setting is still cached.
 
     // There is cache for image quality, so wait for it to expire.
     await timeout((params.config.imageQualityCacheDuration + 1) * 1000);

@@ -6,6 +6,7 @@ import {
   type,
 } from "../integration_test";
 
+// This test validates that the user can change which ID they are using.
 export default class SettingsChangeUserTest extends IntegrationTest {
   name(): string {
     return "SettingsChangeUserTest";

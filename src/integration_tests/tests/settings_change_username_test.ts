@@ -6,6 +6,8 @@ import {
   type,
 } from "../integration_test";
 
+// This test validates that the user can change their name.
+// It does not test any appearences of the username on any other page.
 export default class SettingsChangeUsernameTest extends IntegrationTest {
   name(): string {
     return "SettingsChangeUsernameTest";

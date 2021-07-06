@@ -6,6 +6,8 @@ import {
   type,
 } from "../integration_test";
 
+// This test validates that the user's cardback URL can be changed.
+// It does not validate whether or not the cardback URL is included in exported decks.
 export default class SettingsCardbackTest extends IntegrationTest {
   name(): string {
     return "SettingsCardbackTest";

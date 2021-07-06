@@ -3,6 +3,7 @@ import puppeteer from "puppeteer";
 import Config from "../server/config";
 import { timeout } from "../shared/utils";
 
+// Type some text into a text input. This is a wrapper around page.type that fixes an issue.
 export async function type(
   page: puppeteer.Page,
   selector: string,
@@ -23,6 +24,8 @@ export async function type(
   );
 }
 
+// Gets a property of an HTMLElement object, throwing an error if the selector doesn't select an element.
+// Notably this doesn't get things requiring function calls, such as `element.getAttribute("href")`.
 export async function verifyExistsAndGetValue(
   page: puppeteer.Page,
   selector: string,
@@ -36,7 +39,7 @@ export async function verifyExistsAndGetValue(
       property
     );
   } catch (e) {
-    // Throw an error with more meaningful debug info.
+    // The default error is very generic, so throw an error with more meaningful debug info.
     console.error(e);
     throw new Error(
       `Unable to find element "${selector}" while trying to get property "${property}".`
@@ -44,6 +47,8 @@ export async function verifyExistsAndGetValue(
   }
 }
 
+// Wrapper around verifyExistsAndGetValue that checks the result with a condition function.
+// The condition function should take just the property as input, and return true on success, or false on failure.
 export async function assertValueSatisfies(
   page: puppeteer.Page,
   selector: string,
