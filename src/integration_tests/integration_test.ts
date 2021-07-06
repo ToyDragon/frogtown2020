@@ -14,9 +14,13 @@ export async function type(
     delay: 25,
   });
   await timeout(75);
-  await page.evaluate((value) => {
-    (document.querySelector(selector) as HTMLInputElement).value = value;
-  }, value);
+  await page.evaluate(
+    (value, selector: string) => {
+      (document.querySelector(selector) as HTMLInputElement).value = value;
+    },
+    value,
+    selector
+  );
 }
 
 export async function verifyExistsAndGetValue(

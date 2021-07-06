@@ -7,6 +7,7 @@ import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsCardbackTest from "./tests/settings_cardback_test";
+import SettingsChangeUserTest from "./tests/settings_change_user_test";
 
 (async () => {
   // Setup command line params
@@ -63,16 +64,19 @@ import SettingsCardbackTest from "./tests/settings_cardback_test";
 
   let failed = false;
   const testSets: IntegrationTest[][] = [
-    [new CardsearchLoadsTest()],
-    [new SettingsChangeUsernameTest()],
-    [new SettingsCardbackTest()],
-    [new SettingsQualityTest()],
+    [new SettingsChangeUserTest()],
+    [
+      new CardsearchLoadsTest(),
+      new SettingsChangeUsernameTest(),
+      new SettingsCardbackTest(),
+      new SettingsQualityTest(),
+    ],
   ];
-  const testRunPromises: Promise<void>[] = [];
   for (const set of testSets) {
-    testRunPromises.push(
-      (async () => {
-        for (const test of set) {
+    const testRunPromises: Promise<void>[] = [];
+    for (const test of set) {
+      testRunPromises.push(
+        (async () => {
           try {
             await test.run(runParams);
             console.log(`Test ${test.name()} passed!`);
@@ -81,11 +85,11 @@ import SettingsCardbackTest from "./tests/settings_cardback_test";
             console.error(e);
             failed = true;
           }
-        }
-      })()
-    );
+        })()
+      );
+    }
+    await Promise.all(testRunPromises);
   }
-  await Promise.all(testRunPromises);
   await browser.close();
 
   if (failed) {
