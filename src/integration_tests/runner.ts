@@ -64,7 +64,10 @@ import SettingsChangeUserTest from "./tests/settings_change_user_test";
 
   let failed = false;
   const testSets: IntegrationTest[][] = [
-    [new SettingsChangeUserTest()],
+    [
+      // This changes cookies, so it needs to be done before all other tests that make requests.
+      new SettingsChangeUserTest(),
+    ],
     [
       new CardsearchLoadsTest(),
       new SettingsChangeUsernameTest(),
