@@ -1,16 +1,10 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
 import { timeout } from "../../shared/utils";
-import {
-  assertContains,
-  assertEquals,
-  assertNotEquals,
-  IntegrationTest,
-  RunParams,
-  verifyExistsAndGetValue,
-} from "../integration_test";
+import { IntegrationTest, RunParams } from "../integration_test";
 import * as https from "https";
 import Config from "../../server/config";
+import Assert from "../assertions";
 
 // This test validates that the user can change their preferred quality, and that images redirect based on the setting correctly.
 export default class SettingsQualityTest extends IntegrationTest {
@@ -33,7 +27,7 @@ export default class SettingsQualityTest extends IntegrationTest {
   }
 
   async getShownQuality(page: puppeteer.Page): Promise<boolean> {
-    const qualityTextContent = await verifyExistsAndGetValue(
+    const qualityTextContent = await Assert.existsAndGetValue(
       page,
       "#spanCurrentQualityDisplay",
       "textContent"
@@ -54,7 +48,7 @@ export default class SettingsQualityTest extends IntegrationTest {
     // Verify that cards redirect to the correct bucket.
     let redirectUrl = await this.getRedirectUrl(cardUrl);
     let expectedBucket = this.getBucket(initialHQ, params.config);
-    assertContains(redirectUrl, expectedBucket);
+    await Assert.contains(redirectUrl, expectedBucket);
 
     // Change the quality.
     await page.click("#btnToggleHQ");
@@ -66,18 +60,18 @@ export default class SettingsQualityTest extends IntegrationTest {
 
     // Verify quality display changed.
     const newHQ = await this.getShownQuality(page);
-    assertNotEquals(newHQ, initialHQ);
+    await Assert.notEquals(newHQ, initialHQ);
 
     // Verify that cards redirect to the correct bucket.
     expectedBucket = this.getBucket(newHQ, params.config);
     redirectUrl = await this.getRedirectUrl(cardUrl);
-    assertContains(redirectUrl, expectedBucket);
+    await Assert.contains(redirectUrl, expectedBucket);
 
     // Verify that the setting change persists after reloading the page.
     await page.reload();
     await page.waitForTimeout(1000);
     const reloadHQ = await this.getShownQuality(page);
-    assertEquals(newHQ, reloadHQ);
+    await Assert.equals(newHQ, reloadHQ);
 
     // Wait for the cache to expire again, so this doesn't impact future tests.
     await timeout((params.config.imageQualityCacheDuration + 1) * 1000);

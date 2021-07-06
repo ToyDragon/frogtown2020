@@ -1,12 +1,6 @@
 import { timeout } from "../../shared/utils";
-import {
-  assertNotVisible,
-  assertValueSatisfies,
-  assertVisible,
-  IntegrationTest,
-  RunParams,
-  type,
-} from "../integration_test";
+import Assert from "../assertions";
+import { IntegrationTest, RunParams, type } from "../integration_test";
 
 // This test validates that the user can change which ID they are using.
 export default class SettingsChangeUserTest extends IntegrationTest {
@@ -25,7 +19,7 @@ export default class SettingsChangeUserTest extends IntegrationTest {
       "xhjaz9nlcdeij0x3ghudok2zh4i575r66e6cavevh25fm4xt53jvugmn2k0umihz";
 
     // Verify the input is initially hidden.
-    await assertNotVisible(page, "#divPrivateId");
+    await Assert.notVisible(page, "#divPrivateId");
 
     // Click the button to reveal the input.
     await page.click("#btnChangePrivateId", {
@@ -33,13 +27,13 @@ export default class SettingsChangeUserTest extends IntegrationTest {
     });
 
     // Verify the input is now visible.
-    await assertVisible(page, "#divPrivateId");
+    await Assert.visible(page, "#divPrivateId");
 
     // Verify that the checkmark is visible.
-    await assertVisible(page, "#inputId + .error + .refresh + .ok");
+    await Assert.visible(page, "#inputId + .error + .refresh + .ok");
 
     // Verify that the input shows the current ID.
-    await assertValueSatisfies(
+    await Assert.valueSatisfies(
       page,
       "#inputId",
       "value",
@@ -51,16 +45,16 @@ export default class SettingsChangeUserTest extends IntegrationTest {
       await type(page, "#inputId", newId);
 
       // Verify that the checkmark has disappeared while the change is pending.
-      await assertNotVisible(page, "#inputId + .error + .refresh + .ok");
+      await Assert.notVisible(page, "#inputId + .error + .refresh + .ok");
 
       // Verify that the checkmark is back after some time.
       await timeout(1500);
-      await assertVisible(page, "#inputId + .error + .refresh + .ok");
+      await Assert.visible(page, "#inputId + .error + .refresh + .ok");
 
       // Verify that the ID change persists after reloading the page.
       await page.reload();
       await page.waitForTimeout(1500);
-      await assertValueSatisfies(
+      await Assert.valueSatisfies(
         page,
         "#inputId",
         "value",
