@@ -1,6 +1,8 @@
 import { timeout } from "../../shared/utils";
 import {
+  assertNotVisible,
   assertValueSatisfies,
+  assertVisible,
   IntegrationTest,
   RunParams,
   type,
@@ -19,33 +21,21 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     const testName = "Kanye West " + Math.trunc(Math.random() * 100000);
 
-    // Verify that the checkmark is visible.
-    await assertValueSatisfies(
-      page,
-      "#inputName + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    // Verify that the checkmark is visible, and the refresh icon hidden.
+    await assertVisible(page, "#inputName + .refresh + .ok");
+    await assertNotVisible(page, "#inputName + .refresh");
 
     // Change the name in the input.
     await type(page, "#inputName", testName);
 
     // Verify that the checkmark has disappeared while the change is pending.
-    await assertValueSatisfies(
-      page,
-      "#inputName + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") >= 0
-    );
+    await assertNotVisible(page, "#inputName + .refresh + .ok");
+    await assertVisible(page, "#inputName + .refresh");
 
     // Verify that the checkmark is back after some time.
     await timeout(1500);
-    await assertValueSatisfies(
-      page,
-      "#inputName + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    await assertVisible(page, "#inputName + .refresh + .ok");
+    await assertNotVisible(page, "#inputName + .refresh");
 
     // Verify that the name change persists after reloading the page.
     await page.reload();

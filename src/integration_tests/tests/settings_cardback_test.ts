@@ -1,6 +1,8 @@
 import { timeout } from "../../shared/utils";
 import {
+  assertNotVisible,
   assertValueSatisfies,
+  assertVisible,
   IntegrationTest,
   RunParams,
   type,
@@ -21,32 +23,17 @@ export default class SettingsCardbackTest extends IntegrationTest {
     const testUrl = `https://${params.serverUrl}:${params.port}/Images/V${version}/CardBack.jpg`;
 
     // Verify that the checkmark is visible.
-    await assertValueSatisfies(
-      page,
-      "#ttsBackInput + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    await assertVisible(page, "#ttsBackInput + .refresh + .ok");
 
     // Change the url in the input.
     await type(page, "#ttsBackInput", testUrl);
 
     // Verify that the checkmark has disappeared while the change is pending.
-    await assertValueSatisfies(
-      page,
-      "#ttsBackInput + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") >= 0
-    );
+    await assertNotVisible(page, "#ttsBackInput + .refresh + .ok");
 
     // Verify that the checkmark is back after some time.
     await timeout(1500);
-    await assertValueSatisfies(
-      page,
-      "#ttsBackInput + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    await assertVisible(page, "#ttsBackInput + .refresh + .ok");
 
     // Verify that the url change persists after reloading the page.
     await page.reload();

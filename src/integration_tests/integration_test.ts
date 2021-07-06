@@ -64,6 +64,56 @@ export async function assertValueSatisfies(
   return actualValue;
 }
 
+// Wrapper around page.waitForSelector with specific default values.
+export async function assertVisible(
+  page: puppeteer.Page,
+  selector: string
+): Promise<void> {
+  await page.waitForSelector(selector, {
+    visible: true,
+    timeout: 250,
+  });
+}
+
+// Wrapper around page.waitForSelector with specific default values.
+export async function assertNotVisible(
+  page: puppeteer.Page,
+  selector: string
+): Promise<void> {
+  await page.waitForSelector(selector, {
+    hidden: true,
+    timeout: 250,
+  });
+}
+
+// Wrapper around indexOf that throws an error.
+export function assertContains(value: string, substring: string): void {
+  if (value.indexOf(substring) === -1) {
+    throw new Error(`Expected value "${value}" to contain "${substring}".`);
+  }
+}
+
+// Wrapper around indexOf that throws an error.
+export function assertDoesntContain(value: string, substring: string): void {
+  if (value.indexOf(substring) >= 0) {
+    throw new Error(`Expected value "${value}" to not contain "${substring}".`);
+  }
+}
+
+// Wrapper around === that throws an error.
+export function assertEquals<T>(a: T, b: T): void {
+  if (a !== b) {
+    throw new Error(`Expected value "${a}" to equal "${b}".`);
+  }
+}
+
+// Wrapper around === that throws an error.
+export function assertNotEquals<T>(a: T, b: T): void {
+  if (a === b) {
+    throw new Error(`Expected value "${a}" not to equal "${b}".`);
+  }
+}
+
 export interface RunParams {
   browser: puppeteer.Browser;
   authCookies: puppeteer.Protocol.Network.CookieParam[];

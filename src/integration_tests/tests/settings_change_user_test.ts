@@ -1,6 +1,8 @@
 import { timeout } from "../../shared/utils";
 import {
+  assertNotVisible,
   assertValueSatisfies,
+  assertVisible,
   IntegrationTest,
   RunParams,
   type,
@@ -23,32 +25,18 @@ export default class SettingsChangeUserTest extends IntegrationTest {
       "xhjaz9nlcdeij0x3ghudok2zh4i575r66e6cavevh25fm4xt53jvugmn2k0umihz";
 
     // Verify the input is initially hidden.
-    await assertValueSatisfies(
-      page,
-      "#divPrivateId",
-      "className",
-      (className: string) => className.indexOf("nodisp") >= 0
-    );
+    await assertNotVisible(page, "#divPrivateId");
+
     // Click the button to reveal the input.
     await page.click("#btnChangePrivateId", {
       delay: 200,
     });
 
     // Verify the input is now visible.
-    await assertValueSatisfies(
-      page,
-      "#divPrivateId",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    await assertVisible(page, "#divPrivateId");
 
     // Verify that the checkmark is visible.
-    await assertValueSatisfies(
-      page,
-      "#inputId + .error + .refresh + .ok",
-      "className",
-      (className: string) => className.indexOf("nodisp") === -1
-    );
+    await assertVisible(page, "#inputId + .error + .refresh + .ok");
 
     // Verify that the input shows the current ID.
     await assertValueSatisfies(
@@ -63,21 +51,11 @@ export default class SettingsChangeUserTest extends IntegrationTest {
       await type(page, "#inputId", newId);
 
       // Verify that the checkmark has disappeared while the change is pending.
-      await assertValueSatisfies(
-        page,
-        "#inputId + .error + .refresh + .ok",
-        "className",
-        (className: string) => className.indexOf("nodisp") >= 0
-      );
+      await assertNotVisible(page, "#inputId + .error + .refresh + .ok");
 
       // Verify that the checkmark is back after some time.
       await timeout(1500);
-      await assertValueSatisfies(
-        page,
-        "#inputId + .error + .refresh + .ok",
-        "className",
-        (className: string) => className.indexOf("nodisp") === -1
-      );
+      await assertVisible(page, "#inputId + .error + .refresh + .ok");
 
       // Verify that the ID change persists after reloading the page.
       await page.reload();
