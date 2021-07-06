@@ -16,18 +16,21 @@ export default class SettingsCardbackTest extends IntegrationTest {
     const version = Math.trunc(Math.random() * 100000);
     const testUrl = `https://${params.serverUrl}:${params.port}/Images/V${version}/CardBack.jpg`;
 
-    // Verify that the checkmark is visible.
+    // Verify that the checkmark is visible, and the refresh icon is hidden.
     await Assert.visible(page, "#ttsBackInput + .refresh + .ok");
+    await Assert.notVisible(page, "#ttsBackInput + .refresh");
 
     // Change the url in the input.
     await type(page, "#ttsBackInput", testUrl);
 
     // Verify that the checkmark has disappeared while the change is pending.
     await Assert.notVisible(page, "#ttsBackInput + .refresh + .ok");
+    await Assert.visible(page, "#ttsBackInput + .refresh");
 
     // Verify that the checkmark is back after some time.
     await timeout(1500);
     await Assert.visible(page, "#ttsBackInput + .refresh + .ok");
+    await Assert.notVisible(page, "#ttsBackInput + .refresh");
 
     // Verify that the url change persists after reloading the page.
     await page.reload();
