@@ -2,12 +2,12 @@ import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoUserQuality extends DBInfo {
-  public getCreateCommand(): string {
+  public getCreateCommand(createTableSuffix: string): string {
     return `
       CREATE TABLE IF NOT EXISTS user_quality(
         ip_address VARCHAR(64) NOT NULL,
-        INDEX (ip_address)
-      ) ENGINE=InnoDB;
+        PRIMARY KEY(ip_address)
+      ) ${createTableSuffix};
     `;
   }
 

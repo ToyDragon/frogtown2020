@@ -2,15 +2,15 @@ import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoCardImages extends DBInfo {
-  public getCreateCommand(): string {
+  public getCreateCommand(createTableSuffix: string): string {
     return `
     CREATE TABLE IF NOT EXISTS card_images(
       card_id VARCHAR(36) NOT NULL,
       update_time DATETIME NOT NULL,
       quality TINYINT NOT NULL,
-      PRIMARY KEY (card_id),
-      INDEX (quality)
-    ) ENGINE=InnoDB;
+      PRIMARY KEY (card_id)
+    ) ${createTableSuffix};
+    CREATE INDEX IF NOT EXISTS idx_quality ON card_images(quality);
     `;
   }
 

@@ -18,7 +18,6 @@ import HTTPSRedirectionHandler from "./handler_https_redirection";
 import SetupRequiredHandler from "./handler_setup";
 import ViewHandler from "./handler_views";
 import * as Logs from "./log";
-import DatabaseManager from "./database/db_manager";
 import ScryfallManager from "./scryfall_manager";
 import ImagesHandler from "./handler_images";
 import { initStatusManagement, logGracefulDeath } from "./status_manager";
@@ -27,6 +26,8 @@ import { timeout } from "../shared/utils";
 import WellKnownHandler from "./handler_wellknown";
 import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
 import { PerformanceLogger } from "./performance_monitor/performance_logger";
+import MySQLDatabaseManager from "./database/mysql_db_manager";
+import initializeDatabase from "./database/initialize_database";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -94,7 +95,7 @@ export default class Server {
       Logs.logInfo("Loaded config.");
       const services: Services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
         perfMon: perfMon,
@@ -126,7 +127,7 @@ export default class Server {
       }
 
       // Initialize the database
-      await services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(serverLabel + ":" + os.hostname());

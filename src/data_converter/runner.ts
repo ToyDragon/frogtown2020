@@ -6,7 +6,6 @@ import Services from "../server/services";
 import LoadConfigFromFile from "../server/config_loader";
 import S3StoragePortal from "../server/storage_portal_s3";
 import * as Logs from "../server/log";
-import DatabaseManager from "../server/database/db_manager";
 import ScryfallManager from "../server/scryfall_manager";
 import {
   initStatusManagement,
@@ -14,7 +13,6 @@ import {
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
 import { timeout, UserDetails } from "../shared/utils";
-//import { Collection, ObjectID, MongoClient, Db, FilterQuery } from "mongodb";
 import { Collection, MongoClient, Db, ObjectID } from "mongodb";
 import * as Authentication from "../views/shared/server/authentication";
 import { UserKeysRow } from "../server/database/dbinfos/db_info_user_keys";
@@ -23,6 +21,8 @@ import { SetDeckMetadata, UpdateDeckCards } from "../views/deckviewer/handler";
 import { DeckKeysRow } from "../server/database/dbinfos/db_info_deck_keys";
 import { DatabaseConnection } from "../server/database/db_connection";
 import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
+import initializeDatabase from "../server/database/initialize_database";
+import MySQLDatabaseManager from "../server/database/mysql_db_manager";
 
 /*
 
@@ -78,7 +78,7 @@ export default class Converter {
       Logs.logInfo("Loaded config.");
       this.services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
         perfMon: new PerformanceMonitor(),
@@ -93,7 +93,7 @@ export default class Converter {
       });
 
       // Initialize the database
-      await this.services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(this.services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(process.pid.toString() + ":Updater:" + os.hostname());

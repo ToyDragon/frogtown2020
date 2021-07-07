@@ -2,7 +2,7 @@ import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoServerStatus extends DBInfo {
-  public getCreateCommand(): string {
+  public getCreateCommand(createTableSuffix: string): string {
     return `
       CREATE TABLE IF NOT EXISTS server_status(
         name VARCHAR(64) NOT NULL,
@@ -11,7 +11,7 @@ export class DBInfoServerStatus extends DBInfo {
         status INTEGER NOT NULL,
         target_status INTEGER NOT NULL,
         PRIMARY KEY(name)
-      ) ENGINE=InnoDB;
+      ) ${createTableSuffix};
     `;
   }
 

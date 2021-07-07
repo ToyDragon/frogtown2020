@@ -1,6 +1,6 @@
 import StoragePortal from "./storage_portal";
 import Config from "./config";
-import DatabaseManager from "./database/db_manager";
+import DatabaseManager from "./database/mysql_db_manager";
 import ScryfallManager from "./scryfall_manager";
 import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
 

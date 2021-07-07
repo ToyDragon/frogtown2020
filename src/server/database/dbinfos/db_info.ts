@@ -3,12 +3,17 @@ import { logCritical } from "../../log";
 
 export abstract class DBInfo {
   public async ensureTableExists(
-    connection: DatabaseConnection
+    connection: DatabaseConnection,
+    createTableSuffix: string
   ): Promise<boolean> {
     // Perform creation and check for errors.
-    const result = await connection.query(this.getCreateCommand(), []);
+    const result = await connection.query(
+      this.getCreateCommand(createTableSuffix),
+      []
+    );
     if (result.err) {
       logCritical("Error while ensuring required database tables exist.");
+      logCritical(`Command: ${this.getCreateCommand(createTableSuffix)}`);
       logCritical(result.err);
       connection.release();
       return false;
@@ -16,7 +21,7 @@ export abstract class DBInfo {
     return true;
   }
 
-  public abstract getCreateCommand(): string;
+  public abstract getCreateCommand(createTableSuffix: string): string;
 
   public abstract getUpdateCommands(): ((
     connection: DatabaseConnection

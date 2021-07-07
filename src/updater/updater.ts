@@ -6,7 +6,6 @@ import Services from "../server/services";
 import LoadConfigFromFile from "../server/config_loader";
 import S3StoragePortal from "../server/storage_portal_s3";
 import * as Logs from "../server/log";
-import DatabaseManager from "../server/database/db_manager";
 import ScryfallManager from "../server/scryfall_manager";
 import {
   initStatusManagement,
@@ -33,6 +32,8 @@ import {
   setImageVersion,
 } from "../views/shared/server/image_version";
 import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
+import initializeDatabase from "../server/database/initialize_database";
+import MySQLDatabaseManager from "../server/database/mysql_db_manager";
 
 export default class Updater {
   private services!: Services;
@@ -64,7 +65,7 @@ export default class Updater {
       Logs.logInfo("Loaded config.");
       this.services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
         perfMon: new PerformanceMonitor(),
@@ -79,7 +80,7 @@ export default class Updater {
       });
 
       // Initialize the database
-      await this.services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(this.services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(process.pid.toString() + ":Updater:" + os.hostname());

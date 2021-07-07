@@ -3,15 +3,15 @@ import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 
 export class DBInfoDeckKeys extends DBInfo {
-  public getCreateCommand(): string {
+  public getCreateCommand(createTableSuffix: string): string {
     return `
       CREATE TABLE IF NOT EXISTS deck_keys(
         id VARCHAR(24) NOT NULL,
         owner_id VARCHAR(24) NOT NULL,
         name VARCHAR(100) NOT NULL,
-        PRIMARY KEY (id),
-        INDEX (owner_id)
-      ) ENGINE=InnoDB;
+        PRIMARY KEY (id)
+      ) ${createTableSuffix};
+      CREATE INDEX IF NOT EXISTS idx_owner_id ON deck_keys(owner_id);
     `;
   }
 
@@ -39,8 +39,6 @@ export class DBInfoDeckKeys extends DBInfo {
           } else {
             logInfo("Added star_card_id column to deck_ids");
           }
-        } else {
-          logInfo("Column star_card_id is already present deck_ids");
         }
         return true;
       },
@@ -65,8 +63,6 @@ export class DBInfoDeckKeys extends DBInfo {
           } else {
             logInfo("Added card_count and colors columns to deck_ids");
           }
-        } else {
-          logInfo("Column card_count and colors are already present deck_ids");
         }
         return true;
       },
