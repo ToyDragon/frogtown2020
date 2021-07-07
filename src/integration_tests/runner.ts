@@ -9,22 +9,30 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsCardbackTest from "./tests/settings_cardback_test";
 import SettingsChangeUserTest from "./tests/settings_change_user_test";
 
-(async () => {
-  // Setup command line params
+interface CommandLineArgs {
+  server: string;
+  port: number;
+  config: string;
+}
+
+function getCommandLineArgs(): CommandLineArgs {
   const options = commandLineArgs([
     {
+      // The URL for the server we are testing against, for example "kismarton.frogtown.me".
       name: "server",
       alias: "s",
       type: String,
       defaultValue: "",
     },
     {
+      // The HTTPS port for the server, such as "443".
       name: "port",
       alias: "p",
       type: Number,
       defaultValue: -1,
     },
     {
+      // The file containing the config used by the server.
       name: "config",
       alias: "c",
       type: String,
@@ -36,35 +44,53 @@ import SettingsChangeUserTest from "./tests/settings_change_user_test";
   if (!serverUrl) {
     throw new Error("Server URL required.");
   }
+
   const port: number | null = options["port"];
   if (!port) {
     throw new Error("Server port required.");
   }
-  const config = await LoadConfigFromFile(options["config"]);
-  const browser = await puppeteer.launch();
+
+  return {
+    server: serverUrl,
+    port: port,
+    config: options["config"],
+  };
+}
+
+(async () => {
+  const args = getCommandLineArgs();
+  const config = await LoadConfigFromFile(args.config);
+
+  // Construct an object with the parameters required to run a test.
   const runParams: RunParams = {
     authCookies: [
       {
-        domain: serverUrl,
+        // This user has nothing special about them, we just need a user to test with.
+        domain: args.server,
         value: "4rsvvuw12bm4o1p7bo81bvbp",
         name: "publicId",
       },
       {
-        domain: serverUrl,
+        domain: args.server,
         value:
           "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh",
         name: "privateId",
       },
     ],
-    browser: browser,
-    serverUrl: serverUrl,
-    port: port,
+    browser: await puppeteer.launch(),
+    serverUrl: args.server,
+    port: args.port,
     config: config,
   };
 
-  let failed = false;
+  // Integration tests run in parallel, in serial batches. If your test has no dependencies or side effects
+  // you can add it to the bottom list. If your test risks impacting other tests, it needs to go in a separate
+  // array from those it impacts.
   const testSets: IntegrationTest[][] = [
-    [new SettingsChangeUserTest()],
+    [
+      // This changes cookies, so it needs to be done before all other tests that make requests.
+      new SettingsChangeUserTest(),
+    ],
     [
       new CardsearchLoadsTest(),
       new SettingsChangeUsernameTest(),
@@ -72,7 +98,9 @@ import SettingsChangeUserTest from "./tests/settings_change_user_test";
       new SettingsQualityTest(),
     ],
   ];
+  let failed = false;
   for (const set of testSets) {
+    // Loop over all tests that should run in parallel, and put their promises in the promise array.
     const testRunPromises: Promise<void>[] = [];
     for (const test of set) {
       testRunPromises.push(
@@ -88,9 +116,12 @@ import SettingsChangeUserTest from "./tests/settings_change_user_test";
         })()
       );
     }
+    // Wait for all tests in this batch to complete before moving on to the next batch.
     await Promise.all(testRunPromises);
   }
-  await browser.close();
+
+  // Now that the tests are done, clean up the browser.
+  await runParams.browser.close();
 
   if (failed) {
     console.error("Integration tests failed.");

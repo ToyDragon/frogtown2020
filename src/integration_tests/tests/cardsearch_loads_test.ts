@@ -1,5 +1,7 @@
 import { IntegrationTest, RunParams } from "../integration_test";
 
+// This test only validates that the cardsearch page is accessible from the client, and that the ejs renders without errors.
+// It does not validate any cardsearch behavior.
 export default class CardsearchLoadsTest extends IntegrationTest {
   name(): string {
     return "CardsearchLoadsTest";

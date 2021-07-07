@@ -3,6 +3,7 @@ import puppeteer from "puppeteer";
 import Config from "../server/config";
 import { timeout } from "../shared/utils";
 
+// Type some text into a text input. This is a wrapper around page.type that fixes an issue.
 export async function type(
   page: puppeteer.Page,
   selector: string,
@@ -21,42 +22,6 @@ export async function type(
     value,
     selector
   );
-}
-
-export async function verifyExistsAndGetValue(
-  page: puppeteer.Page,
-  selector: string,
-  property: string
-): Promise<string> {
-  try {
-    return await page.$eval<string>(
-      selector,
-      (e, property) =>
-        ((e as unknown) as Record<string, string>)[property as string],
-      property
-    );
-  } catch (e) {
-    // Throw an error with more meaningful debug info.
-    console.error(e);
-    throw new Error(
-      `Unable to find element "${selector}" while trying to get property "${property}".`
-    );
-  }
-}
-
-export async function assertValueSatisfies(
-  page: puppeteer.Page,
-  selector: string,
-  property: string,
-  condition: (val: string) => boolean
-): Promise<string> {
-  const actualValue = await verifyExistsAndGetValue(page, selector, property);
-  if (!condition(actualValue)) {
-    throw new Error(
-      `Element with selector "${selector}" with value "${actualValue}" did not satisfy condition "${condition}".`
-    );
-  }
-  return actualValue;
 }
 
 export interface RunParams {
