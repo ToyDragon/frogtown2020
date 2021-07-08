@@ -23,6 +23,7 @@ import { DatabaseConnection } from "../server/database/db_connection";
 import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
 import initializeDatabase from "../server/database/initialize_database";
 import MySQLDatabaseManager from "../server/database/mysql_db_manager";
+import FsLocalStorage from "../server/local_storage/fs_local_storage";
 
 /*
 
@@ -82,6 +83,7 @@ export default class Converter {
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
         perfMon: new PerformanceMonitor(),
+        file: new FsLocalStorage(),
       };
 
       process.on("SIGINT", async () => {

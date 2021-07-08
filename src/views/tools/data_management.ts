@@ -1,6 +1,6 @@
 import Services from "../../server/services";
 import { DataInfoResponse } from "./types";
-import { logError, logInfo } from "../../server/log";
+import { logCritical, logError, logInfo } from "../../server/log";
 import { dateToMySQL } from "../../shared/utils";
 import {
   constructAllMaps,
@@ -11,7 +11,6 @@ import { endBatch, trySetBatchInProgress } from "./batch_status";
 import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 import { DatabaseConnection } from "../../server/database/db_connection";
 import { spawn } from "child_process";
-import * as fs from "fs";
 
 const allDataKey = "AllData.json";
 
@@ -214,17 +213,14 @@ export async function startDownloadNewAllCardsFile(
   // TODO: This can't run on a pod until I set it up. Add some warning or checking or something?
   // Pod will just crash or something if you click the update all cards button.
   const tmpFileName = "/tmp/all_cards.json";
-  try {
-    if (fs.existsSync(tmpFileName)) {
-      fs.unlinkSync(tmpFileName);
-    }
-  } catch {
-    //
-  }
+  await services.file.tryUnlink(tmpFileName);
   const curlProcess = spawn("curl", [data_url, "-o", tmpFileName]);
-  curlProcess.on("close", () => {
+  curlProcess.on("close", async () => {
     logInfo("Uploading to AWS...");
-    const fileStream = fs.createReadStream(tmpFileName);
+    const fileStream = await services.file.createReadStream(tmpFileName);
+    if (!fileStream) {
+      return logCritical("Temp file msising :(");
+    }
 
     const awsStream = services.storagePortal.uploadStreamToBucket(
       services.config.storage.awsS3DataMapBucket,
@@ -295,7 +291,7 @@ export async function startDownloadNewAllCardsFile(
         ["all_cards", dateToMySQL(dataUpdated), dateToMySQL(dataChanged)]
       );
       logInfo("Insert result: " + JSON.stringify(insertResult));
-      fs.unlinkSync(tmpFileName);
+      await services.file.tryUnlink(tmpFileName);
       logInfo("Deleted temp file.");
       await endBatch(connection);
       connection.release();

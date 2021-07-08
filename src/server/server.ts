@@ -28,6 +28,7 @@ import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
 import { PerformanceLogger } from "./performance_monitor/performance_logger";
 import MySQLDatabaseManager from "./database/mysql_db_manager";
 import initializeDatabase from "./database/initialize_database";
+import FsLocalStorage from "./local_storage/fs_local_storage";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -99,6 +100,7 @@ export default class Server {
         storagePortal: new S3StoragePortal(config),
         scryfallManager: new ScryfallManager(),
         perfMon: perfMon,
+        file: new FsLocalStorage(),
       };
 
       // Load debug banner variable.
