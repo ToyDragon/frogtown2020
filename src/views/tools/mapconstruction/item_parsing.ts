@@ -9,7 +9,7 @@ import {
 // Lol good luck understanding or maintaining these regexes.
 /* eslint-disable max-len */
 const tokenRegex = /([0-9]+\/[0-9]+)? ?((?:(?:blue|black|white|red|green|colorless)(?:,? and )?)+) ?((?:[A-Za-z]+ )+) ?((?:creature|artifact ?)+) tokens?(?: with ((?:[a-z]+)(?: and [a-z]{2,})?))?(?: named ([A-Za-z]+))?/;
-//                   [power/toughness] [color]                                                      ???                [type]                     token      [attributes, e.g. trample]
+//                   [power/toughness] [color]                                                      name               [type]                     token      [attributes, e.g. trample]
 
 // Tokens that don't fit neatly into the above regex.
 const problematicTokens: { expression: RegExp; tokenstring: string }[] = [
