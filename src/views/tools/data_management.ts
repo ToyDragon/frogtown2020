@@ -10,7 +10,6 @@ import { DataFilesRow } from "../../server/database/dbinfos/db_info_data_files";
 import { endBatch, trySetBatchInProgress } from "./batch_status";
 import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 import { DatabaseConnection } from "../../server/database/db_connection";
-import { spawn } from "child_process";
 
 const allDataKey = "AllData.json";
 
@@ -33,6 +32,7 @@ export async function getDataInfo(
   if (!connection) {
     return null;
   }
+
   const result = {
     allCardsChangeDate: "",
     allCardsNextChangeDate: "",
@@ -44,7 +44,6 @@ export async function getDataInfo(
     dataMapsUpdateInProgress:
       (await getConstructionProgress(services)) !== null,
   };
-
   const bulkdataResponse = await services.scryfallManager.request<
     BulkDataListing
   >("https://api.scryfall.com/bulk-data");
@@ -77,11 +76,11 @@ export async function getDataInfo(
       }
     }
   }
-  connection.release();
+  await connection.release();
   return result;
 }
 
-async function getDownloadInProgress(
+export async function getDownloadInProgress(
   connection: DatabaseConnection
 ): Promise<boolean> {
   const result = await connection.query<BatchStatusRow[]>(
@@ -147,7 +146,7 @@ export async function startConstructingDataMaps(
         "REPLACE INTO data_files (name, update_time, change_time) VALUES (?, ?, ?);",
         [
           "map_files",
-          dateToMySQL(new Date()),
+          dateToMySQL(services.clock.now()),
           dateToMySQL(new Date(change_time)),
         ]
       );
@@ -194,7 +193,7 @@ export async function startDownloadNewAllCardsFile(
   }
 
   let lastUpdate = 0;
-  let lastUpdateTime = new Date();
+  let lastUpdateTime = services.clock.now();
   const MB = 1000000;
   downloadCurBytes = 0;
 
@@ -214,8 +213,16 @@ export async function startDownloadNewAllCardsFile(
   // Pod will just crash or something if you click the update all cards button.
   const tmpFileName = "/tmp/all_cards.json";
   await services.file.tryUnlink(tmpFileName);
-  const curlProcess = spawn("curl", [data_url, "-o", tmpFileName]);
-  curlProcess.on("close", async () => {
+  //const curlProcess = spawn("curl", [data_url, "-o", tmpFileName]);
+  const tmpFileWriteStream = await services.file.createWriteStream(tmpFileName);
+  if (!tmpFileWriteStream) {
+    logCritical(`Failed to create write stream to "${tmpFileName}".`);
+    return;
+  }
+  // TODO: test that this works with the real all cards file.
+  const allCardsStream = await services.scryfallManager.requestStream(data_url);
+  allCardsStream.pipe(tmpFileWriteStream);
+  allCardsStream.on("close", async () => {
     logInfo("Uploading to AWS...");
     const fileStream = await services.file.createReadStream(tmpFileName);
     if (!fileStream) {
@@ -234,10 +241,10 @@ export async function startDownloadNewAllCardsFile(
         downloadCurBytes += chunk.length;
         if (
           downloadCurBytes - lastUpdate > 2 * MB ||
-          lastUpdateTime.getTime() - new Date().getTime() > 15000
+          lastUpdateTime.getTime() - services.clock.now().getTime() > 15000
         ) {
           lastUpdate = downloadCurBytes;
-          lastUpdateTime = new Date();
+          lastUpdateTime = services.clock.now();
           //Update the database every 2MB
           connection.query(
             "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
@@ -253,7 +260,8 @@ export async function startDownloadNewAllCardsFile(
       logError("Upload message abort occurred.");
     });
     awsStream.on("close", () => {
-      logError("Upload message abort occurred.");
+      // TODO: I don't think this is an error. If it's not, remove this log.
+      logError("Upload message close occurred.");
     });
     fileStream.on("error", () => {
       logError("Request message error occurred.");
@@ -263,9 +271,7 @@ export async function startDownloadNewAllCardsFile(
     });
     fileStream.on("close", async () => {
       logInfo(`Done at: ${downloadCurBytes} / ${downloadMaxBytes}`);
-      // logInfo("Status message: " + curlProcess.statusMessage);
-      // logInfo("Status message: " + JSON.stringify(msg.headers));
-      const dataUpdated = new Date();
+      const dataUpdated = services.clock.now();
       const dataChanged = new Date(data_changed);
       if (downloadCurBytes <= downloadMaxBytes / 2) {
         // Data file was likely not available, sometimes the scryfall API does this.

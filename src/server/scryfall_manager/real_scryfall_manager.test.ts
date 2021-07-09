@@ -1,6 +1,6 @@
-import ScryfallManager from "./scryfall_manager";
+import RealScryfallManager from "./real_scryfall_manager";
 
-const scryfallManager = new ScryfallManager();
+const scryfallManager = new RealScryfallManager();
 
 test("Succeeds simple request.", (done) => {
   jest.setTimeout(30000);

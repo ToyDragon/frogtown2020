@@ -6,7 +6,6 @@ import Services from "../server/services";
 import LoadConfigFromFile from "../server/config_loader";
 import S3StoragePortal from "../server/storage_portal_s3";
 import * as Logs from "../server/log";
-import ScryfallManager from "../server/scryfall_manager";
 import {
   initStatusManagement,
   logGracefulDeath,
@@ -35,6 +34,9 @@ import { PerformanceMonitor } from "../server/performance_monitor/performance_mo
 import initializeDatabase from "../server/database/initialize_database";
 import MySQLDatabaseManager from "../server/database/mysql_db_manager";
 import FsLocalStorage from "../server/local_storage/fs_local_storage";
+import RealScryfallManager from "../server/scryfall_manager/real_scryfall_manager";
+import RealClock from "../server/real_clock";
+import RealNetworkManager from "../server/real_network_manager";
 
 export default class Updater {
   private services!: Services;
@@ -68,9 +70,11 @@ export default class Updater {
         config: config,
         dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
-        scryfallManager: new ScryfallManager(),
+        scryfallManager: new RealScryfallManager(),
         perfMon: new PerformanceMonitor(),
         file: new FsLocalStorage(),
+        clock: new RealClock(),
+        net: new RealNetworkManager(),
       };
 
       process.on("SIGINT", async () => {

@@ -2,12 +2,14 @@ import commandLineArgs from "command-line-args";
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
 import LoadConfigFromFile from "../server/config_loader";
+import { Level, setLogLevel } from "../server/log";
 import { IntegrationTest, RunParams } from "./integration_test";
+import AllCardsDownloadTest from "./tests/allcards_download_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
-import SettingsQualityTest from "./tests/settings_quality_test";
-import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsCardbackTest from "./tests/settings_cardback_test";
+import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsChangeUserTest from "./tests/settings_change_user_test";
+import SettingsQualityTest from "./tests/settings_quality_test";
 
 interface CommandLineArgs {
   server: string;
@@ -83,6 +85,9 @@ function getCommandLineArgs(): CommandLineArgs {
     config: config,
   };
 
+  // Disable logging in the integration tests. All logging done for tests should directly use console.log
+  setLogLevel(Level.NONE);
+
   // Integration tests run in parallel, in serial batches. If your test has no dependencies or side effects
   // you can add it to the bottom list. If your test risks impacting other tests, it needs to go in a separate
   // array from those it impacts.
@@ -96,6 +101,7 @@ function getCommandLineArgs(): CommandLineArgs {
       new SettingsChangeUsernameTest(),
       new SettingsCardbackTest(),
       new SettingsQualityTest(),
+      new AllCardsDownloadTest(),
     ],
   ];
   let failed = false;

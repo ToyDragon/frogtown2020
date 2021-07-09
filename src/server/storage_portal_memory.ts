@@ -1,6 +1,7 @@
 import StoragePortal from "./storage_portal";
 import * as stream from "stream";
 import * as fs from "fs";
+import { Clock } from "./clock";
 
 interface ObjectInfo {
   contents: string;
@@ -9,7 +10,12 @@ interface ObjectInfo {
 }
 
 export default class MemoryStoragePortal implements StoragePortal {
-  buckets: Record<string, Record<string, ObjectInfo>> = {};
+  private buckets: Record<string, Record<string, ObjectInfo>> = {};
+  private clock!: Clock;
+
+  public constructor(clock: Clock) {
+    this.clock = clock;
+  }
 
   public async canWriteToBucket(_bucket: string): Promise<boolean> {
     return true;
@@ -34,7 +40,7 @@ export default class MemoryStoragePortal implements StoragePortal {
         }
       );
       this.buckets[bucket][objectKey].acl = "public-read";
-      this.buckets[bucket][objectKey].lastChange = new Date();
+      this.buckets[bucket][objectKey].lastChange = this.clock.now();
 
       return true;
     } catch {
@@ -83,7 +89,7 @@ export default class MemoryStoragePortal implements StoragePortal {
       this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
       this.buckets[bucket][objectKey].contents = data;
       this.buckets[bucket][objectKey].acl = acl;
-      this.buckets[bucket][objectKey].lastChange = new Date();
+      this.buckets[bucket][objectKey].lastChange = this.clock.now();
       return true;
     } catch {
       return false;
@@ -114,7 +120,7 @@ export default class MemoryStoragePortal implements StoragePortal {
       this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
       this.buckets[bucket][objectKey].contents += chunk;
       this.buckets[bucket][objectKey].acl = "public-read";
-      this.buckets[bucket][objectKey].lastChange = new Date();
+      this.buckets[bucket][objectKey].lastChange = this.clock.now();
     });
     return passthrough;
   }

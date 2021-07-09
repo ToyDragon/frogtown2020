@@ -10,6 +10,7 @@ export class DatabaseConnection {
   private transactionOpen: boolean;
 
   private debugStack: string;
+  private stillOpenTimeout!: NodeJS.Timeout;
 
   public constructor(
     timeoutMillis: number,
@@ -29,7 +30,7 @@ export class DatabaseConnection {
       });
     }
 
-    setTimeout(() => {
+    this.stillOpenTimeout = setTimeout(() => {
       if (this.connectionOpen) {
         logError(`Connection open for ${timeoutMillis} milliseconds.`);
         logError(this.debugStack);
@@ -111,6 +112,7 @@ export class DatabaseConnection {
   public async release(): Promise<DatabaseActionResult<void>> {
     this.connectionOpen = false;
     this.rawConnection.release();
+    clearTimeout(this.stillOpenTimeout);
     return new DatabaseActionResult<void>(null, null);
   }
 }

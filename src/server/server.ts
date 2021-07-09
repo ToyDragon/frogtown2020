@@ -18,7 +18,6 @@ import HTTPSRedirectionHandler from "./handler_https_redirection";
 import SetupRequiredHandler from "./handler_setup";
 import ViewHandler from "./handler_views";
 import * as Logs from "./log";
-import ScryfallManager from "./scryfall_manager";
 import ImagesHandler from "./handler_images";
 import { initStatusManagement, logGracefulDeath } from "./status_manager";
 import { setServerName } from "./name";
@@ -29,6 +28,9 @@ import { PerformanceLogger } from "./performance_monitor/performance_logger";
 import MySQLDatabaseManager from "./database/mysql_db_manager";
 import initializeDatabase from "./database/initialize_database";
 import FsLocalStorage from "./local_storage/fs_local_storage";
+import RealScryfallManager from "./scryfall_manager/real_scryfall_manager";
+import RealClock from "./real_clock";
+import RealNetworkManager from "./real_network_manager";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -98,9 +100,11 @@ export default class Server {
         config: config,
         dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
-        scryfallManager: new ScryfallManager(),
+        scryfallManager: new RealScryfallManager(),
         perfMon: perfMon,
         file: new FsLocalStorage(),
+        clock: new RealClock(),
+        net: new RealNetworkManager(),
       };
 
       // Load debug banner variable.

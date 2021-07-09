@@ -5,6 +5,10 @@ import * as stream from "stream";
 export default class MemoryLocalStorage implements LocalStorage {
   private data: Record<string, string> = {};
 
+  public constructor(data: Record<string, string>) {
+    this.data = data;
+  }
+
   public tryUnlink(path: string): Promise<void> {
     return new Promise((resolve) => {
       delete this.data[path];
@@ -20,6 +24,17 @@ export default class MemoryLocalStorage implements LocalStorage {
     s.push(this.data[path]);
     s.push(null);
     return s;
+  }
+
+  public async createWriteStream(
+    path: string,
+    _options?: { encoding: BufferEncoding }
+  ): Promise<stream.Writable | null> {
+    return new stream.Writable({
+      write: (chunk) => {
+        this.data[path] += chunk;
+      },
+    });
   }
 
   public stat(path: string): Promise<FileStats | null> {

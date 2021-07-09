@@ -20,6 +20,13 @@ export default class FsLocalStorage implements LocalStorage {
     return fs.createReadStream(path, options || {});
   }
 
+  public async createWriteStream(
+    path: string,
+    options?: { encoding: BufferEncoding }
+  ): Promise<stream.Writable | null> {
+    return fs.createWriteStream(path, options || {});
+  }
+
   public stat(path: string): Promise<FileStats | null> {
     return new Promise((resolve) => {
       fs.stat(path, (err, _stats) => {
