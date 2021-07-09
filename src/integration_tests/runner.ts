@@ -4,7 +4,6 @@ import puppeteer from "puppeteer";
 import LoadConfigFromFile from "../server/config_loader";
 import { Level, setLogLevel } from "../server/log";
 import { IntegrationTest, RunParams } from "./integration_test";
-import AllCardsDownloadTest from "./tests/allcards_download_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsCardbackTest from "./tests/settings_cardback_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
@@ -101,7 +100,6 @@ function getCommandLineArgs(): CommandLineArgs {
       new SettingsChangeUsernameTest(),
       new SettingsCardbackTest(),
       new SettingsQualityTest(),
-      new AllCardsDownloadTest(),
     ],
   ];
   let failed = false;
