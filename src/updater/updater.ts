@@ -1,5 +1,6 @@
 import * as os from "os";
 import commandLineArgs from "command-line-args";
+import * as fs from "fs";
 
 import Config from "../server/config";
 import Services from "../server/services";
@@ -43,6 +44,13 @@ export default class Updater {
   private checkInProgress = false;
 
   public run(): void {
+    const logfile =
+      "/tmp/frogtown_updater_" +
+      new Date().toLocaleString().replace(/\//g, "-") +
+      ".log";
+    console.log(`Logging to ${logfile}`);
+    const logStream = fs.createWriteStream(logfile, { encoding: "utf8" });
+    Logs.setLogToStream(logStream);
     // Setup command line params
     const options = commandLineArgs([
       {
@@ -81,6 +89,7 @@ export default class Updater {
         Logs.logWarning("SIGINT recieved.");
         await logGracefulDeath(this.services);
         await timeout(2000);
+        logStream.close();
         // eslint-disable-next-line no-process-exit
         process.exit(0);
       });

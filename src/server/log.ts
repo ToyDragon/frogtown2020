@@ -19,6 +19,16 @@ export function setLogLabel(label: string): void {
   currentLogLabel = label;
 }
 
+interface Writable {
+  write: (chunk: string) => void;
+}
+
+let writeStream: Writable | null = null;
+
+export function setLogToStream(stream: Writable): void {
+  writeStream = stream;
+}
+
 // Add output to the log with the given level
 export function log(level: number, ...args: unknown[]): void {
   if (level <= currentLogLevel) {
@@ -49,11 +59,15 @@ export function log(level: number, ...args: unknown[]): void {
       backgroundString = `${CSI}48;5;${background}m`;
     }
     const resetStyle = CSI + "0m";
-    console.log(
-      `[${currentLogLabel}]${foregroundString}${backgroundString}${Level[level]}:`,
-      ...args,
-      resetStyle
-    );
+    const message =
+      `[${currentLogLabel}]${foregroundString}${backgroundString}${Level[level]}:` +
+      args.join("") +
+      resetStyle;
+    if (writeStream) {
+      writeStream.write(message);
+    } else {
+      console.log(message);
+    }
   }
 }
 
