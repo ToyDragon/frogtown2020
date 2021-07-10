@@ -163,7 +163,7 @@ test("Downloads all cards, and can construct maps.", async () => {
 
   // Verify that the data map related dates are still empty.
   expect(dataInfo.dataMapsChangeDate).toBe("2021-07-08 03:07:49 UTC");
-  expect(dataInfo.dataMapsUpdateDate).toBe("2021-01-01 11:00:00 UTC");
+  expect(new Date(dataInfo.dataMapsUpdateDate!)).toEqual(clock.now());
 
   // Verify that the IDToName map contains the expected data.
   const IDToName = JSON.parse(await services.storagePortal.getObjectAsString("bucket_name", "IDToName.json"));
