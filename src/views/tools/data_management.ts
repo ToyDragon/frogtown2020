@@ -296,11 +296,6 @@ export async function startDownloadNewAllCardsFile(
           "false",
         ]
       );
-      logInfo(
-        `Setting data_files change_time to ${dataChanged} (${dateToMySQL(
-          dataChanged
-        )})`
-      );
       const insertResult = await connection.query(
         "REPLACE INTO data_files (name, update_time, change_time) VALUES (?, ?, ?);",
         ["all_cards", dateToMySQL(dataUpdated), dateToMySQL(dataChanged)]

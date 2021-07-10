@@ -129,9 +129,9 @@ test("Downloads all cards, and can construct maps.", async () => {
     return;
   }
 
-  // Verify that the all cards related dates match the current time, and the time rom the bulk data.
+  // Verify that the all cards related dates match the current time, and the time from the bulk data.
   expect(dataInfo.allCardsChangeDate).toBe("2021-07-07 22:07:49 UTC");
-  expect(dataInfo.allCardsUpdateDate).toBe("2021-01-01 11:00:00 UTC");
+  expect(new Date(dataInfo.allCardsUpdateDate!)).toEqual(clock.now());
 
   // Verify that the data map related dates are still empty.
   expect(dataInfo.dataMapsChangeDate).toBe("");
