@@ -147,8 +147,15 @@ test("Downloads all cards, and can construct maps.", async () => {
 
   // Construct the data maps.
   await startConstructingDataMaps(services);
-  await timeout(200);
-  dataInfo = await getDataInfo(services);
+
+  // Try to wait for the upload to finish.
+  for (let i = 0; i < 10; ++i) {
+    await timeout(200);
+    dataInfo = await getDataInfo(services);
+    if (dataInfo && dataInfo.dataMapsChangeDate) {
+      break;
+    }
+  }
   expect(dataInfo).not.toBeNull();
   if (dataInfo === null){
     return;
