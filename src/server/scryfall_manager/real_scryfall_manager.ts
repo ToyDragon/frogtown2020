@@ -2,10 +2,11 @@ import * as stream from "stream";
 import { logInfo } from "../log";
 import { RateLimiter } from "../rate_limiter";
 import { httpsGet, httpsGetMessage, httpsGetRaw } from "../../shared/utils";
+import ScryfallManager from "./scryfall_manager";
 
 let alreadyExists = false;
 
-export default class RealScryfallManager {
+export default class RealScryfallManager implements ScryfallManager {
   private rateLimiter!: RateLimiter;
 
   public constructor() {
@@ -33,7 +34,7 @@ export default class RealScryfallManager {
     return response;
   }
 
-  public async requestStream(url: string): Promise<stream.Readable> {
+  public async requestStream(url: string): Promise<stream.Stream> {
     await this.rateLimiter.lock();
     logInfo("Requesting scryfall stream url: " + url);
     const response = await httpsGetMessage(url);

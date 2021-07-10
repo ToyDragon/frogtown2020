@@ -2,6 +2,7 @@ import * as stream from "stream";
 import * as https from "https";
 import NetworkManager, { GetResult } from "./network_manager";
 import { timeout } from "../shared/utils";
+import dumpStream from "./dump_stream";
 
 export default class MemoryNetworkManager implements NetworkManager {
   private data!: Record<string, string>;
@@ -34,5 +35,16 @@ export default class MemoryNetworkManager implements NetworkManager {
       stream: s,
       stop: () => {},
     };
+  }
+
+  public async httpsGetJson<K>(
+    options: string | https.RequestOptions | URL
+  ): Promise<K | null> {
+    try {
+      const rawResult = await dumpStream((await this.httpsGet(options)).stream);
+      return JSON.parse(rawResult) as K;
+    } catch {
+      return null;
+    }
   }
 }

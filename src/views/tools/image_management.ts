@@ -262,37 +262,49 @@ export async function startUpdatingImages(
     return;
   }
 
-  const idToLargeImage = await httpsGet<Record<string, string>>(
+  const idToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/IDToLargeImageURI.json"
   );
-  const TokenIDToLargeImage = await httpsGet<Record<string, string>>(
+  const TokenIDToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/TokenIDToLargeImageURI.json"
   );
-  const BackIDToLargeImage = await httpsGet<Record<string, string>>(
+  const BackIDToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/BackIDToLargeImageURI.json"
   );
-  const IDToHighResAvail = await httpsGet<Record<string, boolean>>(
+  const IDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/IDToHasHighRes.json"
   );
-  const TokenIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+  const TokenIDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
       "/TokenIDToHasHighRes.json"
   );
-  const BackIDToHighResAvail = await httpsGet<Record<string, boolean>>(
+  const BackIDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +

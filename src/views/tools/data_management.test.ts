@@ -87,7 +87,7 @@ test("Downloads all cards, and can construct maps.", async () => {
         ],
       }),
       "https://c2.scryfall.com/all-cards-abcdefg.json": allCardsData,
-    }),
+    }, {}),
     clock: clock,
     net: new MemoryNetworkManager({
       "https://www.infinitestorage.fake/bucket_name/AllData.json": allCardsData,

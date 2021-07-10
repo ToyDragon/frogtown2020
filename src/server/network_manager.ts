@@ -8,4 +8,7 @@ export interface GetResult {
 
 export default interface NetworkManager {
   httpsGet(options: string | https.RequestOptions | URL): Promise<GetResult>;
+  httpsGetJson<K>(
+    options: string | https.RequestOptions | URL
+  ): Promise<K | null>;
 }
