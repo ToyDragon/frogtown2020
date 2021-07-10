@@ -13,6 +13,8 @@ import MemoryStoragePortal from "../../server/storage_portal_memory";
 import { timeout } from "../../shared/utils";
 import { startUpdatingImages } from "./image_management";
 
+// TODO: test CYMK file conversion.
+//
 // This test verifies that Card images can be downloaded, resized, and stored in S3.
 test("Downloads card images, resizes, and stores them.", async () => {
   setLogLevel(Level.NONE);
