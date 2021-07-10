@@ -20,6 +20,50 @@ import { CardImagesRow } from "../../server/database/dbinfos/db_info_card_images
 import { trySetBatchInProgress, endBatch } from "./batch_status";
 import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
 
+async function getIDToHQMap(
+  services: Services
+): Promise<Record<string, boolean>> {
+  const result: Record<string, boolean> = {};
+  for (const mapName of [
+    "IDToHasHighRes",
+    "TokenIDToHasHighRes",
+    "BackIDToHasHighRes",
+  ]) {
+    const submap = await services.net.httpsGetJson<Record<string, boolean>>(
+      `${services.config.storage.externalRoot}/${services.config.storage.awsS3DataMapBucket}/${mapName}.json`
+    );
+    if (!submap) {
+      throw new Error(`Missing submap ${mapName}`);
+    }
+    for (const id in submap) {
+      result[id] = submap[id];
+    }
+  }
+  return result;
+}
+
+async function getIDToImageURIMap(
+  services: Services
+): Promise<Record<string, string>> {
+  const result: Record<string, string> = {};
+  for (const mapName of [
+    "IDToLargeImageURI",
+    "TokenIDToLargeImageURI",
+    "BackIDToLargeImageURI",
+  ]) {
+    const submap = await services.net.httpsGetJson<Record<string, string>>(
+      `${services.config.storage.externalRoot}/${services.config.storage.awsS3DataMapBucket}/${mapName}.json`
+    );
+    if (!submap) {
+      throw new Error(`Missing submap ${mapName}`);
+    }
+    for (const id in submap) {
+      result[id] = submap[id];
+    }
+  }
+  return result;
+}
+
 export async function getAllImageInfos(
   services: Services
 ): Promise<CardImageInfoResponse | null> {
@@ -34,71 +78,21 @@ export async function getAllImageInfos(
   const cardsNotHQWithHQAvailable: string[] = [];
   const cardsMissingWithLQAvailable: string[] = [];
   const allKnownIds = stringArrayToRecord(await getAllCardIDs(services));
-  const IDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/IDToHasHighRes.json"
-  );
-  const TokenIDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/TokenIDToHasHighRes.json"
-  );
-  const BackIDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/BackIDToHasHighRes.json"
-  );
-  const IDToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/IDToLargeImageURI.json"
-  );
-  const TokenIDToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/TokenIDToLargeImageURI.json"
-  );
-  const BackIDToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/BackIDToLargeImageURI.json"
-  );
+  let IDToHighResAvail!: Record<string, boolean>;
+  let IDToLargeImage!: Record<string, string>;
+  try {
+    IDToHighResAvail = await getIDToHQMap(services);
+    IDToLargeImage = await getIDToImageURIMap(services);
+  } catch (e) {
+    logError(e);
+    return null;
+  }
+
   const allImageInfos = await connection.query<CardImagesRow[]>(
     "SELECT * FROM card_images;",
     []
   );
   connection.release();
-
-  if (
-    !IDToHighResAvail ||
-    !TokenIDToHighResAvail ||
-    !BackIDToHighResAvail ||
-    !IDToLargeImage ||
-    !TokenIDToLargeImage ||
-    !BackIDToLargeImage
-  ) {
-    logError("Unable to load data maps from S3.");
-    return null;
-  }
 
   // Handle all cards that have known image states
   if (allImageInfos && allImageInfos.value) {
@@ -106,17 +100,11 @@ export async function getAllImageInfos(
     for (const info of allImageInfos.value) {
       allInfos[info.card_id] = info.quality;
       const thisDate = new Date(info.update_time + " UTC");
-      const highResAvailable =
-        IDToHighResAvail[info.card_id] ||
-        TokenIDToHighResAvail[info.card_id] ||
-        BackIDToHighResAvail[info.card_id];
+      const highResAvailable = IDToHighResAvail[info.card_id];
       if (info.quality !== ImageInfo.HQ && highResAvailable) {
         cardsNotHQWithHQAvailable.push(info.card_id);
       }
-      const imageAvailable =
-        IDToLargeImage[info.card_id] ||
-        TokenIDToLargeImage[info.card_id] ||
-        BackIDToLargeImage[info.card_id];
+      const imageAvailable = IDToLargeImage[info.card_id];
       if (
         (info.quality === ImageInfo.NONE ||
           info.quality === ImageInfo.MISSING) &&
@@ -134,16 +122,8 @@ export async function getAllImageInfos(
   for (const cardId in allKnownIds) {
     if (typeof allInfos[cardId] === "undefined") {
       allInfos[cardId] = ImageInfo.MISSING;
-      if (
-        IDToLargeImage[cardId] ||
-        TokenIDToLargeImage[cardId] ||
-        BackIDToLargeImage[cardId]
-      ) {
-        if (
-          IDToHighResAvail[cardId] ||
-          TokenIDToHighResAvail[cardId] ||
-          BackIDToHighResAvail[cardId]
-        ) {
+      if (IDToLargeImage[cardId]) {
+        if (IDToHighResAvail[cardId]) {
           cardsNotHQWithHQAvailable.push(cardId);
         } else {
           cardsMissingWithLQAvailable.push(cardId);
@@ -273,64 +253,13 @@ export async function startUpdatingImages(
     return;
   }
 
-  const idToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/IDToLargeImageURI.json"
-  );
-  const TokenIDToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/TokenIDToLargeImageURI.json"
-  );
-  const BackIDToLargeImage = await services.net.httpsGetJson<
-    Record<string, string>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/BackIDToLargeImageURI.json"
-  );
-  const IDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/IDToHasHighRes.json"
-  );
-  const TokenIDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/TokenIDToHasHighRes.json"
-  );
-  const BackIDToHighResAvail = await services.net.httpsGetJson<
-    Record<string, boolean>
-  >(
-    services.config.storage.externalRoot +
-      "/" +
-      services.config.storage.awsS3DataMapBucket +
-      "/BackIDToHasHighRes.json"
-  );
-
-  if (
-    !idToLargeImage ||
-    !TokenIDToLargeImage ||
-    !BackIDToLargeImage ||
-    !IDToHighResAvail ||
-    !TokenIDToHighResAvail ||
-    !BackIDToHighResAvail
-  ) {
-    logError("Unable to load data maps from S3.");
+  let IDToHighResAvail!: Record<string, boolean>;
+  let IDToLargeImage!: Record<string, string>;
+  try {
+    IDToHighResAvail = await getIDToHQMap(services);
+    IDToLargeImage = await getIDToImageURIMap(services);
+  } catch (e) {
+    logError(e);
     return;
   }
 
@@ -341,10 +270,7 @@ export async function startUpdatingImages(
     for (const cardId of updateImageRequest.cardIds) {
       imagesBeingUpdated.push({
         cardId: cardId,
-        isHighRes:
-          IDToHighResAvail[cardId] ||
-          TokenIDToHighResAvail[cardId] ||
-          BackIDToHighResAvail[cardId],
+        isHighRes: IDToHighResAvail[cardId],
       });
     }
     logInfo(
@@ -365,16 +291,12 @@ export async function startUpdatingImages(
     ["update_images_count", "0", "update_images_max", imagesBeingUpdated.length]
   );
 
-  loadNextImage(
-    services,
-    [idToLargeImage, TokenIDToLargeImage, BackIDToLargeImage],
-    connection
-  );
+  loadNextImage(services, IDToLargeImage, connection);
 }
 
 async function loadNextImage(
   services: Services,
-  imageMaps: Record<string, string>[],
+  imageMap: Record<string, string>,
   connection: DatabaseConnection
 ): Promise<void> {
   if (imageUpdateIndex >= (imagesBeingUpdated?.length || 0)) {
@@ -394,14 +316,14 @@ async function loadNextImage(
         ["update_images_count", imageUpdateIndex]
       );
     }
-    loadOneImage(services, imageMaps, connection);
+    loadOneImage(services, imageMap, connection);
     imageUpdateIndex += 1;
   }
 }
 
 function loadOneImage(
   services: Services,
-  imageMaps: Record<string, string>[],
+  imageMap: Record<string, string>,
   connection: DatabaseConnection
 ): void {
   const imgToLoad = imageUpdateIndex;
@@ -423,15 +345,12 @@ function loadOneImage(
     return;
   }
 
-  let url = "";
-  for (const map of imageMaps) {
-    url = url || map[cardDetails.cardId];
-  }
+  const url = imageMap[cardDetails.cardId];
   if (!url) {
     logWarning(
       "Failed to load image from scryfall because no scryfall image available."
     );
-    loadNextImage(services, imageMaps, connection);
+    loadNextImage(services, imageMap, connection);
     return;
   }
 
@@ -482,7 +401,7 @@ function loadOneImage(
           cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
         ]
       );
-      loadNextImage(services, imageMaps, connection);
+      loadNextImage(services, imageMap, connection);
     });
   });
 }
