@@ -141,7 +141,7 @@ test("Downloads all cards, and can construct maps.", async () => {
   expect(dataInfo.allCardsNextChangeDate).toBe("2021-07-07T22:07:49.712+00:00");
 
   // Verify that the AllCards file and data maps related properties are empty.
-  expect(dataInfo.allCardsS3Date).toBe("Fri Jan 01 2021 05:00:00 GMT-0600 (Central Standard Time)");
+  expect(new Date(dataInfo.allCardsS3Date!)).toEqual(clock.now());
   expect(dataInfo.allCardsUpdateInProgress).toBe(false);
   expect(dataInfo.dataMapsUpdateInProgress).toBe(false);
 
