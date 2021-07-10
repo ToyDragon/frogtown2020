@@ -230,7 +230,7 @@ export async function startDownloadNewAllCardsFile(
     logInfo("Uploading to AWS...");
     const fileStream = await services.file.createReadStream(tmpFileName);
     if (!fileStream) {
-      return logCritical("Temp file msising :(");
+      return logCritical("Temp file missing :(");
     }
 
     const awsStream = services.storagePortal.uploadStreamToBucket(
@@ -273,7 +273,7 @@ export async function startDownloadNewAllCardsFile(
     fileStream.on("aborted", () => {
       logError("Request message abort occurred.");
     });
-    fileStream.on("close", async () => {
+    fileStream.on("end", async () => {
       logInfo(`Done at: ${downloadCurBytes} / ${downloadMaxBytes}`);
       const dataUpdated = services.clock.now();
       const dataChanged = new Date(data_changed);
