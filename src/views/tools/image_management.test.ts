@@ -103,5 +103,5 @@ test("Downloads card images, resizes, and stores them.", async () => {
   expect(infos.imageTypeByID["2"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
-  expect(infos.lastUpdateDate).toBe("2021-01-01 11:00:00 UTC");
+  expect(new Date(infos.lastUpdateDate)).toEqual(clock.now());
 });
