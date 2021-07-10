@@ -23,119 +23,130 @@ import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_stat
 export async function getAllImageInfos(
   services: Services
 ): Promise<CardImageInfoResponse | null> {
-  const allInfos: Record<string, ImageInfo> = {};
   const connection = await services.dbManager.getConnectionTimeout(
     5 * 60 * 1000 // 5 minute timeout
   );
+  if (!connection) {
+    return null;
+  }
+  const allInfos: Record<string, ImageInfo> = {};
   let lastUpdateDate: Date | null = null;
   const cardsNotHQWithHQAvailable: string[] = [];
   const cardsMissingWithLQAvailable: string[] = [];
-  if (connection) {
-    const allKnownIds = stringArrayToRecord(
-      await getAllCardIDs(services.config)
-    );
-    const IDToHighResAvail = await httpsGet<Record<string, boolean>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/IDToHasHighRes.json"
-    );
-    const TokenIDToHighResAvail = await httpsGet<Record<string, boolean>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/TokenIDToHasHighRes.json"
-    );
-    const BackIDToHighResAvail = await httpsGet<Record<string, boolean>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/BackIDToHasHighRes.json"
-    );
-    const IDToLargeImage = await httpsGet<Record<string, string>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/IDToLargeImageURI.json"
-    );
-    const TokenIDToLargeImage = await httpsGet<Record<string, string>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/TokenIDToLargeImageURI.json"
-    );
-    const BackIDToLargeImage = await httpsGet<Record<string, string>>(
-      services.config.storage.externalRoot +
-        "/" +
-        services.config.storage.awsS3DataMapBucket +
-        "/BackIDToLargeImageURI.json"
-    );
-    const allImageInfos = await connection.query<CardImagesRow[]>(
-      "SELECT * FROM card_images;",
-      []
-    );
-    connection.release();
+  const allKnownIds = stringArrayToRecord(await getAllCardIDs(services));
+  const IDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/IDToHasHighRes.json"
+  );
+  const TokenIDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/TokenIDToHasHighRes.json"
+  );
+  const BackIDToHighResAvail = await services.net.httpsGetJson<
+    Record<string, boolean>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/BackIDToHasHighRes.json"
+  );
+  const IDToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/IDToLargeImageURI.json"
+  );
+  const TokenIDToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/TokenIDToLargeImageURI.json"
+  );
+  const BackIDToLargeImage = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
+    services.config.storage.externalRoot +
+      "/" +
+      services.config.storage.awsS3DataMapBucket +
+      "/BackIDToLargeImageURI.json"
+  );
+  const allImageInfos = await connection.query<CardImagesRow[]>(
+    "SELECT * FROM card_images;",
+    []
+  );
+  connection.release();
 
-    if (
-      !IDToHighResAvail ||
-      !TokenIDToHighResAvail ||
-      !BackIDToHighResAvail ||
-      !IDToLargeImage ||
-      !TokenIDToLargeImage ||
-      !BackIDToLargeImage
-    ) {
-      logError("Unable to load data maps from S3.");
-      return null;
-    }
+  if (
+    !IDToHighResAvail ||
+    !TokenIDToHighResAvail ||
+    !BackIDToHighResAvail ||
+    !IDToLargeImage ||
+    !TokenIDToLargeImage ||
+    !BackIDToLargeImage
+  ) {
+    logError("Unable to load data maps from S3.");
+    return null;
+  }
 
-    // Handle all cards that have known image states
-    if (allImageInfos && allImageInfos.value) {
-      logInfo("card_images row count: " + allImageInfos.value.length);
-      for (const info of allImageInfos.value) {
-        allInfos[info.card_id] = info.quality;
-        const thisDate = new Date(info.update_time + " UTC");
-        const highResAvailable =
-          IDToHighResAvail[info.card_id] ||
-          TokenIDToHighResAvail[info.card_id] ||
-          BackIDToHighResAvail[info.card_id];
-        if (info.quality !== ImageInfo.HQ && highResAvailable) {
-          cardsNotHQWithHQAvailable.push(info.card_id);
-        }
-        const imageAvailable =
-          IDToLargeImage[info.card_id] ||
-          TokenIDToLargeImage[info.card_id] ||
-          BackIDToLargeImage[info.card_id];
-        if (
-          (info.quality === ImageInfo.NONE ||
-            info.quality === ImageInfo.MISSING) &&
-          imageAvailable
-        ) {
-          cardsMissingWithLQAvailable.push(info.card_id);
-        }
-        if (thisDate && (!lastUpdateDate || lastUpdateDate < thisDate)) {
-          lastUpdateDate = thisDate;
-        }
+  // Handle all cards that have known image states
+  if (allImageInfos && allImageInfos.value) {
+    logInfo("card_images row count: " + allImageInfos.value.length);
+    for (const info of allImageInfos.value) {
+      allInfos[info.card_id] = info.quality;
+      const thisDate = new Date(info.update_time + " UTC");
+      const highResAvailable =
+        IDToHighResAvail[info.card_id] ||
+        TokenIDToHighResAvail[info.card_id] ||
+        BackIDToHighResAvail[info.card_id];
+      if (info.quality !== ImageInfo.HQ && highResAvailable) {
+        cardsNotHQWithHQAvailable.push(info.card_id);
+      }
+      const imageAvailable =
+        IDToLargeImage[info.card_id] ||
+        TokenIDToLargeImage[info.card_id] ||
+        BackIDToLargeImage[info.card_id];
+      if (
+        (info.quality === ImageInfo.NONE ||
+          info.quality === ImageInfo.MISSING) &&
+        imageAvailable
+      ) {
+        cardsMissingWithLQAvailable.push(info.card_id);
+      }
+      if (thisDate && (!lastUpdateDate || lastUpdateDate < thisDate)) {
+        lastUpdateDate = thisDate;
       }
     }
+  }
 
-    // Handle cards that are not yet in the card_image table.
-    for (const cardId in allKnownIds) {
-      if (typeof allInfos[cardId] === "undefined") {
-        allInfos[cardId] = ImageInfo.MISSING;
+  // Handle cards that are not yet in the card_image table.
+  for (const cardId in allKnownIds) {
+    if (typeof allInfos[cardId] === "undefined") {
+      allInfos[cardId] = ImageInfo.MISSING;
+      if (
+        IDToLargeImage[cardId] ||
+        TokenIDToLargeImage[cardId] ||
+        BackIDToLargeImage[cardId]
+      ) {
         if (
-          IDToLargeImage[cardId] ||
-          TokenIDToLargeImage[cardId] ||
-          BackIDToLargeImage[cardId]
+          IDToHighResAvail[cardId] ||
+          TokenIDToHighResAvail[cardId] ||
+          BackIDToHighResAvail[cardId]
         ) {
-          if (
-            IDToHighResAvail[cardId] ||
-            TokenIDToHighResAvail[cardId] ||
-            BackIDToHighResAvail[cardId]
-          ) {
-            cardsNotHQWithHQAvailable.push(cardId);
-          } else {
-            cardsMissingWithLQAvailable.push(cardId);
-          }
+          cardsNotHQWithHQAvailable.push(cardId);
+        } else {
+          cardsMissingWithLQAvailable.push(cardId);
         }
       }
     }
@@ -467,7 +478,7 @@ function loadOneImage(
         "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
         [
           cardDetails.cardId,
-          dateToMySQL(new Date()),
+          dateToMySQL(services.clock.now()),
           cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
         ]
       );

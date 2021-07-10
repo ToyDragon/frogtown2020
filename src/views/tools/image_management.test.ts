@@ -11,7 +11,8 @@ import MemoryScryfallManager from "../../server/scryfall_manager/memory_scryfall
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/storage_portal_memory";
 import { timeout } from "../../shared/utils";
-import { startUpdatingImages } from "./image_management";
+import { getAllImageInfos, startUpdatingImages } from "./image_management";
+import { ImageInfo } from "./types";
 
 // TODO: test CYMK file conversion.
 //
@@ -31,10 +32,10 @@ test("Downloads card images, resizes, and stores them.", async () => {
   /* eslint-disable prettier/prettier */
   jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
   jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({ "2": "https://www.scryfly.fake/Images/2.jpg" });
-  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({ "3": "https://www.scryfly.fake/Images/3.jpg" });
+  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({ "3": "https://www.scryfly.fake/Images/3.jpg", "4": "https://neverused" });
   jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": false });
   jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({ "2": true });
-  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({ "3": true });
+  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({ "3": true, "4": false });
   /* eslint-enable prettier/prettier */
 
   const clock: Clock = {
@@ -68,6 +69,7 @@ test("Downloads card images, resizes, and stores them.", async () => {
   });
   await timeout(1000);
 
+  // Verify the images were converted and stored.
   /* eslint-disable prettier/prettier */
   expect((await services.storagePortal.getObjectAsString("fq", "1.jpg")).length).toBe(202699);
   expect((await services.storagePortal.getObjectAsString("lq", "1.jpg")).length).toBe(52919);
@@ -79,5 +81,27 @@ test("Downloads card images, resizes, and stores them.", async () => {
   expect((await services.storagePortal.getObjectAsString("fq", "3.jpg")).length).toBe(202699);
   expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeGreaterThan(83970 * 0.95);
   expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeLessThan(83970 * 1.05);
+
+  // Verify that card 4 didn't have it's image updated, because we didn't specify it in the call to startUpdatingImages.
+  expect(await services.storagePortal.getObjectAsString("lq", "4.jpg")).toBe("");
   /* eslint-enable prettier/prettier */
+
+  // Verify that the reported info matches what we expect.
+  const infos = await getAllImageInfos(services);
+  expect(infos).not.toBeNull();
+  if (!infos) {
+    return;
+  }
+
+  expect(infos.cardsMissingWithLQAvailable).toEqual(["4"]);
+  expect(infos.cardsNotHQWithHQAvailable).toEqual([]);
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(1);
+  expect(infos.countByType[ImageInfo.NONE]).toBe(0);
+  expect(infos.countByType[ImageInfo.LQ]).toBe(1);
+  expect(infos.countByType[ImageInfo.HQ]).toBe(2);
+  expect(infos.imageTypeByID["1"]).toBe(ImageInfo.LQ);
+  expect(infos.imageTypeByID["2"]).toBe(ImageInfo.HQ);
+  expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
+  expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
+  expect(infos.lastUpdateDate).toBe("2021-01-01 11:00:00 UTC");
 });
