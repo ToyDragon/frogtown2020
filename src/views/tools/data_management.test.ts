@@ -3,7 +3,7 @@ import Config from "../../server/config";
 import initializeDatabase from "../../server/database/initialize_database";
 import MemoryDatabaseManager from "../../server/database/memory_db_manager";
 import MemoryLocalStorage from "../../server/local_storage/memory_local_storage";
-import { Level, setLogLevel } from "../../server/log";
+//import { Level, setLogLevel } from "../../server/log";
 import MemoryNetworkManager from "../../server/memory_network_manager";
 import { PerformanceMonitor } from "../../server/performance_monitor/performance_monitor";
 import MemoryScryfallManager from "../../server/scryfall_manager/memory_scryfall_manager";
@@ -19,7 +19,7 @@ import {
 
 // This test verifies that the AllCards file is retrieved from Scryfall, and stored in the blog storage.
 test("Downloads all cards, and can construct maps.", async () => {
-  setLogLevel(Level.NONE);
+  //setLogLevel(Level.NONE);
   const allCardsData = JSON.stringify([
     /* eslint-disable max-len */
     /* eslint-disable prettier/prettier */

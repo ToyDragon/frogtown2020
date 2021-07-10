@@ -206,8 +206,12 @@ export async function startDownloadNewAllCardsFile(
       "true",
     ]
   );
-
-  logInfo("Starting all cards file update from url: " + data_url);
+  logInfo(
+    "Starting all cards file update from url: " +
+      data_url +
+      " with date changed " +
+      data_changed
+  );
 
   // TODO: This can't run on a pod until I set it up. Add some warning or checking or something?
   // Pod will just crash or something if you click the update all cards button.
