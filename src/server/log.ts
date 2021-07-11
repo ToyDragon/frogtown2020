@@ -58,14 +58,15 @@ export function log(level: number, ...args: unknown[]): void {
     if (background >= 0) {
       backgroundString = `${CSI}48;5;${background}m`;
     }
-    const resetStyle = CSI + "0m";
-    const message =
-      `[${currentLogLabel}]${foregroundString}${backgroundString}${Level[level]}:` +
-      args.join("") +
-      resetStyle;
     if (writeStream) {
+      const message = `[${currentLogLabel}]${Level[level]}:${args.join("")}\n`;
       writeStream.write(message);
     } else {
+      const resetStyle = CSI + "0m";
+      const message =
+        `[${currentLogLabel}]${foregroundString}${backgroundString}${Level[level]}:` +
+        args.join("") +
+        resetStyle;
       console.log(message);
     }
   }
