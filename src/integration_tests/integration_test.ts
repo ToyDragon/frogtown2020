@@ -24,6 +24,19 @@ export async function type(
   );
 }
 
+// This is a wrapper around page.click that includes the selector in the error message.
+export async function click(
+  page: puppeteer.Page,
+  selector: string
+): Promise<void> {
+  try {
+    await page.click(selector);
+  } catch (e) {
+    e.message = `Unable to click "${selector}". ${e.message}`;
+    throw e;
+  }
+}
+
 export interface RunParams {
   browser: puppeteer.Browser;
   authCookies: puppeteer.Protocol.Network.CookieParam[];

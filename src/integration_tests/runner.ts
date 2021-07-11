@@ -9,6 +9,7 @@ import SettingsCardbackTest from "./tests/settings_cardback_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsChangeUserTest from "./tests/settings_change_user_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
+import CreateAndDeleteDeckTest from "./tests/create_and_delete_deck_test";
 
 interface CommandLineArgs {
   server: string;
@@ -94,6 +95,10 @@ function getCommandLineArgs(): CommandLineArgs {
     [
       // This changes cookies, so it needs to be done before all other tests that make requests.
       new SettingsChangeUserTest(),
+    ],
+    [
+      // This ensures decks can be deleted, which is important for all the new decks other tests will make.
+      new CreateAndDeleteDeckTest(),
     ],
     [
       new CardsearchLoadsTest(),
