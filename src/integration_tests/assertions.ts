@@ -1,7 +1,18 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
+import { saveScreenshot } from "./integration_test";
 
 export default abstract class Assert {
+  // Converts an error throwing promise into a boolean returning promise.
+  public static async noError(promise: Promise<unknown>): Promise<boolean> {
+    try {
+      await promise;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // Gets a property of an HTMLElement object, throwing an error if the selector doesn't select an element.
   // Notably this doesn't get things requiring function calls, such as `element.getAttribute("href")`.
   public static async existsAndGetValue(
@@ -19,7 +30,10 @@ export default abstract class Assert {
     } catch (e) {
       // The default error is very generic, so throw an error with more meaningful debug info.
       throw new Error(
-        `Unable to find element "${selector}" while trying to get property "${property}".`
+        `Unable to find element "${selector}" while trying to get property "${property}". Saved screenshot ${await saveScreenshot(
+          page,
+          selector
+        )}.`
       );
     }
   }
@@ -39,7 +53,10 @@ export default abstract class Assert {
     );
     if (!condition(actualValue)) {
       throw new Error(
-        `Element with selector "${selector}" with value "${actualValue}" did not satisfy condition "${condition}".`
+        `Element with selector "${selector}" with value "${actualValue}" did not satisfy condition "${condition}". Saved screenshot ${await saveScreenshot(
+          page,
+          selector
+        )}.`
       );
     }
     return actualValue;
@@ -50,10 +67,25 @@ export default abstract class Assert {
     page: puppeteer.Page,
     selector: string
   ): Promise<void> {
-    await page.waitForSelector(selector, {
-      visible: true,
-      timeout: 250,
-    });
+    try {
+      await page.waitForSelector(selector, {
+        visible: true,
+        timeout: 250,
+      });
+    } catch (e) {
+      const path = `./static/icons/screenshot_${selector.replace(
+        /[^a-zA-Z]/g,
+        ""
+      )}.png`;
+      await page.screenshot({ path: path });
+      e.message = `Selector "${selector}" failed visible check. ${
+        e.message
+      }. Saved screenshot ${path}. Saved screenshot ${await saveScreenshot(
+        page,
+        selector
+      )}.`;
+      throw e;
+    }
   }
 
   // Wrapper around page.waitForSelector with specific default values.
@@ -61,10 +93,25 @@ export default abstract class Assert {
     page: puppeteer.Page,
     selector: string
   ): Promise<void> {
-    await page.waitForSelector(selector, {
-      hidden: true,
-      timeout: 250,
-    });
+    try {
+      await page.waitForSelector(selector, {
+        hidden: true,
+        timeout: 250,
+      });
+    } catch (e) {
+      const path = `./static/icons/screenshot_${selector.replace(
+        /[^a-zA-Z]/g,
+        ""
+      )}.png`;
+      await page.screenshot({ path: path });
+      e.message = `Selector "${selector}" failed not-visible check. ${
+        e.message
+      }. Saved screenshot ${path}. Saved screenshot ${await saveScreenshot(
+        page,
+        selector
+      )}.`;
+      throw e;
+    }
   }
 
   // Wrapper around indexOf that throws an error.

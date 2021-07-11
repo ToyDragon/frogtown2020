@@ -11,8 +11,8 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
   async run(params: RunParams): Promise<void> {
     const page = await params.browser.newPage();
     await page.setViewport({
-      width: 1080,
-      height: 1920,
+      width: 1920,
+      height: 1080,
     });
     await page.setCookie(...params.authCookies);
     await page.goto(
@@ -20,16 +20,12 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
     );
     await timeout(100);
     await click(page, "#tb_mydecks");
-    await page.waitForSelector(".tbDeck[data-deckid='']", { visible: true });
     await click(page, ".tbDeck[data-deckid='']");
     await page.waitForNavigation();
     await timeout(100);
     Assert.contains(page.url(), "/deckViewer/");
-    await page.waitForSelector("#DeckActions", { visible: true });
     await click(page, "#DeckActions");
-    await page.waitForSelector("#actionDelete", { visible: true });
     await click(page, "#actionDelete");
-    await page.waitForSelector("#deleteOverlay", { visible: true });
     await click(page, "#btnConfirmDelete");
     await page.waitForNavigation();
     Assert.contains(page.url(), "/cardsearch");

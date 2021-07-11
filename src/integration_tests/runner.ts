@@ -10,6 +10,7 @@ import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsChangeUserTest from "./tests/settings_change_user_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import CreateAndDeleteDeckTest from "./tests/create_and_delete_deck_test";
+import DeckEditorBulkImportTest from "./tests/deck_editor_bulk_import_test";
 
 interface CommandLineArgs {
   server: string;
@@ -105,6 +106,7 @@ function getCommandLineArgs(): CommandLineArgs {
       new SettingsChangeUsernameTest(),
       new SettingsCardbackTest(),
       new SettingsQualityTest(),
+      new DeckEditorBulkImportTest(),
     ],
   ];
   let failed = false;

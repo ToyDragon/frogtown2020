@@ -1,6 +1,11 @@
 import { timeout } from "../../shared/utils";
 import Assert from "../assertions";
-import { IntegrationTest, RunParams, type } from "../integration_test";
+import {
+  clickUntil,
+  IntegrationTest,
+  RunParams,
+  type,
+} from "../integration_test";
 
 // This test validates that the user can change which ID they are using.
 export default class SettingsChangeUserTest extends IntegrationTest {
@@ -10,6 +15,10 @@ export default class SettingsChangeUserTest extends IntegrationTest {
 
   async run(params: RunParams): Promise<void> {
     const page = await params.browser.newPage();
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
+    });
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     await page.waitForTimeout(100);
@@ -22,12 +31,10 @@ export default class SettingsChangeUserTest extends IntegrationTest {
     await Assert.notVisible(page, "#divPrivateId");
 
     // Click the button to reveal the input.
-    await page.click("#btnChangePrivateId", {
-      delay: 200,
+    await clickUntil(page, "#btnChangePrivateId", async () => {
+      return await Assert.noError(Assert.visible(page, "#divPrivateId"));
     });
-
-    // Verify the input is now visible.
-    await Assert.visible(page, "#divPrivateId");
+    return await Assert.visible(page, "#divPrivateId");
 
     // Verify that the checkmark is visible, and the refresh icon hidden.
     await Assert.visible(page, "#inputId + .error + .refresh + .ok");
