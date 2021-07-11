@@ -1,7 +1,7 @@
 import StoragePortal from "./storage_portal";
 import * as stream from "stream";
 import * as fs from "fs";
-import { Clock } from "./clock";
+import { Clock } from "../clock";
 
 interface ObjectInfo {
   contents: string;

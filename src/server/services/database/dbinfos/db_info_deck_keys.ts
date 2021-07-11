@@ -1,4 +1,4 @@
-import { logError, logInfo } from "../../log";
+import { logError, logInfo } from "../../../log";
 import { DatabaseConnection } from "../db_connection";
 import { DBInfo } from "./db_info";
 

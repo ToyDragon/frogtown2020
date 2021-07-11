@@ -1,4 +1,4 @@
-import { logWarning } from "../log";
+import { logWarning } from "../../log";
 
 export interface SummaryData {
   max_millis: number;

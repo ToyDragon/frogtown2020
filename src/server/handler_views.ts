@@ -6,10 +6,10 @@ import SharedHandler from "../views/shared/server/handler";
 import {
   ColorStringToArray,
   DeckKeysRow,
-} from "./database/dbinfos/db_info_deck_keys";
-import { UserKeysRow } from "./database/dbinfos/db_info_user_keys";
-import { GetSession } from "./performance_monitor/performance_logger";
-import { PerformanceSession } from "./performance_monitor/performance_monitor";
+} from "./services/database/dbinfos/db_info_deck_keys";
+import { UserKeysRow } from "./services/database/dbinfos/db_info_user_keys";
+import { GetSession } from "./services/performance_monitor/performance_logger";
+import { PerformanceSession } from "./services/performance_monitor/performance_monitor";
 
 // Helper function to gather data required for a page to render.
 export function retrieveAllData(

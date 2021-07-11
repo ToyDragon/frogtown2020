@@ -12,9 +12,9 @@ import {
 import {
   ColorStringToArray,
   DeckKeysRow,
-} from "../../server/database/dbinfos/db_info_deck_keys";
-import { DeckCardsRow } from "../../server/database/dbinfos/db_info_deck_cards";
-import { DatabaseConnection } from "../../server/database/db_connection";
+} from "../../server/services/database/dbinfos/db_info_deck_keys";
+import { DeckCardsRow } from "../../server/services/database/dbinfos/db_info_deck_cards";
+import { DatabaseConnection } from "../../server/services/database/db_connection";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {

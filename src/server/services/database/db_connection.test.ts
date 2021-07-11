@@ -1,6 +1,6 @@
 import { DatabaseConnection } from "./db_connection";
 import PooledConnectionMock from "./db_poolconnection_mock";
-import { setLogLevel, Level } from "../log";
+import { setLogLevel, Level } from "../../log";
 
 setLogLevel(Level.NONE);
 

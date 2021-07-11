@@ -1,8 +1,8 @@
 import Services from "../../../server/services";
 import IndividualMapConstructor from "./individual_map_constructor";
 import { logInfo, logError } from "../../../server/log";
-import { BatchStatusRow } from "../../../server/database/dbinfos/db_info_batch_status";
-import { DatabaseConnection } from "../../../server/database/db_connection";
+import { BatchStatusRow } from "../../../server/services/database/dbinfos/db_info_batch_status";
+import { DatabaseConnection } from "../../../server/services/database/db_connection";
 
 let constructors: IndividualMapConstructor[] = [];
 

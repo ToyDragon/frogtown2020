@@ -1,6 +1,6 @@
 import { UserDetailsRequest, UserDetailsResponse } from "../handler_types";
 import Services from "../../../server/services";
-import { UserKeysRow } from "../../../server/database/dbinfos/db_info_user_keys";
+import { UserKeysRow } from "../../../server/services/database/dbinfos/db_info_user_keys";
 
 export async function getUserDetails(
   services: Services,

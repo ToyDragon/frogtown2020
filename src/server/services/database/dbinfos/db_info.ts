@@ -1,5 +1,5 @@
 import { DatabaseConnection } from "../db_connection";
-import { logCritical } from "../../log";
+import { logCritical } from "../../../log";
 
 export abstract class DBInfo {
   public async ensureTableExists(

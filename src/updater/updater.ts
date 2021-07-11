@@ -2,10 +2,10 @@ import * as os from "os";
 import commandLineArgs from "command-line-args";
 import * as fs from "fs";
 
-import Config from "../server/config";
+import Config from "../server/services/config/config";
 import Services from "../server/services";
-import LoadConfigFromFile from "../server/config_loader";
-import S3StoragePortal from "../server/storage_portal_s3";
+import LoadConfigFromFile from "../server/services/config/config_loader";
+import S3StoragePortal from "../server/services/storage_portal/storage_portal_s3";
 import * as Logs from "../server/log";
 import {
   initStatusManagement,
@@ -13,9 +13,9 @@ import {
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
 import { timeout } from "../shared/utils";
-import { BatchStatusRow } from "../server/database/dbinfos/db_info_batch_status";
-import { DataFilesRow } from "../server/database/dbinfos/db_info_data_files";
-import { DatabaseConnection } from "../server/database/db_connection";
+import { BatchStatusRow } from "../server/services/database/dbinfos/db_info_batch_status";
+import { DataFilesRow } from "../server/services/database/dbinfos/db_info_data_files";
+import { DatabaseConnection } from "../server/services/database/db_connection";
 import {
   BulkDataListing,
   startConstructingDataMaps,
@@ -31,13 +31,13 @@ import {
   getImageVersionDetails,
   setImageVersion,
 } from "../views/shared/server/image_version";
-import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
-import initializeDatabase from "../server/database/initialize_database";
-import MySQLDatabaseManager from "../server/database/mysql_db_manager";
-import FsLocalStorage from "../server/local_storage/fs_local_storage";
-import RealScryfallManager from "../server/scryfall_manager/real_scryfall_manager";
-import RealClock from "../server/real_clock";
-import RealNetworkManager from "../server/real_network_manager";
+import { PerformanceMonitor } from "../server/services/performance_monitor/performance_monitor";
+import initializeDatabase from "../server/services/database/initialize_database";
+import MySQLDatabaseManager from "../server/services/database/mysql_db_manager";
+import FsLocalStorage from "../server/services/local_storage/fs_local_storage";
+import RealScryfallManager from "../server/services/scryfall_manager/real_scryfall_manager";
+import RealClock from "../server/services/real_clock";
+import RealNetworkManager from "../server/services/network_manager/real_network_manager";
 
 export default class Updater {
   private services!: Services;

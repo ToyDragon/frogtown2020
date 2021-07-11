@@ -1,4 +1,4 @@
-import { wait } from "../../shared/utils";
+import { wait } from "../../../shared/utils";
 import { PerformanceMonitor, SummaryData } from "./performance_monitor";
 
 expect.extend({

@@ -6,10 +6,10 @@ import {
   constructAllMaps,
   getConstructionProgress,
 } from "./mapconstruction/construct_all_maps";
-import { DataFilesRow } from "../../server/database/dbinfos/db_info_data_files";
+import { DataFilesRow } from "../../server/services/database/dbinfos/db_info_data_files";
 import { endBatch, trySetBatchInProgress } from "./batch_status";
-import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
-import { DatabaseConnection } from "../../server/database/db_connection";
+import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_batch_status";
+import { DatabaseConnection } from "../../server/services/database/db_connection";
 
 const allDataKey = "AllData.json";
 

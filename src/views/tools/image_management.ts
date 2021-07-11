@@ -13,12 +13,12 @@ import {
   CardImageClearInfoRequest,
 } from "./types";
 import { logInfo, logError, logWarning } from "../../server/log";
-import { DatabaseConnection } from "../../server/database/db_connection";
+import { DatabaseConnection } from "../../server/services/database/db_connection";
 import * as stream from "stream";
 import imagemagick from "imagemagick-stream";
-import { CardImagesRow } from "../../server/database/dbinfos/db_info_card_images";
+import { CardImagesRow } from "../../server/services/database/dbinfos/db_info_card_images";
 import { trySetBatchInProgress, endBatch } from "./batch_status";
-import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
+import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_batch_status";
 
 async function getIDToHQMap(
   services: Services

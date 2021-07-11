@@ -1,7 +1,7 @@
 import * as stream from "stream";
-import { logInfo } from "../log";
-import { RateLimiter } from "../rate_limiter";
-import { httpsGet, httpsGetMessage, httpsGetRaw } from "../../shared/utils";
+import { logInfo } from "../../log";
+import { RateLimiter } from "../../rate_limiter";
+import { httpsGet, httpsGetMessage, httpsGetRaw } from "../../../shared/utils";
 import ScryfallManager from "./scryfall_manager";
 
 let alreadyExists = false;

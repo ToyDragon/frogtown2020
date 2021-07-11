@@ -1,4 +1,4 @@
-import { logCritical } from "../log";
+import { logCritical } from "../../log";
 import { DBInfoBatchStatus } from "./dbinfos/db_info_batch_status";
 import { DBInfoCardImages } from "./dbinfos/db_info_card_images";
 import { DBInfoDataFiles } from "./dbinfos/db_info_data_files";
@@ -9,7 +9,7 @@ import { DBInfoServerStatus } from "./dbinfos/db_info_server_status";
 import { DBInfoUserKeys } from "./dbinfos/db_info_user_keys";
 import { DBInfoUserQuality } from "./dbinfos/db_info_user_quality";
 import DatabaseManager from "./db_manager";
-import Config from "../config";
+import Config from "../config/config";
 
 // Ensures that the frogtown database and tables exist.
 export default async function initializeDatabase(

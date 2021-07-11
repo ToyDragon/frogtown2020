@@ -1,9 +1,9 @@
 import * as mysql from "mysql";
 import * as fs from "fs";
 
-import Config from "../config";
+import Config from "../config/config";
 import { DatabaseConnection } from "./db_connection";
-import { logCritical, logError, logInfo } from "../log";
+import { logCritical, logError, logInfo } from "../../log";
 import DatabaseManager, { RawDatabaseConnection } from "./db_manager";
 import { DatabaseActionResult } from "./db_action_result";
 

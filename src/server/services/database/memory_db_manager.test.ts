@@ -1,4 +1,4 @@
-import Config from "../config";
+import Config from "../config/config";
 import { BatchStatusRow } from "./dbinfos/db_info_batch_status";
 import initializeDatabase from "./initialize_database";
 import MemoryDatabaseManager from "./memory_db_manager";

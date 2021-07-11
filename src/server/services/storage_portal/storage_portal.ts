@@ -2,8 +2,11 @@ import * as stream from "stream";
 
 export default interface StoragePortal {
   canWriteToBucket(bucket: string): Promise<boolean>;
-  // eslint-disable-next-line prettier/prettier
-  uploadFileToBucket(bucket: string, objectKey: string, filepath: string): Promise<boolean>;
+  uploadFileToBucket(
+    bucket: string,
+    objectKey: string,
+    filepath: string
+  ): Promise<boolean>;
   uploadStringToBucket(
     bucket: string,
     objectKey: string,

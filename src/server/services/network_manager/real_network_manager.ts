@@ -1,5 +1,5 @@
 import * as https from "https";
-import dumpStream from "./dump_stream";
+import dumpStream from "../../dump_stream";
 import NetworkManager, { GetResult } from "./network_manager";
 
 export default class RealNetworkManager implements NetworkManager {

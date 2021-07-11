@@ -1,4 +1,4 @@
-import Config from "../config";
+import Config from "../config/config";
 import { DatabaseActionResult } from "./db_action_result";
 import { DatabaseConnection } from "./db_connection";
 

@@ -8,10 +8,10 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import commandLineArgs from "command-line-args";
 
-import Config from "./config";
+import Config from "./services/config/config";
 import Services from "./services";
-import LoadConfigFromFile from "./config_loader";
-import S3StoragePortal from "./storage_portal_s3";
+import LoadConfigFromFile from "./services/config/config_loader";
+import S3StoragePortal from "./services/storage_portal/storage_portal_s3";
 import ErrorHandler from "./handler_error";
 import NotFoundHandler from "./handler_not_found";
 import HTTPSRedirectionHandler from "./handler_https_redirection";
@@ -23,14 +23,14 @@ import { initStatusManagement, logGracefulDeath } from "./status_manager";
 import { setServerName } from "./name";
 import { timeout } from "../shared/utils";
 import WellKnownHandler from "./handler_wellknown";
-import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
-import { PerformanceLogger } from "./performance_monitor/performance_logger";
-import MySQLDatabaseManager from "./database/mysql_db_manager";
-import initializeDatabase from "./database/initialize_database";
-import FsLocalStorage from "./local_storage/fs_local_storage";
-import RealScryfallManager from "./scryfall_manager/real_scryfall_manager";
-import RealClock from "./real_clock";
-import RealNetworkManager from "./real_network_manager";
+import { PerformanceMonitor } from "./services/performance_monitor/performance_monitor";
+import { PerformanceLogger } from "./services/performance_monitor/performance_logger";
+import MySQLDatabaseManager from "./services/database/mysql_db_manager";
+import initializeDatabase from "./services/database/initialize_database";
+import FsLocalStorage from "./services/local_storage/fs_local_storage";
+import RealScryfallManager from "./services/scryfall_manager/real_scryfall_manager";
+import RealClock from "./services/real_clock";
+import RealNetworkManager from "./services/network_manager/real_network_manager";
 
 export default class Server {
   public run(serverLabel: string): void {

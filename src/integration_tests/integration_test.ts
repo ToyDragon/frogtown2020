@@ -1,6 +1,6 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
-import Config from "../server/config";
+import Config from "../server/services/config/config";
 import { timeout } from "../shared/utils";
 
 // Type some text into a text input. This is a wrapper around page.type that fixes an issue.

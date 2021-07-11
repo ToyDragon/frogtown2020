@@ -1,5 +1,5 @@
 import * as stream from "stream";
-import { timeout } from "../../shared/utils";
+import { timeout } from "../../../shared/utils";
 import ScryfallManager from "./scryfall_manager";
 
 export default class MemoryScryfallManager implements ScryfallManager {

@@ -1,5 +1,5 @@
-import { DatabaseConnection } from "../../server/database/db_connection";
-import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
+import { DatabaseConnection } from "../../server/services/database/db_connection";
+import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_batch_status";
 import { getName } from "../../server/name";
 
 export async function isBatchInProgress(

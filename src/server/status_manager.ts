@@ -4,7 +4,7 @@ import { dateToMySQL } from "../shared/utils";
 import {
   ServerStatus,
   ServerStatusRow,
-} from "./database/dbinfos/db_info_server_status";
+} from "./services/database/dbinfos/db_info_server_status";
 import { getVersion } from "./version";
 import { getName } from "./name";
 

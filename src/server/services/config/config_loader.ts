@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import Config from "./config";
-import { logCritical } from "./log";
+import { logCritical } from "../../log";
 
 export function GetMissingConfigProperties(config: Config): string[] {
   if (!config || typeof config !== "object") {

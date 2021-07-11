@@ -1,4 +1,4 @@
-import { logError } from "../log";
+import { logError } from "../../log";
 import { DatabaseActionResult } from "./db_action_result";
 import PooledConnection from "./db_poolconnection";
 

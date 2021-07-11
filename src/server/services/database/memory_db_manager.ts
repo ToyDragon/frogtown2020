@@ -1,6 +1,6 @@
 import * as sqlite3 from "sqlite3";
 
-import Config from "../config";
+import Config from "../config/config";
 import { DatabaseConnection } from "./db_connection";
 import DatabaseManager, { RawDatabaseConnection } from "./db_manager";
 import { DatabaseActionResult } from "./db_action_result";

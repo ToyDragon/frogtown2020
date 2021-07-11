@@ -1,11 +1,11 @@
-import StoragePortal from "./storage_portal";
-import Config from "./config";
-import DatabaseManager from "./database/db_manager";
-import ScryfallManager from "./scryfall_manager/scryfall_manager";
-import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
-import LocalStorage from "./local_storage/local_storage";
-import { Clock } from "./clock";
-import NetworkManager from "./network_manager";
+import StoragePortal from "./services/storage_portal/storage_portal";
+import Config from "./services/config/config";
+import DatabaseManager from "./services/database/db_manager";
+import ScryfallManager from "./services/scryfall_manager/scryfall_manager";
+import { PerformanceMonitor } from "./services/performance_monitor/performance_monitor";
+import LocalStorage from "./services/local_storage/local_storage";
+import { Clock } from "./services/clock";
+import NetworkManager from "./services/network_manager/network_manager";
 
 /**
  * Global services configured for the server. These are passed around in a

@@ -1,5 +1,5 @@
-import Services from "../services";
-import { logCritical } from "../log";
+import Services from "../../services";
+import { logCritical } from "../../log";
 import { DatabaseConnection } from "./db_connection";
 
 export default class ConnectionContainer {

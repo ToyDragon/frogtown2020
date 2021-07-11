@@ -1,8 +1,8 @@
 import * as stream from "stream";
 import * as https from "https";
 import NetworkManager, { GetResult } from "./network_manager";
-import { timeout } from "../shared/utils";
-import dumpStream from "./dump_stream";
+import { timeout } from "../../../shared/utils";
+import dumpStream from "../../dump_stream";
 
 export default class MemoryNetworkManager implements NetworkManager {
   private data!: Record<string, string>;

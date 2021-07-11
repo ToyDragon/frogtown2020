@@ -1,7 +1,7 @@
 import commandLineArgs from "command-line-args";
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
-import LoadConfigFromFile from "../server/config_loader";
+import LoadConfigFromFile from "../server/services/config/config_loader";
 import { Level, setLogLevel } from "../server/log";
 import { IntegrationTest, RunParams } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
