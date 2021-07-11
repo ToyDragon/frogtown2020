@@ -1,6 +1,6 @@
 import * as express from "express";
-import { logInfo } from "./log";
-import Services from "./services";
+import { logInfo } from "../log";
+import Services from "../services";
 
 // Creates route handler to serve well known files for SSL certs.
 export default function WellKnownHandler(services: Services): express.Router {

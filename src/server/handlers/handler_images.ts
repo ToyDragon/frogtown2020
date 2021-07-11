@@ -1,7 +1,7 @@
-import Services from "./services";
+import Services from "../services";
 import * as express from "express";
-import { AsyncCacher } from "../shared/async_cacher";
-import { UserQualityRow } from "./services/database/dbinfos/db_info_user_quality";
+import { AsyncCacher } from "../../shared/async_cacher";
+import { UserQualityRow } from "../services/database/dbinfos/db_info_user_quality";
 
 export default function ImagesHandler(
   services: Services

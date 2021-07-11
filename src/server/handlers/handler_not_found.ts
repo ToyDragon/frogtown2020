@@ -1,4 +1,4 @@
-import { logWarning } from "./log";
+import { logWarning } from "../log";
 import express from "express";
 
 const NotFoundHandler: express.RequestHandler = (request, response, _next) => {

@@ -1,10 +1,10 @@
 import express from "express";
 
-import { logCritical } from "./log";
-import SetupIssue from "./setupchecker/setupissue";
-import CheckSetup from "./setupchecker/setupchecker";
-import Services from "./services";
-import { GetAllPages } from "./view_data";
+import { logCritical } from "../log";
+import SetupIssue from "../setupchecker/setupissue";
+import CheckSetup from "../setupchecker/setupchecker";
+import Services from "../services";
+import { GetAllPages } from "../view_data";
 
 let pendingIssueCheck = true;
 let issues: SetupIssue[] = [];

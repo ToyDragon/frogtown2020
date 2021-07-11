@@ -1,4 +1,4 @@
-import { logError } from "./log";
+import { logError } from "../log";
 import express from "express";
 
 const ErrorHandler: express.ErrorRequestHandler = (

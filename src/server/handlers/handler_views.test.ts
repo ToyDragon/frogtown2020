@@ -1,7 +1,7 @@
 import express from "express";
 import { retrieveAllData } from "./handler_views";
-import { IncludedData } from "./view_data";
-import Services from "./services";
+import { IncludedData } from "../view_data";
+import Services from "../services";
 
 const simpleExampleStringData: IncludedData = {
   var: "A",

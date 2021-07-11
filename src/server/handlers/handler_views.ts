@@ -1,15 +1,15 @@
 import * as express from "express";
-import Services from "./services";
-import { IncludedData, GetAllPages } from "./view_data";
-import { logInfo } from "./log";
-import SharedHandler from "../views/shared/server/handler";
+import Services from "../services";
+import { IncludedData, GetAllPages } from "../view_data";
+import { logInfo } from "../log";
+import SharedHandler from "../../views/shared/server/handler";
 import {
   ColorStringToArray,
   DeckKeysRow,
-} from "./services/database/dbinfos/db_info_deck_keys";
-import { UserKeysRow } from "./services/database/dbinfos/db_info_user_keys";
-import { GetSession } from "./services/performance_monitor/performance_logger";
-import { PerformanceSession } from "./services/performance_monitor/performance_monitor";
+} from "../services/database/dbinfos/db_info_deck_keys";
+import { UserKeysRow } from "../services/database/dbinfos/db_info_user_keys";
+import { GetSession } from "../services/performance_monitor/performance_logger";
+import { PerformanceSession } from "../services/performance_monitor/performance_monitor";
 
 // Helper function to gather data required for a page to render.
 export function retrieveAllData(
@@ -121,7 +121,7 @@ export default function ViewHandler(
 ): express.Router {
   const router = express.Router();
   const allPages = GetAllPages(services);
-  const viewDir = __dirname + "/../views/";
+  const viewDir = __dirname + "/../../views/";
 
   // Statically serve shared resoureces
   router.use(express.static(viewDir + "shared/client/"));
@@ -171,6 +171,7 @@ export default function ViewHandler(
     // This doesn't match the source files, webpack will compile
     // the behavior.ts file and it's dependencies into this bundle file.
     router.use("/" + view.routes[0], express.static(viewDir + view.view + "/"));
+    logInfo(`Static serving ${view.routes[0]} to ${viewDir + view.view + "/"}`);
     router.use(
       `/${view.routes[0]}/styles.css`,
       express.static(`./static/styles/${view.view}_styles.css`)
