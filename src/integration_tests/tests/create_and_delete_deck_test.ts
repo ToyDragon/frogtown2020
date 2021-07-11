@@ -24,15 +24,7 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
     await click(page, ".tbDeck[data-deckid='']");
     await page.waitForNavigation();
     await timeout(100);
-    const url = page.url();
-    const pieces = url.split("/");
-    let deckId = "";
-    if (pieces.length >= 3) {
-      deckId = pieces[pieces.length - 2];
-    }
     Assert.contains(page.url(), "/deckViewer/");
-    Assert.notEquals(deckId, "");
-    console.log("New url: " + page.url());
     await page.waitForSelector("#DeckActions", { visible: true });
     await click(page, "#DeckActions");
     await page.waitForSelector("#actionDelete", { visible: true });
