@@ -162,7 +162,7 @@ test("Downloads all cards, and can construct maps.", async () => {
   }
 
   // Verify that the data map related dates are still empty.
-  expect(dataInfo.dataMapsChangeDate).toBe("2021-07-08 03:07:49 UTC");
+  expect(dataInfo.dataMapsChangeDate).toBe("2021-07-07 22:07:49 UTC");
   expect(new Date(dataInfo.dataMapsUpdateDate!)).toEqual(clock.now());
 
   // Verify that the IDToName map contains the expected data.

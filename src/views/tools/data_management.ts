@@ -71,6 +71,7 @@ export async function getDataInfo(
         result.allCardsUpdateDate = row.update_time + " UTC";
       }
       if (row.name === "map_files") {
+        console.log("Read out of SQL " + row.change_time);
         result.dataMapsChangeDate = row.change_time + " UTC";
         result.dataMapsUpdateDate = row.update_time + " UTC";
       }
@@ -147,7 +148,9 @@ export async function startConstructingDataMaps(
         [
           "map_files",
           dateToMySQL(services.clock.now()),
-          dateToMySQL(new Date(change_time)),
+          dateToMySQL(
+            new Date(change_time.split("+")[0].replace("T", " ") + " UTC")
+          ),
         ]
       );
       logInfo("Insert result: " + JSON.stringify(insertResult));
@@ -276,7 +279,9 @@ export async function startDownloadNewAllCardsFile(
     fileStream.on("end", async () => {
       logInfo(`Done at: ${downloadCurBytes} / ${downloadMaxBytes}`);
       const dataUpdated = services.clock.now();
-      const dataChanged = new Date(data_changed);
+      const dataChanged = new Date(
+        data_changed.split("+")[0].replace("T", " ") + " UTC"
+      );
       if (downloadCurBytes <= downloadMaxBytes / 2) {
         // Data file was likely not available, sometimes the scryfall API does this.
         // Often it's just a JSON file that says no response was available, sometimes it's
