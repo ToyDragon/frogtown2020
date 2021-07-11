@@ -71,7 +71,6 @@ export async function getDataInfo(
         result.allCardsUpdateDate = row.update_time + " UTC";
       }
       if (row.name === "map_files") {
-        console.log("Read out of SQL " + row.change_time);
         result.dataMapsChangeDate = row.change_time + " UTC";
         result.dataMapsUpdateDate = row.update_time + " UTC";
       }
