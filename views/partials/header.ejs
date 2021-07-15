@@ -18,7 +18,7 @@
       <% } %>
     <% } %>
   <% } %>
-  <% if (typeof(debugBanner) !== "undefined") { %>
+  <% if (typeof(debugBanner) === "string" && debugBanner.trim().length > 0) { %>
     <div id="debugbanner"><%- debugBanner -%></div>
   <% } %>
 </div>
