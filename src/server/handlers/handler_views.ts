@@ -171,7 +171,7 @@ export default function ViewHandler(
     // This doesn't match the source files, webpack will compile
     // the behavior.ts file and it's dependencies into this bundle file.
     router.use("/" + view.routes[0], express.static(viewDir + view.view + "/"));
-    logInfo(`Static serving ${view.routes[0]} to ${viewDir + view.view + "/"}`);
+    logInfo(`Static serving ${view.routes[0]}`);
     router.use(
       `/${view.routes[0]}/styles.css`,
       express.static(`./static/styles/${view.view}_styles.css`)

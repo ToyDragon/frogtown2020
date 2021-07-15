@@ -246,10 +246,12 @@ export async function startUpdatingImages(
     20 * 60 * 1000 // 20 minute timeout
   );
   if (!connection) {
+    logError("No connection.");
     return;
   }
   if (!(await trySetBatchInProgress(connection))) {
     connection.release();
+    logError("Failed to start batch.");
     return;
   }
 
@@ -259,12 +261,14 @@ export async function startUpdatingImages(
     IDToHighResAvail = await getIDToHQMap(services);
     IDToLargeImage = await getIDToImageURIMap(services);
   } catch (e) {
+    logError("Error getting HQ/URI maps.");
     logError(e);
     return;
   }
 
   if (updateImageRequest.allMissingCards) {
     //TODO: I'll implement this when most/all cards are done.
+    logError("Tried to update all missing cards, not implemented.");
   } else {
     imagesBeingUpdated = [];
     for (const cardId of updateImageRequest.cardIds) {

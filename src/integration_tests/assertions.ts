@@ -149,4 +149,25 @@ export default abstract class Assert {
       throw new Error(`Expected value "${a}" not to equal "${b}".`);
     }
   }
+
+  // Wrapper around < that throws an error.
+  public static async lessThan<T>(a: T, b: T): Promise<void> {
+    if (a >= b) {
+      throw new Error(`Expected value "${a}" to be less than "${b}".`);
+    }
+  }
+
+  // Wrapper around > that throws an error.
+  public static async greaterThan<T>(a: T, b: T): Promise<void> {
+    if (a <= b) {
+      throw new Error(`Expected value "${a}" to be greater than "${b}".`);
+    }
+  }
+
+  // Checks that the value is true, throws an error if not.
+  public static async true(value: boolean): Promise<void> {
+    if (!value) {
+      throw new Error(`Expected value "${value}" to be true.`);
+    }
+  }
 }

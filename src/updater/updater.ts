@@ -10,6 +10,7 @@ import * as Logs from "../server/log";
 import {
   initStatusManagement,
   logGracefulDeath,
+  stopHeartbeat,
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
 import { timeout } from "../shared/utils";
@@ -87,6 +88,7 @@ export default class Updater {
 
       process.on("SIGINT", async () => {
         Logs.logWarning("SIGINT recieved.");
+        await stopHeartbeat();
         await logGracefulDeath(this.services);
         await timeout(2000);
         logStream.close();

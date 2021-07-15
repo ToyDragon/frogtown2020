@@ -1,7 +1,7 @@
 import Services from "../../../server/services";
 import { ToolbarNewDeckResponse } from "../handler_types";
 import { randomString, randomName, UserDetails } from "../../../shared/utils";
-import { logError, logInfo } from "../../../server/log";
+import { logError } from "../../../server/log";
 
 export default async function createNewDeck(
   userDetails: UserDetails,
@@ -18,8 +18,6 @@ export default async function createNewDeck(
     "SELECT public_id FROM user_keys WHERE private_id=?;",
     [userDetails.privateId || ""]
   );
-  logInfo("Private: " + userDetails.privateId);
-  logInfo("Response: " + JSON.stringify(ownerRows));
   if (!ownerRows?.value || ownerRows.value.length === 0) {
     connection.release();
     return null;

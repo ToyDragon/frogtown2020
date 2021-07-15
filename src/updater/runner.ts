@@ -42,7 +42,12 @@ if (cluster.isMaster) {
   setTimeout(() => {
     closing = true;
     console.log("Runner: Reached 3 hour limit, shutting down.");
-    process.kill(process.pid, "SIGINT");
+    for (const worker of workers) {
+      if (!deadWorkers[worker.id]) {
+        console.log(`Runner: Killing pid ${worker.process.pid}.`);
+        process.kill(worker.process.pid, "SIGINT");
+      }
+    }
   }, 1000 * 60 * 60 * 3); // 3 hours
 } else {
   new Updater().run();

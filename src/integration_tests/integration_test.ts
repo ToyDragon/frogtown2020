@@ -8,7 +8,7 @@ export async function saveScreenshot(
   selector: string
 ): Promise<string> {
   const path = `./static/icons/screenshot_${selector.replace(
-    /[^a-zA-Z]/g,
+    /[^a-zA-Z0-9_]/g,
     ""
   )}.png`;
   await page.screenshot({ path: path });
@@ -53,11 +53,16 @@ export async function clickUntil(
   selector: string,
   condition: () => Promise<boolean>
 ): Promise<void> {
+  if (await condition()) {
+    return;
+  }
   for (let i = 0; i < 100; ++i) {
     await click(page, selector);
-    await timeout(100);
-    if (await condition()) {
-      return;
+    for (let j = 0; j < 10; ++j) {
+      if (await condition()) {
+        return;
+      }
+      await timeout(100);
     }
   }
   throw new Error(
@@ -86,7 +91,7 @@ export async function click(
 }
 
 export interface RunParams {
-  browser: puppeteer.Browser;
+  newPage: () => Promise<puppeteer.Page>;
   authCookies: puppeteer.Protocol.Network.CookieParam[];
   serverUrl: string;
   port: number;

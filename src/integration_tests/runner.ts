@@ -3,14 +3,14 @@ import commandLineArgs from "command-line-args";
 import puppeteer from "puppeteer";
 import LoadConfigFromFile from "../server/services/config/config_loader";
 import { Level, setLogLevel } from "../server/log";
-import { IntegrationTest, RunParams } from "./integration_test";
+import { IntegrationTest, saveScreenshot } from "./integration_test";
 import CardsearchLoadsTest from "./tests/cardsearch_loads_test";
 import SettingsCardbackTest from "./tests/settings_cardback_test";
 import SettingsChangeUsernameTest from "./tests/settings_change_username_test";
 import SettingsChangeUserTest from "./tests/settings_change_user_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import CreateAndDeleteDeckTest from "./tests/create_and_delete_deck_test";
-import DeckEditorBulkImportTest from "./tests/deck_editor_bulk_import_test";
+import DeckEditorImportDisplayAndGroupTest from "./tests/deck_editor_import_display_and_group_test";
 
 interface CommandLineArgs {
   server: string;
@@ -63,9 +63,10 @@ function getCommandLineArgs(): CommandLineArgs {
 (async () => {
   const args = getCommandLineArgs();
   const config = await LoadConfigFromFile(args.config);
+  const browser = await puppeteer.launch();
 
   // Construct an object with the parameters required to run a test.
-  const runParams: RunParams = {
+  const runParams = {
     authCookies: [
       {
         // This user has nothing special about them, we just need a user to test with.
@@ -80,7 +81,6 @@ function getCommandLineArgs(): CommandLineArgs {
         name: "privateId",
       },
     ],
-    browser: await puppeteer.launch(),
     serverUrl: args.server,
     port: args.port,
     config: config,
@@ -106,7 +106,7 @@ function getCommandLineArgs(): CommandLineArgs {
       new SettingsChangeUsernameTest(),
       new SettingsCardbackTest(),
       new SettingsQualityTest(),
-      new DeckEditorBulkImportTest(),
+      new DeckEditorImportDisplayAndGroupTest(),
     ],
   ];
   let failed = false;
@@ -116,13 +116,55 @@ function getCommandLineArgs(): CommandLineArgs {
     for (const test of set) {
       testRunPromises.push(
         (async () => {
-          try {
-            await test.run(runParams);
-            console.log(`Test ${test.name()} passed!`);
-          } catch (e) {
-            console.log(`Test ${test.name()} failed!`);
-            console.error(e);
-            failed = true;
+          const pages: puppeteer.Page[] = [];
+          for (let attempt = 0; attempt < 5; ++attempt) {
+            try {
+              await test.run({
+                ...runParams,
+                newPage: async () => {
+                  const page = await browser.newPage();
+                  await page.setViewport({
+                    width: 1920,
+                    height: 1080,
+                  });
+                  pages.push(page);
+                  return page;
+                },
+              });
+              console.log(`Test ${test.name()} passed!`);
+              break;
+            } catch (e) {
+              let pageScreenshots: string[] = [];
+              for (let i = 0; i < pages.length; ++i) {
+                if (!pages[i].isClosed()) {
+                  pageScreenshots.push(
+                    await saveScreenshot(pages[i], test.name() + "_page_" + i)
+                  );
+                }
+              }
+              let screenshotMessage = "";
+              if (pageScreenshots.length > 0) {
+                screenshotMessage =
+                  "Saved screenshots of pages: " +
+                  pageScreenshots.join(", ") +
+                  ".";
+                pageScreenshots = [];
+              }
+              if (attempt < 5) {
+                console.error(
+                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
+                  `  ${screenshotMessage}\n`,
+                  `  ${(e as Error).message}`
+                );
+              } else {
+                console.error(
+                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
+                  `  ${screenshotMessage}\n`,
+                  e
+                );
+                failed = true;
+              }
+            }
           }
         })()
       );
@@ -132,7 +174,7 @@ function getCommandLineArgs(): CommandLineArgs {
   }
 
   // Now that the tests are done, clean up the browser.
-  await runParams.browser.close();
+  await browser.close();
 
   if (failed) {
     console.error("Integration tests failed.");

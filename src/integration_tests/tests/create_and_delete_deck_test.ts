@@ -1,6 +1,11 @@
 import { timeout } from "../../shared/utils";
 import Assert from "../assertions";
-import { click, IntegrationTest, RunParams } from "../integration_test";
+import {
+  click,
+  clickUntil,
+  IntegrationTest,
+  RunParams,
+} from "../integration_test";
 
 // This tests that the button in the toolbar can be used to create a new deck, and that the deck can be deleted with a deck action.
 export default class CreateAndDeleteDeckTest extends IntegrationTest {
@@ -9,11 +14,7 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
   }
 
   async run(params: RunParams): Promise<void> {
-    const page = await params.browser.newPage();
-    await page.setViewport({
-      width: 1920,
-      height: 1080,
-    });
+    const page = await params.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(
       `https://${params.serverUrl}:${params.port}/cardsearch.html`
@@ -25,7 +26,9 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
     await timeout(100);
     Assert.contains(page.url(), "/deckViewer/");
     await click(page, "#DeckActions");
-    await click(page, "#actionDelete");
+    await clickUntil(page, "#actionDelete", async () => {
+      return Assert.noError(Assert.visible(page, "#deleteOverlay"));
+    });
     await click(page, "#btnConfirmDelete");
     await page.waitForNavigation();
     Assert.contains(page.url(), "/cardsearch");
