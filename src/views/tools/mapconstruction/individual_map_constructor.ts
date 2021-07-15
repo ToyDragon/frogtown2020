@@ -12,7 +12,7 @@ interface Range {
 }
 
 export default class IndividualMapConstructor {
-  private templateFile: string;
+  private templateString: string;
   private streamBuffer: string;
   private cardCount: number;
   public mapTemplate: MapFile | null = null;
@@ -23,15 +23,15 @@ export default class IndividualMapConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data: any;
 
-  public constructor(templateFile: string) {
-    this.templateFile = templateFile;
+  public constructor(templateString: string) {
+    this.templateString = templateString;
     this.streamBuffer = "";
     this.cardCount = 0;
   }
 
-  public async attachStream(input: stream.Readable): Promise<void> {
-    this.mapTemplate = new MapFile(this.templateFile);
-    await this.mapTemplate.loadFromFile();
+  public async attachStream(input: stream.Stream): Promise<void> {
+    this.mapTemplate = new MapFile(this.templateString);
+    await this.mapTemplate.loadFromString();
     this.streamBuffer = "";
     this.cardCount = 0;
     input.on("data", (data: string) => {

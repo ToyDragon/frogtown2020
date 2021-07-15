@@ -8,25 +8,29 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import commandLineArgs from "command-line-args";
 
-import Config from "./config";
+import Config from "./services/config/config";
 import Services from "./services";
-import LoadConfigFromFile from "./config_loader";
-import S3StoragePortal from "./storage_portal_s3";
-import ErrorHandler from "./handler_error";
-import NotFoundHandler from "./handler_not_found";
-import HTTPSRedirectionHandler from "./handler_https_redirection";
-import SetupRequiredHandler from "./handler_setup";
-import ViewHandler from "./handler_views";
+import LoadConfigFromFile from "./services/config/config_loader";
+import S3StoragePortal from "./services/storage_portal/storage_portal_s3";
+import ErrorHandler from "./handlers/handler_error";
+import NotFoundHandler from "./handlers/handler_not_found";
+import HTTPSRedirectionHandler from "./handlers/handler_https_redirection";
+import SetupRequiredHandler from "./handlers/handler_setup";
+import ViewHandler from "./handlers/handler_views";
 import * as Logs from "./log";
-import DatabaseManager from "./database/db_manager";
-import ScryfallManager from "./scryfall_manager";
-import ImagesHandler from "./handler_images";
+import ImagesHandler from "./handlers/handler_images";
 import { initStatusManagement, logGracefulDeath } from "./status_manager";
 import { setServerName } from "./name";
 import { timeout } from "../shared/utils";
-import WellKnownHandler from "./handler_wellknown";
-import { PerformanceMonitor } from "./performance_monitor/performance_monitor";
-import { PerformanceLogger } from "./performance_monitor/performance_logger";
+import WellKnownHandler from "./handlers/handler_wellknown";
+import { PerformanceMonitor } from "./services/performance_monitor/performance_monitor";
+import { PerformanceLogger } from "./services/performance_monitor/performance_logger";
+import MySQLDatabaseManager from "./services/database/mysql_db_manager";
+import initializeDatabase from "./services/database/initialize_database";
+import FsLocalStorage from "./services/local_storage/fs_local_storage";
+import RealScryfallManager from "./services/scryfall_manager/real_scryfall_manager";
+import RealClock from "./services/real_clock";
+import RealNetworkManager from "./services/network_manager/real_network_manager";
 
 export default class Server {
   public run(serverLabel: string): void {
@@ -94,10 +98,13 @@ export default class Server {
       Logs.logInfo("Loaded config.");
       const services: Services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
-        scryfallManager: new ScryfallManager(),
+        scryfallManager: new RealScryfallManager(),
         perfMon: perfMon,
+        file: new FsLocalStorage(),
+        clock: new RealClock(),
+        net: new RealNetworkManager(),
       };
 
       // Load debug banner variable.
@@ -126,7 +133,7 @@ export default class Server {
       }
 
       // Initialize the database
-      await services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(serverLabel + ":" + os.hostname());

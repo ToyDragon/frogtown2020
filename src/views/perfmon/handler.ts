@@ -1,7 +1,7 @@
 import * as express from "express";
 import Services from "../../server/services";
 import { addEndpoint } from "../../shared/utils";
-import { SummaryData } from "../../server/performance_monitor/performance_monitor";
+import { SummaryData } from "../../server/services/performance_monitor/performance_monitor";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {

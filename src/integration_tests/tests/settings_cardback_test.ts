@@ -10,7 +10,7 @@ export default class SettingsCardbackTest extends IntegrationTest {
   }
 
   async run(params: RunParams): Promise<void> {
-    const page = await params.browser.newPage();
+    const page = await params.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     const version = Math.trunc(Math.random() * 100000);

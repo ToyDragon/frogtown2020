@@ -1,6 +1,11 @@
 import { timeout } from "../../shared/utils";
 import Assert from "../assertions";
-import { IntegrationTest, RunParams, type } from "../integration_test";
+import {
+  clickUntil,
+  IntegrationTest,
+  RunParams,
+  type,
+} from "../integration_test";
 
 // This test validates that the user can change which ID they are using.
 export default class SettingsChangeUserTest extends IntegrationTest {
@@ -9,10 +14,10 @@ export default class SettingsChangeUserTest extends IntegrationTest {
   }
 
   async run(params: RunParams): Promise<void> {
-    const page = await params.browser.newPage();
+    const page = await params.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(1000);
     const oldId =
       "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh";
     const newId =
@@ -22,11 +27,9 @@ export default class SettingsChangeUserTest extends IntegrationTest {
     await Assert.notVisible(page, "#divPrivateId");
 
     // Click the button to reveal the input.
-    await page.click("#btnChangePrivateId", {
-      delay: 200,
+    await clickUntil(page, "#btnChangePrivateId", async () => {
+      return await Assert.noError(Assert.visible(page, "#divPrivateId"));
     });
-
-    // Verify the input is now visible.
     await Assert.visible(page, "#divPrivateId");
 
     // Verify that the checkmark is visible, and the refresh icon hidden.
@@ -65,6 +68,9 @@ export default class SettingsChangeUserTest extends IntegrationTest {
       );
     } finally {
       // Restore the original ID.
+      await clickUntil(page, "#btnChangePrivateId", async () => {
+        return await Assert.noError(Assert.visible(page, "#divPrivateId"));
+      });
       await type(page, "#inputId", oldId);
       await page.waitForTimeout(1500);
     }

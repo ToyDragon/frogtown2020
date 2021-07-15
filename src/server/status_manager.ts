@@ -4,12 +4,13 @@ import { dateToMySQL } from "../shared/utils";
 import {
   ServerStatus,
   ServerStatusRow,
-} from "./database/dbinfos/db_info_server_status";
+} from "./services/database/dbinfos/db_info_server_status";
 import { getVersion } from "./version";
 import { getName } from "./name";
 
 let initialized = false;
 const status = ServerStatus.Waiting;
+let heartbeatInterval: NodeJS.Timeout | null = null;
 
 export async function logGracefulDeath(services: Services): Promise<void> {
   const connection = await services.dbManager.getConnection();
@@ -48,6 +49,7 @@ async function heartbeat(services: Services): Promise<void> {
   }
 
   if (shouldShutdown) {
+    await stopHeartbeat();
     await connection.query("UPDATE server_status SET status=? WHERE name=?;", [
       ServerStatus.Shutdown,
       getName(),
@@ -58,7 +60,7 @@ async function heartbeat(services: Services): Promise<void> {
     process.exit(1); // 1 indicates that a new server should be spawned.
   } else {
     connection.release();
-    logInfo("Server heartbeat.");
+    logInfo(`Server heartbeat at ${new Date().toLocaleString()}.`);
   }
 }
 
@@ -82,7 +84,13 @@ export async function initStatusManagement(services: Services): Promise<void> {
   connection.release();
 
   heartbeat(services);
-  setInterval(() => {
+  heartbeatInterval = setInterval(() => {
     heartbeat(services);
   }, 60000);
+}
+
+export async function stopHeartbeat(): Promise<void> {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+  }
 }

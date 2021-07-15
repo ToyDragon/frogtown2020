@@ -3,3 +3,4 @@ bin
 config.*json
 node_modules
 .vscode
+static/icons/screenshot*

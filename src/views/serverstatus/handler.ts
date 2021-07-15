@@ -6,9 +6,9 @@ import {
   Server,
   SetServerTargetStatusRequest,
 } from "./types";
-import { ServerStatus } from "../../server/database/dbinfos/db_info_server_status";
+import { ServerStatus } from "../../server/services/database/dbinfos/db_info_server_status";
 import { logWarning } from "../../server/log";
-import { BatchStatusRow } from "../../server/database/dbinfos/db_info_batch_status";
+import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_batch_status";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {

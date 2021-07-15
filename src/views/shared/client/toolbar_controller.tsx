@@ -3,7 +3,7 @@ import * as React from "react";
 import { post } from "./request";
 import { DataDetailsResponse, ToolbarNewDeckResponse } from "../handler_types";
 import { GetImageUrl } from "./utils";
-import { DeckInfo } from "../../../server/handler_views";
+import { DeckInfo } from "../../../server/handlers/handler_views";
 
 declare let includedData: {
   decks: DeckInfo[];

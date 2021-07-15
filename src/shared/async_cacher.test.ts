@@ -19,19 +19,23 @@ function getRetriever(): (key: string) => Promise<string> {
 }
 
 test("Expires the cache.", async (done) => {
-  const asyncCacher = new AsyncCacher(50, getRetriever());
+  const asyncCacher = new AsyncCacher(200, getRetriever());
   expect(await asyncCacher.get("a")).toBe("a_1");
   expect(await asyncCacher.get("a")).toBe("a_1");
   expect(await asyncCacher.get("a")).toBe("a_1");
   await timeout(35);
   expect(await asyncCacher.get("a")).toBe("a_1");
   await timeout(35);
-  expect(await asyncCacher.get("a")).toBe("a_2");
-  await timeout(35);
+  expect(await asyncCacher.get("a")).toBe("a_1");
+
+  await timeout(400);
   expect(await asyncCacher.get("a")).toBe("a_2");
   await timeout(10);
   expect(await asyncCacher.get("a")).toBe("a_2");
-  await timeout(200);
+  await timeout(10);
+  expect(await asyncCacher.get("a")).toBe("a_2");
+
+  await timeout(400);
   expect(await asyncCacher.get("a")).toBe("a_3");
   done();
 });

@@ -1,5 +1,5 @@
 import Services from "../../../server/services";
-import { MetadataRow } from "../../../server/database/dbinfos/db_info_metadata";
+import { MetadataRow } from "../../../server/services/database/dbinfos/db_info_metadata";
 import { dateToMySQL } from "../../../shared/utils";
 import { ImageVersionDetails } from "../handler_types";
 

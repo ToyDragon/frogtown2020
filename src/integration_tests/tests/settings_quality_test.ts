@@ -3,7 +3,7 @@ import puppeteer from "puppeteer";
 import { timeout } from "../../shared/utils";
 import { IntegrationTest, RunParams } from "../integration_test";
 import * as https from "https";
-import Config from "../../server/config";
+import Config from "../../server/services/config/config";
 import Assert from "../assertions";
 
 // This test validates that the user can change their preferred quality, and that images redirect based on the setting correctly.
@@ -36,7 +36,7 @@ export default class SettingsQualityTest extends IntegrationTest {
   }
 
   async run(params: RunParams): Promise<void> {
-    const page = await params.browser.newPage();
+    const page = await params.newPage();
     await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     await timeout(1000);

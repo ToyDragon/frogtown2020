@@ -465,5 +465,5 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
 }
 
 // Expose behavior to the window for easier debugging.
-const behavior = new DeckViewerViewBehavior();
-behavior;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).behavior = new DeckViewerViewBehavior();
