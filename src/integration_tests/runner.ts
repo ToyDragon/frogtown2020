@@ -32,7 +32,7 @@ function getCommandLineArgs(): CommandLineArgs {
       name: "port",
       alias: "p",
       type: Number,
-      defaultValue: -1,
+      defaultValue: 0,
     },
     {
       // The file containing the config used by the server.
@@ -43,19 +43,9 @@ function getCommandLineArgs(): CommandLineArgs {
     },
   ]);
 
-  const serverUrl: string | null = options["server"];
-  if (!serverUrl) {
-    throw new Error("Server URL required.");
-  }
-
-  const port: number | null = options["port"];
-  if (!port) {
-    throw new Error("Server port required.");
-  }
-
   return {
-    server: serverUrl,
-    port: port,
+    server: options["server"],
+    port: options["port"],
     config: options["config"],
   };
 }
@@ -63,6 +53,12 @@ function getCommandLineArgs(): CommandLineArgs {
 (async () => {
   const args = getCommandLineArgs();
   const config = await LoadConfigFromFile(args.config);
+  if (!args.port) {
+    args.port = config.network.securePort;
+  }
+  if (!args.server) {
+    args.server = config.hostname;
+  }
   const browser = await puppeteer.launch();
 
   // Construct an object with the parameters required to run a test.
