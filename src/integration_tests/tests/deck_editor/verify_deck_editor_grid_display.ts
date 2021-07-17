@@ -67,7 +67,7 @@ async function getDOMCardGroups(
   }, hasGroupers);
 }
 
-export default async function verifyDeckEditorDisplayGrid(
+export default async function verifyDeckEditorGridDisplay(
   page: puppeteer.Page,
   deck: DeckEditorInfo
 ): Promise<void> {

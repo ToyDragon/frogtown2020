@@ -8,7 +8,7 @@ import {
   type,
 } from "../integration_test";
 import DeckEditorInfo from "./deck_editor/deck_editor_info";
-import verifyDeckEditorDisplayGrid from "./deck_editor/verify_deck_editor_display_grid";
+import verifyDeckEditorGridDisplay from "./deck_editor/verify_deck_editor_grid_display";
 
 const cardIdA = "10544646-50d5-4225-a35f-e8396850fc0b";
 const cardNameA = "Fireball";
@@ -69,11 +69,11 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
     await timeout(1000);
 
     // Verify each display option.
-    await verifyDeckEditorDisplayGrid(page, this.getParams("", ""));
+    await verifyDeckEditorGridDisplay(page, this.getParams("", ""));
 
     await click(page, "#DeckDisplayGroupers");
     await click(page, "#DeckDisplayGroupers li[data-value='IDToColor']");
-    await verifyDeckEditorDisplayGrid(page, this.getParams("Red", "Colorless"));
+    await verifyDeckEditorGridDisplay(page, this.getParams("Red", "Colorless"));
 
     // Delete the deck.
     await click(page, "#DeckActions");
