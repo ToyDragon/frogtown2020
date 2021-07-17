@@ -54,17 +54,17 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
     await click(page, ".tbDeck[data-deckid='']");
     await page.waitForNavigation();
     await timeout(100);
-    Assert.contains(page.url(), "/deckViewer/");
+    await Assert.contains(page.url(), "/deckViewer/");
 
     // Import some copies of two different cards.
     await click(page, "#DeckActions");
     await clickUntil(page, "#actionBulkImport", async () => {
-      return Assert.noError(Assert.visible(page, "#importOverlay"));
+      return await Assert.noError(Assert.visible(page, "#importOverlay"));
     });
     await type(page, "#bulkInputArea", `3 ${cardIdA}\n2 ${cardIdB}\n`);
     await timeout(100);
     await clickUntil(page, "#btnConfirmImport", async () => {
-      return Assert.noError(Assert.notVisible(page, "#btnConfirmImport"));
+      return await Assert.noError(Assert.notVisible(page, "#btnConfirmImport"));
     });
     await timeout(1000);
 
@@ -78,10 +78,10 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
     // Delete the deck.
     await click(page, "#DeckActions");
     await clickUntil(page, "#actionDelete", async () => {
-      return Assert.noError(Assert.visible(page, "#deleteOverlay"));
+      return await Assert.noError(Assert.visible(page, "#deleteOverlay"));
     });
     await click(page, "#btnConfirmDelete");
     await page.waitForNavigation();
-    Assert.contains(page.url(), "/cardsearch");
+    await Assert.contains(page.url(), "/cardsearch");
   }
 }

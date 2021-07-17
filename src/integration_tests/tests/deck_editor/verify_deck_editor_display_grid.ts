@@ -74,7 +74,7 @@ export default async function verifyDeckEditorDisplayGrid(
   const hasGroupers = deck.mainboard[0].groupLabel !== "";
 
   // Verify the grid display is selected by default.
-  Assert.equals(
+  await Assert.equals(
     await page.evaluate(() => {
       return document
         .querySelector("#DeckDisplayDropdown li[data-active='true']")
@@ -85,7 +85,7 @@ export default async function verifyDeckEditorDisplayGrid(
 
   // Verify the cards are present.
   for (const card of deck.mainboard) {
-    Assert.equals(
+    await Assert.equals(
       await page.evaluate((id) => {
         return document.querySelectorAll(`#mainboard div[data-id='${id}']`)
           .length;
@@ -94,7 +94,7 @@ export default async function verifyDeckEditorDisplayGrid(
     );
   }
   for (const card of deck.sideboard) {
-    Assert.equals(
+    await Assert.equals(
       await page.evaluate((id) => {
         return document.querySelectorAll(`#sideboard div[data-id='${id}']`)
           .length;
@@ -104,7 +104,7 @@ export default async function verifyDeckEditorDisplayGrid(
   }
 
   // Verify each card container has actions.
-  Assert.equals(
+  await Assert.equals(
     await page.evaluate(() => {
       let containers = document.querySelectorAll("#mainboard .cardContainer");
       let expectedActions = ["add", "remove", "similar", "star", "tosideboard"];
@@ -149,11 +149,11 @@ export default async function verifyDeckEditorDisplayGrid(
 
     // Verify all card containers contain at most 4 cards, and only cards with the same name.
     for (const cardSet of group.contents) {
-      Assert.greaterThan(cardSet.length, 0);
-      Assert.lessThan(cardSet.length, 5);
-      Assert.true(allowedNames[cardSet[0]]);
+      await Assert.greaterThan(cardSet.length, 0);
+      await Assert.lessThan(cardSet.length, 5);
+      await Assert.true(allowedNames[cardSet[0]]);
       for (let i = 1; i < cardSet.length; ++i) {
-        Assert.equals(cardSet[i], cardSet[0]);
+        await Assert.equals(cardSet[i], cardSet[0]);
       }
     }
   }
@@ -172,5 +172,5 @@ export default async function verifyDeckEditorDisplayGrid(
     }
     return result;
   });
-  Assert.notEquals(imageData.length, 0);
+  await Assert.notEquals(imageData.length, 0);
 }

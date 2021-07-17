@@ -146,20 +146,17 @@ function getCommandLineArgs(): CommandLineArgs {
                   ".";
                 pageScreenshots = [];
               }
+              const errs = [
+                `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
+                `  ${screenshotMessage}\n`,
+              ];
               if (attempt < 5) {
-                console.error(
-                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
-                  `  ${screenshotMessage}\n`,
-                  `  ${(e as Error).message}`
-                );
+                errs.push(`  ${(e as Error).message}`);
               } else {
-                console.error(
-                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
-                  `  ${screenshotMessage}\n`,
-                  e
-                );
+                errs.push(e);
                 failed = true;
               }
+              console.error(...errs);
             }
           }
         })()

@@ -24,13 +24,13 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
     await click(page, ".tbDeck[data-deckid='']");
     await page.waitForNavigation();
     await timeout(100);
-    Assert.contains(page.url(), "/deckViewer/");
+    await Assert.contains(page.url(), "/deckViewer/");
     await click(page, "#DeckActions");
     await clickUntil(page, "#actionDelete", async () => {
       return Assert.noError(Assert.visible(page, "#deleteOverlay"));
     });
     await click(page, "#btnConfirmDelete");
     await page.waitForNavigation();
-    Assert.contains(page.url(), "/cardsearch");
+    await Assert.contains(page.url(), "/cardsearch");
   }
 }
