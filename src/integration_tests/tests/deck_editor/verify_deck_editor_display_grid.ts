@@ -4,6 +4,69 @@ import ViewBehavior from "../../../views/shared/client/view_behavior";
 import Assert from "../../assertions";
 import DeckEditorInfo from "./deck_editor_info";
 
+interface GroupContainers {
+  groupLabel: string;
+  contents: string[][];
+}
+
+// Parses the card IDs out of the card containers.
+async function getDOMCardGroups(
+  page: puppeteer.Page,
+  hasGroupers: boolean
+): Promise<GroupContainers[]> {
+  return await page.evaluate((hasGroupers) => {
+    return new Promise<GroupContainers[]>((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const viewBehavior: ViewBehavior<unknown> = (window as any).behavior;
+      viewBehavior.dl.onLoaded("IDToName").then(() => {
+        const result: GroupContainers[] = [];
+        const IDToName = viewBehavior.dl.getMapData("IDToName")!;
+        if (hasGroupers) {
+          const groups = document.querySelectorAll(".group");
+          for (const group of groups) {
+            const label = group.querySelector(".groupSeperator")!.textContent;
+            const containers = group.querySelectorAll(".cardContainer");
+            const groupContents: GroupContainers = {
+              groupLabel: label || "",
+              contents: [],
+            };
+            for (const container of containers) {
+              const containerNames: string[] = [];
+              const children = container.querySelectorAll("div[data-id]");
+              for (const child of children) {
+                const id = child.getAttribute("data-id");
+                if (id) {
+                  containerNames.push(IDToName[id]);
+                }
+              }
+              groupContents.contents.push(containerNames);
+            }
+            result.push(groupContents);
+          }
+        } else {
+          result.push({
+            groupLabel: "",
+            contents: [],
+          });
+          const containers = document.querySelectorAll(".cardContainer");
+          for (const container of containers) {
+            const containerNames: string[] = [];
+            const children = container.querySelectorAll("div[data-id]");
+            for (const child of children) {
+              const id = child.getAttribute("data-id");
+              if (id) {
+                containerNames.push(IDToName[id]);
+              }
+            }
+            result[0].contents.push(containerNames);
+          }
+        }
+        resolve(result);
+      });
+    });
+  }, hasGroupers);
+}
+
 export default async function verifyDeckEditorDisplayGrid(
   page: puppeteer.Page,
   deck: DeckEditorInfo
@@ -68,64 +131,8 @@ export default async function verifyDeckEditorDisplayGrid(
     ""
   );
 
-  interface GroupContainers {
-    groupLabel: string;
-    contents: string[][];
-  }
-
   // Get the contents of all of the card containers.
-  const data = await page.evaluate((hasGroupers) => {
-    return new Promise<GroupContainers[]>((resolve) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const viewBehavior: ViewBehavior<unknown> = (window as any).behavior;
-      viewBehavior.dl.onLoaded("IDToName").then(() => {
-        const result: GroupContainers[] = [];
-        const IDToName = viewBehavior.dl.getMapData("IDToName")!;
-        if (hasGroupers) {
-          const groups = document.querySelectorAll(".group");
-          for (const group of groups) {
-            const label = group.querySelector(".groupSeperator")!.textContent;
-            const containers = group.querySelectorAll(".cardContainer");
-            const groupContents: GroupContainers = {
-              groupLabel: label || "",
-              contents: [],
-            };
-            for (const container of containers) {
-              const containerNames: string[] = [];
-              const children = container.querySelectorAll("div[data-id]");
-              for (const child of children) {
-                const id = child.getAttribute("data-id");
-                if (id) {
-                  containerNames.push(IDToName[id]);
-                }
-              }
-              groupContents.contents.push(containerNames);
-            }
-            result.push(groupContents);
-          }
-        } else {
-          result.push({
-            groupLabel: "",
-            contents: [],
-          });
-          const containers = document.querySelectorAll(".cardContainer");
-          for (const container of containers) {
-            const containerNames: string[] = [];
-            const children = container.querySelectorAll("div[data-id]");
-            for (const child of children) {
-              const id = child.getAttribute("data-id");
-              if (id) {
-                containerNames.push(IDToName[id]);
-              }
-            }
-            result[0].contents.push(containerNames);
-          }
-        }
-        resolve(result);
-      });
-    });
-  }, hasGroupers);
-
+  const data = await getDOMCardGroups(page, hasGroupers);
   for (const group of data) {
     const cleanGroupLabel = group.groupLabel.split("(")[0].trim().toLowerCase();
     const allowedNames: Record<string, boolean> = {};
@@ -150,4 +157,20 @@ export default async function verifyDeckEditorDisplayGrid(
       }
     }
   }
+
+  // Verify that at least one card image is present.
+  const imageData = await page.evaluate(() => {
+    const result: string[] = [];
+    const cardDivs = document.querySelectorAll<HTMLDivElement>("div[data-id]");
+    for (const div of cardDivs) {
+      if (
+        div.style.backgroundImage &&
+        div.style.backgroundImage.indexOf("CardBack") === -1
+      ) {
+        result.push(div.style.backgroundImage);
+      }
+    }
+    return result;
+  });
+  Assert.notEquals(imageData.length, 0);
 }
