@@ -37,7 +37,6 @@ export default class SettingsQualityTest extends IntegrationTest {
 
   async run(params: RunParams): Promise<void> {
     const page = await params.newPage();
-    await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     await timeout(1000);
     const cardUrl = `https://${params.serverUrl}:${params.port}/Images/V1/6cd72b77-f505-4023-a72d-b9f05b80080c.jpg`;

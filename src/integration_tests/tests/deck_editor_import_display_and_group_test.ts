@@ -8,6 +8,7 @@ import {
   type,
 } from "../integration_test";
 import DeckEditorInfo from "./deck_editor/deck_editor_info";
+import verifyDeckEditorGridActions from "./deck_editor/verify_deck_editor_grid_actions";
 import verifyDeckEditorGridDisplay from "./deck_editor/verify_deck_editor_grid_display";
 
 const cardIdA = "10544646-50d5-4225-a35f-e8396850fc0b";
@@ -43,7 +44,6 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
 
   async run(params: RunParams): Promise<void> {
     const page = await params.newPage();
-    await page.setCookie(...params.authCookies);
     await page.goto(
       `https://${params.serverUrl}:${params.port}/cardsearch.html`
     );
@@ -74,6 +74,11 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
     await click(page, "#DeckDisplayGroupers");
     await click(page, "#DeckDisplayGroupers li[data-value='IDToColor']");
     await verifyDeckEditorGridDisplay(page, this.getParams("Red", "Colorless"));
+
+    // Remove grouper, and verify actions.
+    await click(page, "#DeckDisplayGroupers");
+    await click(page, "#DeckDisplayGroupers li[data-value='IDToColor']");
+    await verifyDeckEditorGridActions(page, this.getParams("", ""));
 
     // Delete the deck.
     await click(page, "#DeckActions");

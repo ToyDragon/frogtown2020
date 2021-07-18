@@ -15,7 +15,6 @@ export default class CreateAndDeleteDeckTest extends IntegrationTest {
 
   async run(params: RunParams): Promise<void> {
     const page = await params.newPage();
-    await page.setCookie(...params.authCookies);
     await page.goto(
       `https://${params.serverUrl}:${params.port}/cardsearch.html`
     );

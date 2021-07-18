@@ -1,71 +1,9 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
-import ViewBehavior from "../../../views/shared/client/view_behavior";
 import Assert from "../../assertions";
+import { deckEditorGridGetCardGroups } from "./deck_editor_grid_get_card_groups";
 import DeckEditorInfo from "./deck_editor_info";
-
-interface GroupContainers {
-  groupLabel: string;
-  contents: string[][];
-}
-
-// Parses the card IDs out of the card containers.
-async function getDOMCardGroups(
-  page: puppeteer.Page,
-  hasGroupers: boolean
-): Promise<GroupContainers[]> {
-  return await page.evaluate((hasGroupers) => {
-    return new Promise<GroupContainers[]>((resolve) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const viewBehavior: ViewBehavior<unknown> = (window as any).behavior;
-      viewBehavior.dl.onLoaded("IDToName").then(() => {
-        const result: GroupContainers[] = [];
-        const IDToName = viewBehavior.dl.getMapData("IDToName")!;
-        if (hasGroupers) {
-          const groups = document.querySelectorAll(".group");
-          for (const group of groups) {
-            const label = group.querySelector(".groupSeperator")!.textContent;
-            const containers = group.querySelectorAll(".cardContainer");
-            const groupContents: GroupContainers = {
-              groupLabel: label || "",
-              contents: [],
-            };
-            for (const container of containers) {
-              const containerNames: string[] = [];
-              const children = container.querySelectorAll("div[data-id]");
-              for (const child of children) {
-                const id = child.getAttribute("data-id");
-                if (id) {
-                  containerNames.push(IDToName[id]);
-                }
-              }
-              groupContents.contents.push(containerNames);
-            }
-            result.push(groupContents);
-          }
-        } else {
-          result.push({
-            groupLabel: "",
-            contents: [],
-          });
-          const containers = document.querySelectorAll(".cardContainer");
-          for (const container of containers) {
-            const containerNames: string[] = [];
-            const children = container.querySelectorAll("div[data-id]");
-            for (const child of children) {
-              const id = child.getAttribute("data-id");
-              if (id) {
-                containerNames.push(IDToName[id]);
-              }
-            }
-            result[0].contents.push(containerNames);
-          }
-        }
-        resolve(result);
-      });
-    });
-  }, hasGroupers);
-}
+import verifyGroupContainersMatch from "./verify_group_containers_match";
 
 export default async function verifyDeckEditorGridDisplay(
   page: puppeteer.Page,
@@ -82,26 +20,6 @@ export default async function verifyDeckEditorGridDisplay(
     }),
     "Grid"
   );
-
-  // Verify the cards are present.
-  for (const card of deck.mainboard) {
-    await Assert.equals(
-      await page.evaluate((id) => {
-        return document.querySelectorAll(`#mainboard div[data-id='${id}']`)
-          .length;
-      }, card.id),
-      card.count
-    );
-  }
-  for (const card of deck.sideboard) {
-    await Assert.equals(
-      await page.evaluate((id) => {
-        return document.querySelectorAll(`#sideboard div[data-id='${id}']`)
-          .length;
-      }, card.id),
-      card.count
-    );
-  }
 
   // Verify each card container has actions.
   await Assert.equals(
@@ -131,32 +49,13 @@ export default async function verifyDeckEditorGridDisplay(
     ""
   );
 
-  // Get the contents of all of the card containers.
-  const data = await getDOMCardGroups(page, hasGroupers);
-  for (const group of data) {
-    const cleanGroupLabel = group.groupLabel.split("(")[0].trim().toLowerCase();
-    const allowedNames: Record<string, boolean> = {};
-    for (const card of deck.mainboard) {
-      if (!hasGroupers || card.groupLabel.toLowerCase() === cleanGroupLabel) {
-        allowedNames[card.name] = true;
-      }
-    }
-    for (const card of deck.sideboard) {
-      if (!hasGroupers || card.groupLabel.toLowerCase() === cleanGroupLabel) {
-        allowedNames[card.name] = true;
-      }
-    }
-
-    // Verify all card containers contain at most 4 cards, and only cards with the same name.
-    for (const cardSet of group.contents) {
-      await Assert.greaterThan(cardSet.length, 0);
-      await Assert.lessThan(cardSet.length, 5);
-      await Assert.true(allowedNames[cardSet[0]]);
-      for (let i = 1; i < cardSet.length; ++i) {
-        await Assert.equals(cardSet[i], cardSet[0]);
-      }
-    }
-  }
+  // Get the contents of all of the card containers, and verify they match the deck.
+  const data = await deckEditorGridGetCardGroups(page, hasGroupers);
+  await verifyGroupContainersMatch(data, deck, hasGroupers, async (cardSet) => {
+    await Assert.equals(Object.keys(cardSet).length, 1);
+    const name = Object.keys(cardSet)[0];
+    await Assert.lessThan(cardSet[name], 5);
+  });
 
   // Verify that at least one card image is present.
   const imageData = await page.evaluate(() => {

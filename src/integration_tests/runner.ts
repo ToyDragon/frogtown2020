@@ -123,6 +123,7 @@ function getCommandLineArgs(): CommandLineArgs {
                     width: 1920,
                     height: 1080,
                   });
+                  await page.setCookie(...runParams.authCookies);
                   pages.push(page);
                   return page;
                 },
@@ -136,6 +137,7 @@ function getCommandLineArgs(): CommandLineArgs {
                   pageScreenshots.push(
                     await saveScreenshot(pages[i], test.name() + "_page_" + i)
                   );
+                  await pages[i].close();
                 }
               }
               let screenshotMessage = "";
@@ -150,7 +152,7 @@ function getCommandLineArgs(): CommandLineArgs {
                 `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
                 `  ${screenshotMessage}\n`,
               ];
-              if (attempt < 5) {
+              if (attempt < 4) {
                 errs.push(`  ${(e as Error).message}`);
               } else {
                 errs.push(e);
