@@ -22,7 +22,7 @@ export default async function verifyDeckEditorGridActions(
 
   // Get the contents of all of the card containers, and verify they match the deck.
   await verifyGroupContainersMatch(
-    await deckEditorGridGetCardGroups(page, false),
+    await deckEditorGridGetCardGroups(page, "#deckArea", false),
     deck,
     false
   );
@@ -39,7 +39,7 @@ export default async function verifyDeckEditorGridActions(
 
   // Get the contents of all of the card containers, and verify they match the deck.
   await verifyGroupContainersMatch(
-    await deckEditorGridGetCardGroups(page, false),
+    await deckEditorGridGetCardGroups(page, "#deckArea", false),
     deck,
     false
   );
@@ -84,6 +84,20 @@ export default async function verifyDeckEditorGridActions(
     "Show Duplicates"
   );
 
+  // Verify that the cards that show up in the card search all have the same name.
+  const data = await deckEditorGridGetCardGroups(page, "#cardArea", false);
+  Assert.greaterThan(data.length, 0);
+  for (const group of data) {
+    for (const cardSet of group.contents) {
+      for (const cardName in cardSet) {
+        await Assert.contains(
+          cardName.toLowerCase(),
+          deck.mainboard[0].name.toLowerCase()
+        );
+      }
+    }
+  }
+
   // Test move to sideboard.
   await page.hover(
     `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}']`
@@ -100,7 +114,7 @@ export default async function verifyDeckEditorGridActions(
     name: deck.mainboard[0].name,
   });
   await verifyGroupContainersMatch(
-    await deckEditorGridGetCardGroups(page, false),
+    await deckEditorGridGetCardGroups(page, "#deckArea", false),
     deck,
     false
   );
@@ -116,7 +130,7 @@ export default async function verifyDeckEditorGridActions(
   deck.mainboard[0].count++;
   deck.sideboard[deck.sideboard.length - 1].count--;
   await verifyGroupContainersMatch(
-    await deckEditorGridGetCardGroups(page, false),
+    await deckEditorGridGetCardGroups(page, "#deckArea", false),
     deck,
     false
   );

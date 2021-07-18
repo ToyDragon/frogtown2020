@@ -50,7 +50,11 @@ export default async function verifyDeckEditorGridDisplay(
   );
 
   // Get the contents of all of the card containers, and verify they match the deck.
-  const data = await deckEditorGridGetCardGroups(page, hasGroupers);
+  const data = await deckEditorGridGetCardGroups(
+    page,
+    "#deckArea",
+    hasGroupers
+  );
   await verifyGroupContainersMatch(data, deck, hasGroupers, async (cardSet) => {
     await Assert.equals(Object.keys(cardSet).length, 1);
     const name = Object.keys(cardSet)[0];
