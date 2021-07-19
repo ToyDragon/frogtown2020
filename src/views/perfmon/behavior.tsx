@@ -1,6 +1,6 @@
 import ViewBehavior from "../shared/client/view_behavior";
 import { post } from "../shared/client/request";
-import { SummaryData } from "../../server/performance_monitor/performance_monitor";
+import { SummaryData } from "../../server/services/performance_monitor/performance_monitor";
 
 class PerfMonitorViewBehavior extends ViewBehavior<unknown> {
   public async ready(): Promise<void> {

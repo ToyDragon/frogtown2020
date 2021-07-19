@@ -316,3 +316,14 @@ button[disabled] {
   position: relative;
   top: 2px;
 }
+
+#debugBanner {
+  position: absolute;
+  right: 17px;
+  top: 11px;
+  color: black;
+  font-size: 24px;
+  background-color: pink;
+  padding: 5px;
+  border-radius: 4px;
+}

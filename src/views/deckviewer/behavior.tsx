@@ -92,7 +92,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
           "/deckViewer/cloneDeck/" + this.getIncludedData().deckDetails.id,
           {}
         );
-        window.location.replace("/deckViewer/" + data + "/edit.html");
+        window.location.replace(`/deckViewer/${data}/edit.html`);
       });
 
     // Bulk import popup
@@ -281,7 +281,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       deckDetails.mainboard.push(cardId);
       deckDetails.mainboard = deckDetails.mainboard.sort();
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
-      console.log("adding card " + cardId + " to mainboard");
+      console.log(`adding card ${cardId} to mainboard`);
       this.saveDeckChange();
     } else if (action === "remove") {
       for (let i = 0; i < deckDetails.mainboard.length; i++) {
@@ -292,7 +292,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
         }
       }
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
-      console.log("removing card " + cardId + " from mainboard");
+      console.log(`removing card ${cardId} from mainboard`);
       this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
@@ -465,5 +465,5 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
 }
 
 // Expose behavior to the window for easier debugging.
-const behavior = new DeckViewerViewBehavior();
-behavior;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).behavior = new DeckViewerViewBehavior();

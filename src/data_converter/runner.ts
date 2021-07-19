@@ -1,28 +1,31 @@
 import * as os from "os";
 import commandLineArgs from "command-line-args";
 
-import Config from "../server/config";
+import Config from "../server/services/config/config";
 import Services from "../server/services";
-import LoadConfigFromFile from "../server/config_loader";
-import S3StoragePortal from "../server/storage_portal_s3";
+import LoadConfigFromFile from "../server/services/config/config_loader";
+import S3StoragePortal from "../server/services/storage_portal/storage_portal_s3";
 import * as Logs from "../server/log";
-import DatabaseManager from "../server/database/db_manager";
-import ScryfallManager from "../server/scryfall_manager";
+import RealScryfallManager from "../server/services/scryfall_manager/real_scryfall_manager";
 import {
   initStatusManagement,
   logGracefulDeath,
 } from "../server/status_manager";
 import { setServerName } from "../server/name";
 import { timeout, UserDetails } from "../shared/utils";
-//import { Collection, ObjectID, MongoClient, Db, FilterQuery } from "mongodb";
 import { Collection, MongoClient, Db, ObjectID } from "mongodb";
 import * as Authentication from "../views/shared/server/authentication";
-import { UserKeysRow } from "../server/database/dbinfos/db_info_user_keys";
+import { UserKeysRow } from "../server/services/database/dbinfos/db_info_user_keys";
 import createNewDeck from "../views/shared/server/deck_creator";
 import { SetDeckMetadata, UpdateDeckCards } from "../views/deckviewer/handler";
-import { DeckKeysRow } from "../server/database/dbinfos/db_info_deck_keys";
-import { DatabaseConnection } from "../server/database/db_connection";
-import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
+import { DeckKeysRow } from "../server/services/database/dbinfos/db_info_deck_keys";
+import { DatabaseConnection } from "../server/services/database/db_connection";
+import { PerformanceMonitor } from "../server/services/performance_monitor/performance_monitor";
+import initializeDatabase from "../server/services/database/initialize_database";
+import MySQLDatabaseManager from "../server/services/database/mysql_db_manager";
+import FsLocalStorage from "../server/services/local_storage/fs_local_storage";
+import RealClock from "../server/services/real_clock";
+import RealNetworkManager from "../server/services/network_manager/real_network_manager";
 
 /*
 
@@ -78,10 +81,13 @@ export default class Converter {
       Logs.logInfo("Loaded config.");
       this.services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
-        scryfallManager: new ScryfallManager(),
+        scryfallManager: new RealScryfallManager(),
         perfMon: new PerformanceMonitor(),
+        file: new FsLocalStorage(),
+        clock: new RealClock(),
+        net: new RealNetworkManager(),
       };
 
       process.on("SIGINT", async () => {
@@ -93,7 +99,7 @@ export default class Converter {
       });
 
       // Initialize the database
-      await this.services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(this.services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(process.pid.toString() + ":Updater:" + os.hostname());
@@ -110,7 +116,7 @@ export default class Converter {
       await this.cols.users.find({}).forEach((user) => {
         all_users.push(user);
       });
-      Logs.logInfo("Considering " + all_users.length + " users");
+      Logs.logInfo(`Considering ${all_users.length} users`);
       let users_with_non_empty_decks = 0;
       let skipping = true;
       let skip_count = 0;
@@ -136,7 +142,7 @@ export default class Converter {
         if (skipping) {
           if (user.privateId === skipId) {
             skipping = false;
-            Logs.logInfo("Skipped " + skip_count + " users to catch up.");
+            Logs.logInfo(`Skipped ${skip_count} users to catch up.`);
 
             const decks = await connection.query<DeckKeysRow[]>(
               "SELECT * FROM deck_keys WHERE owner_id=?;",
@@ -172,10 +178,7 @@ export default class Converter {
         }
 
         Logs.logInfo(
-          "Trying to create user with private id: " +
-            user.privateId +
-            " and public " +
-            public_id
+          `Trying to create user with private id: ${user.privateId} and public ${public_id}`
         );
         const existing = await Authentication.getPublicKeyFromPrivateKey(
           user.privateId,
@@ -233,7 +236,7 @@ export default class Converter {
         await Promise.all(all_promises);
       }
       Logs.logInfo(
-        "Processed " + users_with_non_empty_decks + " users with nonempty deck"
+        `Processed ${users_with_non_empty_decks} users with nonempty deck`
       );
       Logs.logInfo("Done, shutting down in 2 seconds...");
       await logGracefulDeath(this.services);

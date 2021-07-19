@@ -129,7 +129,7 @@ export class CardRenderArea {
 
   public UpdateCardList(cardList: string[]): void {
     this.cardList = cardList;
-    console.log("Updated to card list with " + cardList.length + " items");
+    console.log(`Updated to card list with ${cardList.length} items`);
     console.log(this.GetMiscOptions());
     this.activeRenderer.ChangeCardSet(this.cardList, this.GetMiscOptions());
     this.activeRenderer.UpdateDisplayedCards();

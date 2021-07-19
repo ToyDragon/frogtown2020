@@ -191,17 +191,24 @@ class ToolsBehavior extends ViewBehavior<unknown> {
   }
 
   private async updateClearImageInfo(): Promise<void> {
-    const btnClearSetImages = document.querySelector<HTMLButtonElement>("#btnClearSetImages");
-    const textareaSets = document.querySelector<HTMLTextAreaElement>("#textareaSetsToClear");
-    if (!textareaSets || !btnClearSetImages ) {
+    const btnClearSetImages = document.querySelector<HTMLButtonElement>(
+      "#btnClearSetImages"
+    );
+    const textareaSets = document.querySelector<HTMLTextAreaElement>(
+      "#textareaSetsToClear"
+    );
+    if (!textareaSets || !btnClearSetImages) {
       return;
     }
     btnClearSetImages.addEventListener("click", async () => {
       const sets = textareaSets.value.split("\n");
       textareaSets.value = "";
-      await post<CardImageClearInfoRequest, unknown>("/tools/clear_image_info", {
-        sets: sets
-      });
+      await post<CardImageClearInfoRequest, unknown>(
+        "/tools/clear_image_info",
+        {
+          sets: sets,
+        }
+      );
       console.log("Done clearing image infos.");
     });
   }

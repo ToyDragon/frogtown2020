@@ -124,6 +124,6 @@ export class Exporter {
 
   private getCardImage(cardId: string, version: number): string {
     const rootURL = window.location.href.split("/").slice(0, 3).join("/");
-    return rootURL + "/Images/V" + version + "/" + cardId + ".jpg";
+    return `${rootURL}/Images/V${version}/${cardId}.jpg`;
   }
 }

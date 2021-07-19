@@ -1,9 +1,8 @@
 import Services from "../../../server/services";
 import IndividualMapConstructor from "./individual_map_constructor";
-import * as https from "https";
 import { logInfo, logError } from "../../../server/log";
-import { BatchStatusRow } from "../../../server/database/dbinfos/db_info_batch_status";
-import { DatabaseConnection } from "../../../server/database/db_connection";
+import { BatchStatusRow } from "../../../server/services/database/dbinfos/db_info_batch_status";
+import { DatabaseConnection } from "../../../server/services/database/db_connection";
 
 let constructors: IndividualMapConstructor[] = [];
 
@@ -21,7 +20,11 @@ export function constructAllMaps(
       let aborted = false;
       constructors = [];
       for (const mapFile of services.config.mapFiles) {
-        constructors.push(new IndividualMapConstructor(mapFile));
+        constructors.push(
+          new IndividualMapConstructor(
+            (await services.file.readFile(mapFile)) || ""
+          )
+        );
       }
 
       const allCardsURL =
@@ -33,72 +36,70 @@ export function constructAllMaps(
       logInfo("Stream all card data to constructors...");
       let lastUpdate = 0;
       let totalChars = 0;
-      const req = https.get(allCardsURL, (stream) => {
-        for (const ctor of constructors) {
-          ctor.attachStream(stream);
-        }
-        stream.on("data", (data: string) => {
-          totalChars += data.length;
-          if (totalChars - lastUpdate > 5000000) {
-            lastUpdate = totalChars;
-            let cardCount = 0;
-            let errorCount = 0;
-            for (const ctor of constructors) {
-              cardCount += ctor.getCardCount();
-              errorCount += ctor.errorCount;
-            }
-            connection.query(
-              "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
-              ["construct_maps_progress", cardCount]
-            );
-            logInfo("Map progress: " + cardCount);
-
-            if (errorCount > 20) {
-              aborted = true;
-              logError(
-                "Aborting data map build, errors occurred: " + errorCount
-              );
-              req.end();
-            }
-          }
-        });
-        stream.on("close", async () => {
-          if (aborted) {
-            resolve(false);
-            return;
-          }
+      const getResult = await services.net.httpsGet(allCardsURL);
+      for (const ctor of constructors) {
+        ctor.attachStream(getResult.stream);
+      }
+      getResult.stream.on("data", (data: string) => {
+        totalChars += data.length;
+        if (totalChars - lastUpdate > 5000000) {
+          lastUpdate = totalChars;
+          let cardCount = 0;
+          let errorCount = 0;
           for (const ctor of constructors) {
-            if (
-              !ctor.mapTemplate ||
-              !ctor.mapTemplate.data ||
-              !ctor.mapTemplate.data.maps
-            ) {
-              continue;
-            }
+            cardCount += ctor.getCardCount();
+            errorCount += ctor.errorCount;
+          }
+          connection.query(
+            "REPLACE INTO batch_status (name, value) VALUES(?, ?);",
+            ["construct_maps_progress", cardCount]
+          );
+          logInfo("Map progress: " + cardCount);
 
-            for (let i = 0; i < ctor.mapTemplate.data.maps.length; i++) {
-              const mapTemplate = ctor.mapTemplate.data.maps[i];
-              const mapData = JSON.stringify(ctor.mapTemplate.mapData[i]);
-              logInfo("Saving " + mapTemplate.name + ".json");
-              await services.storagePortal.uploadStringToBucket(
-                services.config.storage.awsS3DataMapBucket,
-                mapTemplate.name + ".json",
-                mapData
-              );
-            }
+          if (errorCount > 20) {
+            aborted = true;
+            logError("Aborting data map build, errors occurred: " + errorCount);
+            getResult.stop();
+          }
+        }
+      });
+      getResult.stream.on("close", async () => {
+        if (aborted) {
+          resolve(false);
+          console.log("aborted");
+          return;
+        }
+        for (const ctor of constructors) {
+          if (
+            !ctor.mapTemplate ||
+            !ctor.mapTemplate.data ||
+            !ctor.mapTemplate.data.maps
+          ) {
+            continue;
           }
 
-          await connection.query(
-            "REPLACE INTO batch_status (name, value) VALUES(?, ?), (?, ?);",
-            [
-              "construct_maps_progress",
-              "0",
-              "construct_maps_in_progress",
-              "false",
-            ]
-          );
-          resolve(true);
-        });
+          for (let i = 0; i < ctor.mapTemplate.data.maps.length; i++) {
+            const mapTemplate = ctor.mapTemplate.data.maps[i];
+            const mapData = JSON.stringify(ctor.mapTemplate.mapData[i]);
+            logInfo("Saving " + mapTemplate.name + ".json");
+            await services.storagePortal.uploadStringToBucket(
+              services.config.storage.awsS3DataMapBucket,
+              mapTemplate.name + ".json",
+              mapData
+            );
+          }
+        }
+
+        await connection.query(
+          "REPLACE INTO batch_status (name, value) VALUES(?, ?), (?, ?);",
+          [
+            "construct_maps_progress",
+            "0",
+            "construct_maps_in_progress",
+            "false",
+          ]
+        );
+        resolve(true);
       });
     })();
   });

@@ -22,7 +22,7 @@ export class BaseFilter {
     this.type = fitlertype;
     this.dl = dataLoader;
     this.container = document.querySelector(
-      "div[data-filtertype=" + fitlertype + "]"
+      `div[data-filtertype=${fitlertype}]`
     ) as HTMLElement;
     this.dataMapName = this.container.getAttribute("data-datamapname") || "";
     this.idMapName = this.container.getAttribute("data-idmapname") || "";
@@ -62,18 +62,11 @@ export class BaseFilter {
     if (!this.ready) {
       return -1;
     }
-    let numOptions = 0;
     const sourceMap = this.dl.getAnyMapData(this.dataMapName);
-    if (!sourceMap) {
+    if (!sourceMap || typeof sourceMap !== "object") {
       return -1;
     }
-    if (typeof sourceMap === "object") {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for (const _value in sourceMap) {
-        numOptions++;
-      }
-    }
-    return numOptions;
+    return Object.keys(sourceMap).length;
   }
 
   protected setup(): void {}
