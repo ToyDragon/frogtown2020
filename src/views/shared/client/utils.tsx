@@ -1,4 +1,5 @@
 import { DataDetailsResponse } from "../handler_types";
+import { resolveOrTimeout } from "../../../shared/resolve_or_timeout";
 
 export function GetImageUrl(
   cardId: string,
@@ -87,18 +88,36 @@ export function ReplaceNewlines(text: string): string {
   );
 }
 
-export function LoadCardImageIntoElement(
+export async function LoadCardImageIntoElement(
   cardId: string,
   dataDetails: DataDetailsResponse,
   element: HTMLElement
-): void {
+): Promise<void> {
   if (element.getAttribute("data-loaded")) {
     return;
   }
   element.setAttribute("data-loaded", "true");
+  element.style.backgroundImage = "url(/Images/CardBack.jpg)";
   const imageUrl = GetImageUrl(cardId, dataDetails);
-  // eslint-disable-next-line prettier/prettier
-  element.style.backgroundImage = "url(\"" + imageUrl + "\")";
+
+  const result = await resolveOrTimeout(waitForImageToLoad(imageUrl), 100);
+  let url = "";
+  if (result.timedOut) {
+    element.style.backgroundImage = "url(/Images/CardBack.jpg)";
+    url = await result.promise!;
+  } else {
+    url = result.result!;
+  }
+  element.style.backgroundImage = url;
+}
+
+function waitForImageToLoad(imageUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(`url("${imageUrl}")`);
+    img.onerror = reject;
+    img.src = imageUrl;
+  });
 }
 
 export function showPopup(popup: HTMLElement | null): void {
