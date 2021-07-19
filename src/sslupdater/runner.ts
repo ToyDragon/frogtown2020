@@ -1,13 +1,12 @@
 import * as os from "os";
 import commandLineArgs from "command-line-args";
 
-import Config from "../server/config";
+import Config from "../server/services/config/config";
 import Services from "../server/services";
-import LoadConfigFromFile from "../server/config_loader";
-import S3StoragePortal from "../server/storage_portal_s3";
+import LoadConfigFromFile from "../server/services/config/config_loader";
+import S3StoragePortal from "../server/services/storage_portal/storage_portal_s3";
 import * as Logs from "../server/log";
-import DatabaseManager from "../server/database/db_manager";
-import ScryfallManager from "../server/scryfall_manager";
+import RealScryfallManager from "../server/services/scryfall_manager/real_scryfall_manager";
 import {
   initStatusManagement,
   logGracefulDeath,
@@ -15,7 +14,12 @@ import {
 import { setServerName } from "../server/name";
 import { httpsGetRaw, timeout } from "../shared/utils";
 import { spawn, execSync } from "child_process";
-import { PerformanceMonitor } from "../server/performance_monitor/performance_monitor";
+import { PerformanceMonitor } from "../server/services/performance_monitor/performance_monitor";
+import initializeDatabase from "../server/services/database/initialize_database";
+import MySQLDatabaseManager from "../server/services/database/mysql_db_manager";
+import FsLocalStorage from "../server/services/local_storage/fs_local_storage";
+import RealClock from "../server/services/real_clock";
+import RealNetworkManager from "../server/services/network_manager/real_network_manager";
 
 /*
 
@@ -91,10 +95,13 @@ export default class SSLUpdater {
       Logs.logInfo("Loaded config.");
       this.services = {
         config: config,
-        dbManager: new DatabaseManager(config),
+        dbManager: new MySQLDatabaseManager(config),
         storagePortal: new S3StoragePortal(config),
-        scryfallManager: new ScryfallManager(),
+        scryfallManager: new RealScryfallManager(),
         perfMon: new PerformanceMonitor(),
+        file: new FsLocalStorage(),
+        clock: new RealClock(),
+        net: new RealNetworkManager(),
       };
 
       process.on("SIGINT", async () => {
@@ -106,7 +113,7 @@ export default class SSLUpdater {
       });
 
       // Initialize the database
-      await this.services.dbManager.ensureDatabaseAndTablesExist(config);
+      await initializeDatabase(this.services.dbManager, config);
 
       // Heartbeats and server status managment
       setServerName(process.pid.toString() + ":Updater:" + os.hostname());

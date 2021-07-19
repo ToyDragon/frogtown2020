@@ -9,8 +9,8 @@ import {
   NameChangeRequest,
   TTSBackChangeRequest,
 } from "./types";
-import { UserKeysRow } from "../../server/database/dbinfos/db_info_user_keys";
-import { UserQualityRow } from "../../server/database/dbinfos/db_info_user_quality";
+import { UserKeysRow } from "../../server/services/database/dbinfos/db_info_user_keys";
+import { UserQualityRow } from "../../server/services/database/dbinfos/db_info_user_quality";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {

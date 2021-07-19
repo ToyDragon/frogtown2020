@@ -1,8 +1,8 @@
 import * as express from "express";
-import Config from "../server/config";
 import * as http from "http";
 import * as https from "https";
 import { logError } from "../server/log";
+import Services from "../server/services";
 
 /**
  * Any shared helper functions whose usefullness isn't restricted to a single area.
@@ -202,18 +202,21 @@ export async function httpsGet<T>(path: string): Promise<T | null> {
   return result;
 }
 
-export async function getAllCardIDs(config: Config): Promise<string[]> {
+export async function getAllCardIDs(services: Services): Promise<string[]> {
   const result: string[] = [];
   const commonRoot =
-    config.storage.externalRoot + "/" + config.storage.awsS3DataMapBucket + "/";
+    services.config.storage.externalRoot +
+    "/" +
+    services.config.storage.awsS3DataMapBucket +
+    "/";
   const allImgMaps = [
-    await httpsGet<Record<string, string>>(
+    await services.net.httpsGetJson<Record<string, string>>(
       commonRoot + "IDToLargeImageURI.json"
     ),
-    await httpsGet<Record<string, string>>(
+    await services.net.httpsGetJson<Record<string, string>>(
       commonRoot + "BackIDToLargeImageURI.json"
     ),
-    await httpsGet<Record<string, string>>(
+    await services.net.httpsGetJson<Record<string, string>>(
       commonRoot + "TokenIDToLargeImageURI.json"
     ),
   ];

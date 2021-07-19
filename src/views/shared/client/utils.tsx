@@ -79,13 +79,12 @@ export function ReplaceSymbols(text: string): string {
 }
 
 export function ReplaceNewlines(text: string): string {
-  return (
-    /* eslint-disable prettier/prettier */
-    "<div class=\"textLine\">" +
-    text.split("\n").join("</div><div class=\"textLine\">") +
-    "</div>"
-    /* eslint-enable prettier/prettier */
-  );
+  return text
+    .split("\n")
+    .map((line) => {
+      return `<div class="textLine">${line}</div>`;
+    })
+    .join("");
 }
 
 export async function LoadCardImageIntoElement(

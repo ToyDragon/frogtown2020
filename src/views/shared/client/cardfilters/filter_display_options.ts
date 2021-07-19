@@ -15,7 +15,7 @@ export class FilterDisplayOptions extends FilterDropdown {
     options: Displayable[]
   ) {
     const root = document.querySelector(
-      "div[data-filtertype=" + filtertype + "]"
+      `div[data-filtertype=${filtertype}]`
     ) as HTMLElement;
     if (root.getAttribute("data-setupDisplay") !== "true") {
       root.setAttribute("data-setupDisplay", "true");
@@ -37,7 +37,7 @@ export class FilterDisplayOptions extends FilterDropdown {
           item.classList.add("default");
         }
         document
-          .querySelector("div[data-filtertype=" + filtertype + "] ul")
+          .querySelector(`div[data-filtertype=${filtertype}] ul`)
           ?.append(item);
 
         if (option.requiredMaps && option.requiredMaps.length > 0) {
@@ -55,7 +55,7 @@ export class FilterDisplayOptions extends FilterDropdown {
 
   public resetDefault(): void {
     (document.querySelector(
-      "div[data-filtertype=" + this.type + "] ul li.default"
+      `div[data-filtertype=${this.type}] ul li.default`
     ) as HTMLElement).click();
   }
 }

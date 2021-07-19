@@ -12,7 +12,7 @@ interface Range {
 }
 
 export default class IndividualMapConstructor {
-  private templateFile: string;
+  private templateString: string;
   private streamBuffer: string;
   private cardCount: number;
   public mapTemplate: MapFile | null = null;
@@ -23,15 +23,15 @@ export default class IndividualMapConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data: any;
 
-  public constructor(templateFile: string) {
-    this.templateFile = templateFile;
+  public constructor(templateString: string) {
+    this.templateString = templateString;
     this.streamBuffer = "";
     this.cardCount = 0;
   }
 
-  public async attachStream(input: stream.Readable): Promise<void> {
-    this.mapTemplate = new MapFile(this.templateFile);
-    await this.mapTemplate.loadFromFile();
+  public async attachStream(input: stream.Stream): Promise<void> {
+    this.mapTemplate = new MapFile(this.templateString);
+    await this.mapTemplate.loadFromString();
     this.streamBuffer = "";
     this.cardCount = 0;
     input.on("data", (data: string) => {
@@ -120,7 +120,7 @@ export default class IndividualMapConstructor {
       range.end - range.start + 1
     );
     this.lastParseData =
-      "Buffer: " + rawData + "\nRange: " + JSON.stringify(range);
+      `Buffer: ${rawData}\nRange: ${JSON.stringify(range)}`;
     try {
       const cardData = JSON.parse(rawData) as ScryfallFullCard;
       if (this.cardMeetsFilter(cardData)) {
@@ -130,14 +130,11 @@ export default class IndividualMapConstructor {
     } catch (e) {
       if (this.errorCount <= 3) {
         logError(
-          "Error parsing card with range: " +
-            JSON.stringify(range) +
-            "\n" +
-            e +
-            "\n" +
-            this.streamBuffer +
-            "\nPrevious card----\n" +
-            this.lastParseData
+          `Error parsing card with range: ${JSON.stringify(range)}` +
+            `\n${e}` +
+            `\n${this.streamBuffer}` +
+            "\nPrevious card----" +
+            `\n${this.lastParseData}`
         );
       }
       this.errorCount += 1;

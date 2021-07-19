@@ -1,5 +1,4 @@
 import { ScryfallFullCard } from "../../shared/scryfall_types";
-import * as FileUtils from "../../../shared/file_utils";
 import { logError } from "../../../server/log";
 
 interface RawMapFilter {
@@ -30,39 +29,28 @@ export interface RawMapFileData {
 }
 
 export default class MapFile {
-  private path: string;
+  private templateString: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public mapData: any[];
   public data: RawMapFileData | null;
 
-  public constructor(pathOrMapdata: string) {
-    this.path = pathOrMapdata;
+  public constructor(templateString: string) {
+    this.templateString = templateString;
     this.data = null;
     this.mapData = [];
   }
 
-  public async loadFromFile(): Promise<boolean> {
-    const stat = await FileUtils.stat(this.path);
-    if (!stat) {
-      logError("Error loading file: " + this.path);
-      return false;
-    }
-    const contents = await FileUtils.readFile(this.path);
-    if (!contents) {
-      logError("Error reading file: " + this.path);
-      return false;
-    }
-
+  public async loadFromString(): Promise<boolean> {
     try {
-      this.data = JSON.parse(contents);
+      this.data = JSON.parse(this.templateString);
     } catch (e) {
-      logError("Error parsing file: " + this.path);
+      logError("Error parsing file: " + this.templateString);
       return false;
     }
 
     const validationError = this.verifyData();
     if (validationError) {
-      logError("Error verifying data: " + this.path);
+      logError("Error verifying data: " + this.templateString);
       logError(validationError);
       return false;
     }

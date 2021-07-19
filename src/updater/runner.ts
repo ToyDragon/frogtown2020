@@ -15,7 +15,7 @@ if (cluster.isMaster) {
   cluster.on("exit", (worker, code, _signal) => {
     deadWorkers[worker.id] = true;
     if (code !== 0 && !worker.exitedAfterDisconnect && !closing) {
-      console.log("Worker " + worker.id + " crashed. Starting a new worker...");
+      console.log(`Worker ${worker.id} crashed. Starting a new worker...`);
       cluster.fork();
     }
   });
@@ -32,19 +32,22 @@ if (cluster.isMaster) {
         // eslint-disable-next-line no-process-exit
         process.exit(0);
       } else {
-        console.log(
-          "Runner: Waiting for " + aliveCount + " servers to close..."
-        );
+        console.log(`Runner: Waiting for ${aliveCount} servers to close...`);
         await timeout(2500);
       }
     }
   });
-  
+
   console.log("Runner: Will shut down in 3 hours...");
   setTimeout(() => {
     closing = true;
     console.log("Runner: Reached 3 hour limit, shutting down.");
-    process.kill(process.pid, "SIGINT");
+    for (const worker of workers) {
+      if (!deadWorkers[worker.id]) {
+        console.log(`Runner: Killing pid ${worker.process.pid}.`);
+        process.kill(worker.process.pid, "SIGINT");
+      }
+    }
   }, 1000 * 60 * 60 * 3); // 3 hours
 } else {
   new Updater().run();
