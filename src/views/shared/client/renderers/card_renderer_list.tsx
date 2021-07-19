@@ -248,12 +248,12 @@ export class CardRendererList extends BaseCardRenderer {
         this.putSetSVG(setReference.current, setCode);
       }
 
-      cardDiv.addEventListener("mouseover", async (event) => {
+      cardDiv.addEventListener("mouseover", (event) => {
         this.hoverCard.setAttribute("data-id", cardId);
         this.hoverCard.setAttribute("data-lastFailedId", "");
         this.hoverCard.setAttribute(
           "src",
-          await Utils.GetImageUrl(cardId, this.dl.dataDetails!)
+          Utils.GetImageUrl(cardId, this.dl.dataDetails!)
         );
         this.hoverCard.classList.remove("nodisp");
         this.UpdateHoverPosition(event.pageX, event.pageY);

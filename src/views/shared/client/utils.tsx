@@ -88,6 +88,7 @@ export function ReplaceNewlines(text: string): string {
   );
 }
 
+// The returned promise resolves after the default image is loaded, if necessary.
 export async function LoadCardImageIntoElement(
   cardId: string,
   dataDetails: DataDetailsResponse,
@@ -97,16 +98,17 @@ export async function LoadCardImageIntoElement(
     return;
   }
   element.setAttribute("data-loaded", "true");
-  element.style.backgroundImage = "url(/Images/CardBack.jpg)";
   const imageUrl = GetImageUrl(cardId, dataDetails);
-
-  const result = await resolveOrTimeout(waitForImageToLoad(imageUrl), 100);
+  const timeoutStatus = await resolveOrTimeout(
+    waitForImageToLoad(imageUrl),
+    100
+  );
   let url = "";
-  if (result.timedOut) {
+  if (timeoutStatus.timedOut) {
     element.style.backgroundImage = "url(/Images/CardBack.jpg)";
-    url = await result.promise!;
+    url = await timeoutStatus.promise!;
   } else {
-    url = result.result!;
+    url = timeoutStatus.result!;
   }
   element.style.backgroundImage = url;
 }
