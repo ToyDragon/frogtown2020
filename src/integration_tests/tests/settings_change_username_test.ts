@@ -11,7 +11,6 @@ export default class SettingsChangeUsernameTest extends IntegrationTest {
 
   async run(params: RunParams): Promise<void> {
     const page = await params.newPage();
-    await page.setCookie(...params.authCookies);
     await page.goto(`https://${params.serverUrl}:${params.port}/settings.html`);
     const testName = "Kanye West " + Math.trunc(Math.random() * 100000);
 

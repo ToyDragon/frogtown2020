@@ -32,7 +32,7 @@ function getCommandLineArgs(): CommandLineArgs {
       name: "port",
       alias: "p",
       type: Number,
-      defaultValue: -1,
+      defaultValue: 0,
     },
     {
       // The file containing the config used by the server.
@@ -43,19 +43,9 @@ function getCommandLineArgs(): CommandLineArgs {
     },
   ]);
 
-  const serverUrl: string | null = options["server"];
-  if (!serverUrl) {
-    throw new Error("Server URL required.");
-  }
-
-  const port: number | null = options["port"];
-  if (!port) {
-    throw new Error("Server port required.");
-  }
-
   return {
-    server: serverUrl,
-    port: port,
+    server: options["server"],
+    port: options["port"],
     config: options["config"],
   };
 }
@@ -63,6 +53,12 @@ function getCommandLineArgs(): CommandLineArgs {
 (async () => {
   const args = getCommandLineArgs();
   const config = await LoadConfigFromFile(args.config);
+  if (!args.port) {
+    args.port = config.network.securePort;
+  }
+  if (!args.server) {
+    args.server = config.hostname;
+  }
   const browser = await puppeteer.launch();
 
   // Construct an object with the parameters required to run a test.
@@ -127,6 +123,7 @@ function getCommandLineArgs(): CommandLineArgs {
                     width: 1920,
                     height: 1080,
                   });
+                  await page.setCookie(...runParams.authCookies);
                   pages.push(page);
                   return page;
                 },
@@ -140,6 +137,7 @@ function getCommandLineArgs(): CommandLineArgs {
                   pageScreenshots.push(
                     await saveScreenshot(pages[i], test.name() + "_page_" + i)
                   );
+                  await pages[i].close();
                 }
               }
               let screenshotMessage = "";
@@ -150,20 +148,17 @@ function getCommandLineArgs(): CommandLineArgs {
                   ".";
                 pageScreenshots = [];
               }
-              if (attempt < 5) {
-                console.error(
-                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
-                  `  ${screenshotMessage}\n`,
-                  `  ${(e as Error).message}`
-                );
+              const errs = [
+                `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
+                `  ${screenshotMessage}\n`,
+              ];
+              if (attempt < 4) {
+                errs.push(`  ${(e as Error).message}`);
               } else {
-                console.error(
-                  `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
-                  `  ${screenshotMessage}\n`,
-                  e
-                );
+                errs.push(e);
                 failed = true;
               }
+              console.error(...errs);
             }
           }
         })()

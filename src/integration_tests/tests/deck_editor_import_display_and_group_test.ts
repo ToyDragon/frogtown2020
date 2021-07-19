@@ -8,7 +8,8 @@ import {
   type,
 } from "../integration_test";
 import DeckEditorInfo from "./deck_editor/deck_editor_info";
-import verifyDeckEditorDisplayGrid from "./deck_editor/verify_deck_editor_display_grid";
+import verifyDeckEditorGridActions from "./deck_editor/verify_deck_editor_grid_actions";
+import verifyDeckEditorGridDisplay from "./deck_editor/verify_deck_editor_grid_display";
 
 const cardIdA = "10544646-50d5-4225-a35f-e8396850fc0b";
 const cardNameA = "Fireball";
@@ -43,7 +44,6 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
 
   async run(params: RunParams): Promise<void> {
     const page = await params.newPage();
-    await page.setCookie(...params.authCookies);
     await page.goto(
       `https://${params.serverUrl}:${params.port}/cardsearch.html`
     );
@@ -54,34 +54,39 @@ export default class DeckEditorImportDisplayAndGroupTest extends IntegrationTest
     await click(page, ".tbDeck[data-deckid='']");
     await page.waitForNavigation();
     await timeout(100);
-    Assert.contains(page.url(), "/deckViewer/");
+    await Assert.contains(page.url(), "/deckViewer/");
 
     // Import some copies of two different cards.
     await click(page, "#DeckActions");
     await clickUntil(page, "#actionBulkImport", async () => {
-      return Assert.noError(Assert.visible(page, "#importOverlay"));
+      return await Assert.noError(Assert.visible(page, "#importOverlay"));
     });
     await type(page, "#bulkInputArea", `3 ${cardIdA}\n2 ${cardIdB}\n`);
     await timeout(100);
     await clickUntil(page, "#btnConfirmImport", async () => {
-      return Assert.noError(Assert.notVisible(page, "#btnConfirmImport"));
+      return await Assert.noError(Assert.notVisible(page, "#btnConfirmImport"));
     });
     await timeout(1000);
 
     // Verify each display option.
-    await verifyDeckEditorDisplayGrid(page, this.getParams("", ""));
+    await verifyDeckEditorGridDisplay(page, this.getParams("", ""));
 
     await click(page, "#DeckDisplayGroupers");
     await click(page, "#DeckDisplayGroupers li[data-value='IDToColor']");
-    await verifyDeckEditorDisplayGrid(page, this.getParams("Red", "Colorless"));
+    await verifyDeckEditorGridDisplay(page, this.getParams("Red", "Colorless"));
+
+    // Remove grouper, and verify actions.
+    await click(page, "#DeckDisplayGroupers");
+    await click(page, "#DeckDisplayGroupers li[data-value='IDToColor']");
+    await verifyDeckEditorGridActions(page, this.getParams("", ""));
 
     // Delete the deck.
     await click(page, "#DeckActions");
     await clickUntil(page, "#actionDelete", async () => {
-      return Assert.noError(Assert.visible(page, "#deleteOverlay"));
+      return await Assert.noError(Assert.visible(page, "#deleteOverlay"));
     });
     await click(page, "#btnConfirmDelete");
     await page.waitForNavigation();
-    Assert.contains(page.url(), "/cardsearch");
+    await Assert.contains(page.url(), "/cardsearch");
   }
 }

@@ -53,6 +53,7 @@
   "scripts": {
     "start": "node ./bin/server/runner.js",
     "test": "jest",
+    "itest": "node bin/integration_tests/runner.js",
     "lint": "npx eslint \"./src/**/*.ts\"",
     "build": "tsc && npx webpack --config ./bin/webpack.config.js",
     "startprod": "node ./bin/server/runner.js",
