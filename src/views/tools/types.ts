@@ -37,7 +37,8 @@ export interface CardImageUpdateStartRequest {
 }
 
 export interface CardImageClearInfoRequest {
-  sets: string[];
+  sets?: string[];
+  cardIDs?: string[];
 }
 
 export interface CardImageInfoResponse {

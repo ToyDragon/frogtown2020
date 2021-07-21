@@ -221,15 +221,23 @@ export async function clearImageInfo(
   }
 
   let cardCount = 0;
-  for (const set of clearInfoRequest.sets) {
-    if (SetCodeToCardID[set]) {
-      for (const cardId of SetCodeToCardID[set]) {
-        cardCount++;
-        await connection.query("DELETE FROM card_images WHERE card_id=?;", [
-          cardId,
-        ]);
-      }
+  const cardsToBeCleared: string[] = [];
+  if (clearInfoRequest.sets !== undefined) {
+    for (const set of clearInfoRequest.sets) {
+      cardsToBeCleared.push(...SetCodeToCardID[set]);
     }
+  }
+
+  if (clearInfoRequest.cardIDs !== undefined) {
+    cardsToBeCleared.push(...clearInfoRequest.cardIDs);
+  }
+
+  for (const cardID of cardsToBeCleared) {
+    cardCount++;
+    cardID;
+    await connection.query("DELETE FROM card_images WHERE card_id=?;", [
+      cardID,
+    ]);
   }
 
   logInfo(`Cleared images for ${cardCount} cards.`);
