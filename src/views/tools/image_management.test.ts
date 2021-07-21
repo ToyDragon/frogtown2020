@@ -11,7 +11,11 @@ import MemoryScryfallManager from "../../server/services/scryfall_manager/memory
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/services/storage_portal/storage_portal_memory";
 import { dateToMySQL, timeout } from "../../shared/utils";
-import { getAllImageInfos, startUpdatingImages } from "./image_management";
+import {
+  clearImageInfo,
+  getAllImageInfos,
+  startUpdatingImages,
+} from "./image_management";
 import { ImageInfo } from "./types";
 
 // TODO: test CYMK file conversion.
