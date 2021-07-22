@@ -16,5 +16,5 @@ test("Case where promies DOES timeout", async () => {
   const result = await resolveOrTimeout(timeout(200), 100);
   expect(result.result).toBeUndefined();
   expect(result.timedOut).toBe(true);
-  expect(result.promise).toBe(timeout(200));
+  expect(result.promise).toStrictEqual(timeout(200));
 });
