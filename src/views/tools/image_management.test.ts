@@ -120,9 +120,14 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   const blobPrefix = `${config.storage.externalRoot}/${config.storage.awsS3DataMapBucket}/`;
 
   const jsonFiles: Record<string, string> = {};
-  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`] = JSON.stringify({
-    "1": "https://www.scryfly.fake/Images/1.jpg",
-  });
+  /* eslint-disable prettier/prettier */
+  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
+  jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({ "2": "https://www.scryfly.fake/Images/2.jpg" });
+  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({ "3": "https://www.scryfly.fake/Images/3.jpg", "4": "https://neverused" });
+  jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": false });
+  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({ "2": true });
+  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({ "3": true, "4": false });
+  /* eslint-enable prettier/prettier */
 
   const clock: Clock = {
     now: () => {
@@ -153,9 +158,12 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   if (!infos) {
     return;
   }
-  expect(infos.countByType[ImageInfo.NONE]).toBe(0);
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
   expect(infos.countByType[ImageInfo.HQ]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
 
   clearImageInfo(services, { cardIDs: ["1"] });
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(1);
+  expect(infos.countByType[ImageInfo.HQ]).toBe(0);
+  expect(infos.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
 });
