@@ -294,6 +294,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
       console.log(`removing card ${cardId} from mainboard`);
       this.saveDeckChange();
+      // Trigger for opening the new pane.
     } else if (action === "similar") {
       console.log("looking for similar cards");
       (document.querySelector(
@@ -308,6 +309,12 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       );
       this.cardSearchUtil!.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil!.ApplyFilter();
+      document.getElementById("altPane")!.style.visibility = "visible";
+      document
+        .getElementById("exitIcon")
+        ?.addEventListener("click", function () {
+          document.getElementById("altPane")!.style.visibility = "hidden";
+        });
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);

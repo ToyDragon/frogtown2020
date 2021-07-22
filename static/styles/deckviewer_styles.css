@@ -38,6 +38,50 @@ body.frogtown {
   height: calc(100% - 64px);
 }
 
+#altPane{
+  visibility: hidden;
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+#altRenderArea{
+  margin: 2%;
+  position: fixed;
+  border-radius: 5px;
+  background-color: #dfdfdf;
+  width: 96%;
+  height: 85%;
+}
+
+#altDim {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: #000000;
+  opacity: 50%;
+}
+
+#exitIcon{
+  position: absolute;
+  left: 95%;
+  font-size: 24px;
+  width: 72px;
+  height: 40px;
+  vertical-align: text-top;
+  text-align: center;
+  font-family: arial;
+}
+
+#exitIcon:hover{
+  background-color: rgb(221, 56, 56);
+  border-radius: 2px;
+  color: white;
+}
+
 #deckArea{
   width: 550px;
   flex-grow: 1;
