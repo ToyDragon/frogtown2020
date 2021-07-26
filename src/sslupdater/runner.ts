@@ -140,7 +140,10 @@ export default class SSLUpdater {
       const result = /Create a file containing just this data:\n\n(.*)\n\n.*\n\n.*\.well-known\/acme-challenge\/(.*)\n/.exec(
         chunk
       );
-      if (result) {
+      if (chunk.indexOf("Are you OK with your IP being logged?") >= 0) {
+        certprocess.stdin.write("Y\n");
+        Logs.logInfo("Agreed to IP logging");
+      } else if (result) {
         Logs.logInfo(`Uploading "${result[1]}" to "${result[2]}"`);
         await this.services.storagePortal.uploadStringToBucketACL(
           this.services.config.storage.awsS3WellKnownBucket,
