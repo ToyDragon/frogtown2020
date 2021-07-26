@@ -87,7 +87,7 @@ export function ReplaceNewlines(text: string): string {
     .join("");
 }
 
-// The returned promise resolves after the default image is loaded, if necessary.
+// Resolves after the card image is loaded into the element.
 export async function LoadCardImageIntoElement(
   cardId: string,
   dataDetails: DataDetailsResponse,
