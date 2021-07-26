@@ -141,8 +141,8 @@ export default class SSLUpdater {
         chunk
       );
       if (chunk.indexOf("Are you OK with your IP being logged?") >= 0) {
-	certprocess.stdin.write("Y\n");
-	Logs.logInfo("Agreed to IP logging");
+        certprocess.stdin.write("Y\n");
+        Logs.logInfo("Agreed to IP logging");
       } else if (result) {
         Logs.logInfo(`Uploading "${result[1]}" to "${result[2]}"`);
         await this.services.storagePortal.uploadStringToBucketACL(
