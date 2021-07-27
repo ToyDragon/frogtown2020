@@ -4,24 +4,22 @@ import Config from "../../server/services/config/config";
 import initializeDatabase from "../../server/services/database/initialize_database";
 import MemoryDatabaseManager from "../../server/services/database/memory_db_manager";
 import MemoryLocalStorage from "../../server/services/local_storage/memory_local_storage";
-import { Level, setLogLevel } from "../../server/log";
 import MemoryNetworkManager from "../../server/services/network_manager/memory_network_manager";
 import { PerformanceMonitor } from "../../server/services/performance_monitor/performance_monitor";
 import MemoryScryfallManager from "../../server/services/scryfall_manager/memory_scryfall_manager";
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/services/storage_portal/storage_portal_memory";
 import { timeout } from "../../shared/utils";
-import {
-  getAllImageInfos,
-  getImageUpdateProgress,
-  startUpdatingImages,
-} from "./image_management";
+import { getAllImageInfos, startUpdatingImages } from "./image_management";
 import { ImageInfo } from "./types";
 import { spawn } from "child_process";
+import { Level, setLogLevel } from "../../server/log";
 
 // Helper to save a jpeg buffer to a file, and run imagemagick's identify tool on it.
 function identify(jpgData: Buffer): Promise<string> {
   return new Promise((resolve) => {
+    // TODO: Remove dependency on the filesystem, see if there's a way to send the data
+    // through a stdin stream or something.
     const tmpFile =
       "/tmp/imagemanagement_img_" + Math.floor(Math.random() * 100) + ".jpg";
     fs.writeFile(tmpFile, jpgData, () => {
@@ -62,6 +60,7 @@ async function checkImage(
 
 // This test verifies that Card images can be downloaded, resized, and stored in S3.
 test("Downloads card images, resizes, and stores them.", async () => {
+  jest.setTimeout(10000);
   setLogLevel(Level.NONE);
 
   const config = new Config();
@@ -113,14 +112,8 @@ test("Downloads card images, resizes, and stores them.", async () => {
     cardIds: ["1", "2", "3"],
   });
 
-  // Wait for the image update to finish
-  for (let i = 0; i < 20; ++i) {
-    if ((await getImageUpdateProgress(services)).max === 0) {
-      break;
-    }
-    await timeout(250);
-  }
-  expect((await getImageUpdateProgress(services)).max).toBe(0);
+  // Wait for the image update to finish.
+  await timeout(2000);
 
   // Verify the images were converted and stored.
   await checkImage(storage, "fq", "1.jpg", "", 202690);
