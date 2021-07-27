@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { Clock } from "../clock";
 
 interface ObjectInfo {
-  contents: string;
+  contents: string | Buffer;
   acl: string; // TODO: Remove this if it's not needed.
   lastChange: Date;
 }
@@ -15,6 +15,18 @@ export default class MemoryStoragePortal implements StoragePortal {
 
   public constructor(clock: Clock) {
     this.clock = clock;
+  }
+
+  // Can retrieve an object stored as a Buffer, that was stored using a stream.
+  public async getObjectRaw(
+    bucket: string,
+    objectKey: string
+  ): Promise<Buffer | string> {
+    try {
+      return this.buckets[bucket][objectKey].contents;
+    } catch {
+      return "";
+    }
   }
 
   public async canWriteToBucket(_bucket: string): Promise<boolean> {
@@ -35,7 +47,7 @@ export default class MemoryStoragePortal implements StoragePortal {
             if (err) {
               throw new Error();
             }
-            resolve(data.toString());
+            resolve(data);
           });
         }
       );
@@ -63,11 +75,7 @@ export default class MemoryStoragePortal implements StoragePortal {
     bucket: string,
     objectKey: string
   ): Promise<string> {
-    try {
-      return this.buckets[bucket][objectKey].contents;
-    } catch {
-      return "";
-    }
+    return (await this.getObjectRaw(bucket, objectKey)).toString();
   }
 
   public async uploadStringToBucket(
@@ -118,7 +126,14 @@ export default class MemoryStoragePortal implements StoragePortal {
     passthrough.on("data", (chunk) => {
       this.buckets[bucket] = this.buckets[bucket] || {};
       this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
-      this.buckets[bucket][objectKey].contents += chunk;
+      if (!this.buckets[bucket][objectKey].contents) {
+        this.buckets[bucket][objectKey].contents = chunk;
+      } else {
+        this.buckets[bucket][objectKey].contents = Buffer.concat([
+          this.buckets[bucket][objectKey].contents,
+          chunk,
+        ]);
+      }
       this.buckets[bucket][objectKey].acl = "public-read";
       this.buckets[bucket][objectKey].lastChange = this.clock.now();
     });
