@@ -92,8 +92,9 @@ async function runTestWithRetry(
         },
       });
       console.log(`Test ${test.name()} passed!`);
-      break;
+      return true;
     } catch (e) {
+      // If there was an error in the test, save screenshots of all the open pages, and add a message to the log with the paths.
       let pageScreenshots: string[] = [];
       for (let i = 0; i < pages.length; ++i) {
         if (!pages[i].isClosed()) {
@@ -113,19 +114,17 @@ async function runTestWithRetry(
         `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
         `  ${screenshotMessage}\n`,
       ];
+
+      // Only show the error stack on the final try, otherwise the stack will completely fill the output and make it difficult to read.
       if (attempt < retries - 1) {
         errs.push(`  ${(e as Error).message}`);
       } else {
         errs.push(e);
       }
       console.error(...errs);
-
-      if (attempt === retries - 1) {
-        return false;
-      }
     }
   }
-  return true;
+  return false;
 }
 
 (async () => {
