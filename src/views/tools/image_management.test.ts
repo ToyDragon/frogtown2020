@@ -121,11 +121,11 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   const jsonFiles: Record<string, string> = {};
   /* eslint-disable prettier/prettier */
   jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
-  jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({ "2": "https://www.scryfly.fake/Images/1.jpg" });
-  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({ "3": "https://www.scryfly.fake/Images/1.jpg"});
+  jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({});
   jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
-  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({ "2": true });
-  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({ "3": true });
+  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({});
   /* eslint-enable prettier/prettier */
 
   const clock: Clock = {
