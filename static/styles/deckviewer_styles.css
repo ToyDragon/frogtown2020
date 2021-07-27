@@ -74,6 +74,7 @@ body.frogtown {
   vertical-align: text-top;
   text-align: center;
   font-family: arial;
+  cursor: pointer;
 }
 
 #exitIcon:hover{

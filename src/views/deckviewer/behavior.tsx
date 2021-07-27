@@ -27,6 +27,7 @@ import setupDelete from "./action_delete";
 import setupEditName from "./action_editname";
 import setupSearchArrow from "./search_arrow";
 import { GetImageUrl } from "../shared/client/utils";
+import { altPaneInit } from "./alternate_art_popup_pane";
 
 class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardSearchUtil: CardSearchBehavior | null = null;
@@ -267,6 +268,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     });
 
     this.updateKeyCardDisplay();
+    // Alternate art pane initialization
+    altPaneInit();
   }
 
   private updateCardDivs(): void {
@@ -310,11 +313,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.cardSearchUtil!.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil!.ApplyFilter();
       document.getElementById("altPane")!.style.visibility = "visible";
-      document
-        .getElementById("exitIcon")
-        ?.addEventListener("click", function () {
-          document.getElementById("altPane")!.style.visibility = "hidden";
-        });
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);
