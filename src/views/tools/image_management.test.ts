@@ -11,11 +11,55 @@ import MemoryScryfallManager from "../../server/services/scryfall_manager/memory
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/services/storage_portal/storage_portal_memory";
 import { timeout } from "../../shared/utils";
-import { getAllImageInfos, startUpdatingImages } from "./image_management";
+import {
+  getAllImageInfos,
+  getImageUpdateProgress,
+  startUpdatingImages,
+} from "./image_management";
 import { ImageInfo } from "./types";
+import { spawn } from "child_process";
 
-// TODO: test CYMK file conversion.
-//
+// Helper to save a jpeg buffer to a file, and run imagemagick's identify tool on it.
+function identify(jpgData: Buffer): Promise<string> {
+  return new Promise((resolve) => {
+    const tmpFile =
+      "/tmp/imagemanagement_img_" + Math.floor(Math.random() * 100) + ".jpg";
+    fs.writeFile(tmpFile, jpgData, () => {
+      const childProc = spawn("identify", [tmpFile]);
+      let data = "";
+      childProc.stdout.on("data", (chunk) => {
+        data += chunk;
+      });
+      childProc.on("exit", () => {
+        fs.unlink(tmpFile, () => {
+          resolve(data);
+        });
+      });
+    });
+  });
+}
+
+// Verifies the size and color space of a jpg in a storage portal.
+async function checkImage(
+  portal: MemoryStoragePortal,
+  bucket: string,
+  key: string,
+  colorSpace: string,
+  expectedSize: number
+): Promise<void> {
+  if (colorSpace) {
+    expect(
+      await identify((await portal.getObjectRaw(bucket, key)) as Buffer)
+    ).toContain("sRGB");
+  }
+  expect((await portal.getObjectAsString(bucket, key)).length).toBeGreaterThan(
+    expectedSize * 0.9
+  );
+  expect((await portal.getObjectAsString(bucket, key)).length).toBeLessThan(
+    expectedSize * 1.1
+  );
+}
+
 // This test verifies that Card images can be downloaded, resized, and stored in S3.
 test("Downloads card images, resizes, and stores them.", async () => {
   setLogLevel(Level.NONE);
@@ -43,19 +87,20 @@ test("Downloads card images, resizes, and stores them.", async () => {
       return new Date("2021-01-01T05:00:00");
     },
   };
+  const storage = new MemoryStoragePortal(clock);
   const services: Services = {
     config: config,
     dbManager: new MemoryDatabaseManager(),
     file: new MemoryLocalStorage({}),
     perfMon: new PerformanceMonitor(),
-    storagePortal: new MemoryStoragePortal(clock),
+    storagePortal: storage,
     scryfallManager: new MemoryScryfallManager(
       {},
       {
         /* eslint-disable prettier/prettier */
         "https://www.scryfly.fake/Images/1.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
         "https://www.scryfly.fake/Images/2.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
-        "https://www.scryfly.fake/Images/3.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
+        "https://www.scryfly.fake/Images/3.jpg": () => fs.createReadStream("./test_data_files/monk_class_cymk.jpg"),
         /* eslint-enable prettier/prettier */
       }
     ),
@@ -67,24 +112,30 @@ test("Downloads card images, resizes, and stores them.", async () => {
     allMissingCards: false,
     cardIds: ["1", "2", "3"],
   });
-  await timeout(1000);
+  for (let i = 0; i < 10; ++i) {
+    if ((await getImageUpdateProgress(services)).max === 0) {
+      break;
+    }
+    await timeout(1000);
+  }
+  expect((await getImageUpdateProgress(services)).max).toBe(0);
 
   // Verify the images were converted and stored.
-  /* eslint-disable prettier/prettier */
-  expect((await services.storagePortal.getObjectAsString("fq", "1.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("lq", "1.jpg")).length).toBe(52919);
+  await checkImage(storage, "fq", "1.jpg", "", 202690);
+  await checkImage(storage, "lq", "1.jpg", "sRGB", 52910);
 
-  expect((await services.storagePortal.getObjectAsString("fq", "2.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("hq", "2.jpg")).length).toBeGreaterThan(83970 * 0.95);
-  expect((await services.storagePortal.getObjectAsString("hq", "2.jpg")).length).toBeLessThan(83970 * 1.05);
+  await checkImage(storage, "fq", "2.jpg", "", 202690);
+  await checkImage(storage, "hq", "2.jpg", "sRGB", 83961);
+  await checkImage(storage, "lq", "2.jpg", "sRGB", 52910);
 
-  expect((await services.storagePortal.getObjectAsString("fq", "3.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeGreaterThan(83970 * 0.95);
-  expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeLessThan(83970 * 1.05);
+  await checkImage(storage, "fq", "3.jpg", "", 72596);
+  await checkImage(storage, "hq", "3.jpg", "sRGB", 61655);
+  await checkImage(storage, "lq", "3.jpg", "sRGB", 49945);
 
   // Verify that card 4 didn't have it's image updated, because we didn't specify it in the call to startUpdatingImages.
-  expect(await services.storagePortal.getObjectAsString("lq", "4.jpg")).toBe("");
-  /* eslint-enable prettier/prettier */
+  expect(await services.storagePortal.getObjectAsString("lq", "4.jpg")).toBe(
+    ""
+  );
 
   // Verify that the reported info matches what we expect.
   const infos = await getAllImageInfos(services);

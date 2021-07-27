@@ -383,6 +383,7 @@ function loadOneImage(
     inStream
       .pipe(
         (imagemagick()
+          .op("colorspace", "RGB")
           .resize("672x936")
           .quality(40) as unknown) as stream.Writable
       )
@@ -390,6 +391,7 @@ function loadOneImage(
     inStream
       .pipe(
         (imagemagick()
+          .op("colorspace", "RGB")
           .resize("672x936")
           .quality(20) as unknown) as stream.Writable
       )
