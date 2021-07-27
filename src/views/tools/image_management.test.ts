@@ -50,7 +50,7 @@ async function checkImage(
   if (colorSpace) {
     expect(
       await identify((await portal.getObjectRaw(bucket, key)) as Buffer)
-    ).toContain("sRGB");
+    ).toContain(colorSpace);
   }
   expect((await portal.getObjectAsString(bucket, key)).length).toBeGreaterThan(
     expectedSize * 0.9
@@ -112,11 +112,13 @@ test("Downloads card images, resizes, and stores them.", async () => {
     allMissingCards: false,
     cardIds: ["1", "2", "3"],
   });
-  for (let i = 0; i < 10; ++i) {
+
+  // Wait for the image update to finish
+  for (let i = 0; i < 20; ++i) {
     if ((await getImageUpdateProgress(services)).max === 0) {
       break;
     }
-    await timeout(1000);
+    await timeout(250);
   }
   expect((await getImageUpdateProgress(services)).max).toBe(0);
 
