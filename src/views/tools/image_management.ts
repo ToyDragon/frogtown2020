@@ -210,7 +210,7 @@ export async function clearImageInfo(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
-      "/SetCodeToID.json"
+      "/SetCodeToCardID.json"
   );
 
   if (!SetCodeToCardID) {

@@ -121,7 +121,7 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   const jsonFiles: Record<string, string> = {};
 
   /* eslint-disable prettier/prettier */
-  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
+  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "www.scryfly.fake/Images/1.jpg" });
   jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
   jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({});
   jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
@@ -161,7 +161,6 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
   expect(infos.countByType[ImageInfo.HQ]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
-
   await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
   infos = await getAllImageInfos(services);
 
