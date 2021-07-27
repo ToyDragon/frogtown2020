@@ -119,6 +119,7 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   config.storage.awsS3CompressedImageBucket = "lq";
   const blobPrefix = `${config.storage.externalRoot}/${config.storage.awsS3DataMapBucket}/`;
   const jsonFiles: Record<string, string> = {};
+
   /* eslint-disable prettier/prettier */
   jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
   jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
@@ -157,14 +158,14 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   if (!infos) {
     return;
   }
-  expect(infos.countByType[ImageInfo.MISSING]).toBe(2);
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
   expect(infos.countByType[ImageInfo.HQ]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
 
-  clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
+  await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
   infos = await getAllImageInfos(services);
 
-  expect(infos!.countByType[ImageInfo.MISSING]).toBe(3);
+  expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
   expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
   expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
 });
