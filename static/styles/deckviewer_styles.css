@@ -32,13 +32,13 @@ body.frogtown {
   background-image: url("https://www.frogtown.me/Images/CardBack.jpg");
 }
 
-#root{
+#root {
   display: flex;
   flex-direction: row;
   height: calc(100% - 64px);
 }
 
-#altPane{
+#altPane {
   visibility: hidden;
   position: fixed;
   display: flex;
@@ -48,13 +48,24 @@ body.frogtown {
   z-index: 2;
 }
 
-#altRenderArea{
-  margin: 2%;
+#altContainer {
+  width: 96%;
+  height: calc(100% - 80px);
+  margin: 4px;
   position: fixed;
   border-radius: 5px;
   background-color: #dfdfdf;
-  width: 96%;
-  height: 85%;
+}
+
+#altRenderArea {
+  height: calc(100% - 44px);
+  width: calc(100% - 8px);
+  position: relative;
+  top: 40px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  overflow: auto;
 }
 
 #altDim {
@@ -65,9 +76,18 @@ body.frogtown {
   opacity: 50%;
 }
 
+#cardContainer {
+  width: 223px;
+  height: 312px;
+  border-radius: 15px;
+  margin: 4px;
+  background-size: 100% 100%;
+  background-image: url("/CardBack.jpg");
+}
+
 #exitIcon{
   position: absolute;
-  left: 95%;
+  left: calc(100% - 72px);
   font-size: 24px;
   width: 72px;
   height: 40px;
