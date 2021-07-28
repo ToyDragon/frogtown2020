@@ -27,7 +27,7 @@ import setupDelete from "./action_delete";
 import setupEditName from "./action_editname";
 import setupSearchArrow from "./search_arrow";
 import { GetImageUrl } from "../shared/client/utils";
-import { altPaneInit } from "./alternate_art_popup_pane";
+import { AlternateArtPane } from "./alternate_art_popup_pane";
 
 class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardSearchUtil: CardSearchBehavior | null = null;
@@ -44,6 +44,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardScrollingParent!: HTMLElement;
   private saveDebouncer = new Debouncer(500);
   private tableTopSimulator!: TableTopSimulator;
+  private altPane = new AlternateArtPane();
 
   public async ready(): Promise<void> {
     if (!this.getIncludedData()?.deckDetails?.id) {
@@ -269,7 +270,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
 
     this.updateKeyCardDisplay();
     // Alternate art pane initialization
-    altPaneInit();
   }
 
   private updateCardDivs(): void {
@@ -297,7 +297,6 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
       console.log(`removing card ${cardId} from mainboard`);
       this.saveDeckChange();
-      // Trigger for opening the new pane.
     } else if (action === "similar") {
       console.log("looking for similar cards");
       (document.querySelector(
@@ -312,7 +311,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       );
       this.cardSearchUtil!.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil!.ApplyFilter();
-      document.getElementById("altPane")!.style.visibility = "visible";
+      this.altPane.open(cardId);
+      this.altPane.applyFilters();
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);

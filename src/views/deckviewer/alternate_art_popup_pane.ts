@@ -1,4 +1,4 @@
-import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
+/*import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
 import { DataLoader } from "../shared/client/data_loader";
 import {
@@ -62,11 +62,32 @@ export class altArtPane extends ViewBehavior<DeckViewerIncludedData> {
     null,
     "AltPaneCards"
   );
-}
+}*/
 
-export function altPaneInit(): void {
-  document.getElementById("exitIcon")?.addEventListener("click", function () {
-    document.getElementById("altPane")!.style.visibility = "hidden";
-  });
-  return;
+export class AlternateArtPane {
+  constructor() {
+    document.getElementById("exitIcon")?.addEventListener("click", function () {
+      document.getElementById("altPane")!.style.visibility = "hidden";
+    });
+  }
+
+  open(cardID: string): void {
+    document.getElementById("altPane")!.style.visibility = "visible";
+    this.renderAltArts(cardID);
+  }
+
+  applyFilters(): void {
+    console.log("Apply filters");
+    return;
+  }
+
+  renderAltArts(cardID: string): void {
+    console.log("Rendering alternate artwork for cardID: " + cardID);
+    return;
+  }
+
+  replaceAll(cardID: string): void {
+    console.log("Replacing all artworks for cardID: " + cardID);
+    return;
+  }
 }

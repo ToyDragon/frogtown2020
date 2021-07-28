@@ -11,9 +11,11 @@ import { CardRenderArea } from "../shared/client/renderers/card_render_area";
 import { CardRendererText } from "../shared/client/renderers/card_renderer_text";
 import { CardRendererTextIDs } from "../shared/client/renderers/card_renderer_text_ids";
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
+import { AlternateArtPane } from "../deckviewer/alternate_art_popup_pane";
 
 class CardSearchViewBehavior extends ViewBehavior<unknown> {
   private cardSearchUtil: CardSearchBehavior | null = null;
+  private altPane = new AlternateArtPane(); // Initialize in constructor instead of separate method.
 
   public async ready(): Promise<void> {
     this.dl.startLoading(["IDToName", "IDToText"]);
@@ -61,7 +63,6 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       this.cardSearchUtil,
       ""
     );
-
     setInterval(() => {
       deckRenderArea.UpdateDisplayedCards();
     }, 250);
@@ -87,7 +88,8 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       if (!idToName) {
         return;
       }
-
+      this.altPane.open(cardId);
+      this.altPane.applyFilters();
       this.cardSearchUtil.GetNameFilter().setValue(idToName[cardId]);
       this.cardSearchUtil.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil.ApplyFilter();
