@@ -49,7 +49,6 @@ body.frogtown {
 }
 
 #altContainer {
-  width: 96%;
   height: calc(100% - 80px);
   margin: 4px;
   position: fixed;
@@ -66,6 +65,7 @@ body.frogtown {
   flex-direction: row;
   flex-wrap: wrap;
   overflow: auto;
+  padding-bottom: 48px;
 }
 
 #altDim {
@@ -86,20 +86,27 @@ body.frogtown {
 }
 
 #exitIcon{
+  display: inline-block;
   position: absolute;
-  left: calc(100% - 72px);
+  left: calc(100% - 64px);
   font-size: 24px;
-  width: 72px;
-  height: 40px;
-  vertical-align: text-top;
+  width: 64px;
+  height: 48px;
+  padding-top: 8px;
   text-align: center;
-  font-family: arial;
+  font-family: "helvetica";
   cursor: pointer;
+}
+
+.filterBox {
+  margin-top: 12px;
+  margin-left: 12px;
+  margin-bottom: 0px;
 }
 
 #exitIcon:hover{
   background-color: rgb(221, 56, 56);
-  border-radius: 2px;
+  border-radius: 4px;
   color: white;
 }
 
