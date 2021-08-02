@@ -2,7 +2,6 @@ import {
   getAllCardIDs,
   stringArrayToRecord,
   dateToMySQL,
-  httpsGet,
 } from "../../shared/utils";
 import Services from "../../server/services";
 import {
@@ -206,7 +205,9 @@ export async function clearImageInfo(
     connection.release();
     return;
   }
-  const SetCodeToCardID = await httpsGet<Record<string, string>>(
+  const SetCodeToCardID = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
