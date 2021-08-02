@@ -46,6 +46,9 @@ export default async function verifyDeckEditorGridActions(
 
   // Test similar.
   // TODO: After fixing the bug, select some filters here to verify they are deselected.
+  await click(page, "#filterSelection > div > ul > text");
+  await click(page, "#filterSelection > div > ul > rarity");
+  await click(page, "#filterSelection > div > ul > set");
   await page.hover(
     `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}']`
   );
