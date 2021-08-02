@@ -24,13 +24,17 @@ function identify(jpgData: Buffer): Promise<string> {
       "/tmp/imagemanagement_img_" + Math.floor(Math.random() * 100) + ".jpg";
     fs.writeFile(tmpFile, jpgData, () => {
       const childProc = spawn("identify", [tmpFile]);
-      let data = "";
-      childProc.stdout.on("data", (chunk) => {
-        data += chunk;
+      let data: Buffer | null = null;
+      childProc.stdout.on("data", (chunk: Buffer) => {
+        if (!data) {
+          data = chunk;
+        } else {
+          data = Buffer.concat([data, chunk]);
+        }
       });
       childProc.on("exit", () => {
         fs.unlink(tmpFile, () => {
-          resolve(data);
+          resolve(data?.toString() || "");
         });
       });
     });
