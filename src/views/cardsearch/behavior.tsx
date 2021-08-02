@@ -15,7 +15,7 @@ import { AlternateArtPane } from "../deckviewer/alternate_art_popup_pane";
 
 class CardSearchViewBehavior extends ViewBehavior<unknown> {
   private cardSearchUtil: CardSearchBehavior | null = null;
-  private altPane = new AlternateArtPane(); // Initialize in constructor instead of separate method.
+  private altPane = new AlternateArtPane(this.dl); // Initialize in constructor instead of separate method.
 
   public async ready(): Promise<void> {
     this.dl.startLoading(["IDToName", "IDToText"]);

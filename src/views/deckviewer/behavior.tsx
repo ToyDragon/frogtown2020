@@ -44,7 +44,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardScrollingParent!: HTMLElement;
   private saveDebouncer = new Debouncer(500);
   private tableTopSimulator!: TableTopSimulator;
-  private altPane = new AlternateArtPane();
+  private altPane = new AlternateArtPane(this.dl);
 
   public async ready(): Promise<void> {
     if (!this.getIncludedData()?.deckDetails?.id) {

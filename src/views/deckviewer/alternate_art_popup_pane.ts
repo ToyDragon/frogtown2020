@@ -1,5 +1,6 @@
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
 import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
+import { DataLoader } from "../shared/client/data_loader";
 import {
   BaseCardRenderer,
   CardRendererOptions,
@@ -9,42 +10,51 @@ import { CardRendererCompactGrid } from "../shared/client/renderers/card_rendere
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
 import { CardRenderArea } from "../shared/client/renderers/card_render_area";
-import ViewBehavior from "../shared/client/view_behavior";
 
-export class AlternateArtPane extends ViewBehavior<unknown> {
-  private altPaneRenderArea: CardRenderArea;
-  searchOptions: CardRendererOptions = {
-    dataLoader: this.dl,
-    cardArea: document.getElementById("altContainer")!,
-    scrollingParent: document.getElementById("altPane")!,
-    allowEdit: false,
-    actionHandler: (action: string, cardId: string) => {
-      return action + cardId;
-    },
-  };
+export class AlternateArtPane {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dl: DataLoader;
+  altPaneRenderArea!: CardRenderArea;
+  searchOptions!: CardRendererOptions;
+  cardRenderers: BaseCardRenderer[] = [];
+  cardSearchUtil: CardSearchBehavior;
+
+  constructor(dl: DataLoader) {
+    this.dl = dl;
+    this.cardSearchUtil = new CardSearchBehavior(
+      this.dl,
+      (cardIds: string[], _miscOptions: MiscOptions) => {
+        this.altPaneRenderArea.UpdateCardList(cardIds);
+      }
+    );
+  }
+
   defaultSearchOptions: MiscOptions = {
     "Action Add": true,
     "Action Similar": true,
   };
-  cardRenderers: BaseCardRenderer[] = [
-    new CardRendererGrid(this.searchOptions),
-    new CardRendererCompactList(this.searchOptions),
-    new CardRendererCompactDetails(this.searchOptions),
-    new CardRendererCompactGrid(this.searchOptions),
-  ];
-  cardSearchUtil = new CardSearchBehavior(
-    this.dl,
-    (cardIds: string[], _miscOptions: MiscOptions) => {
-      this.altPaneRenderArea.UpdateCardList(cardIds);
-    }
-  );
 
-  constructor() {
-    super();
-
-    document.getElementById("exitIcon")?.addEventListener("click", function () {
+  ready(): void {
+    document.getElementById("exitIcon")?.addEventListener("click", () => {
       document.getElementById("altPane")!.style.visibility = "hidden";
     });
+
+    this.searchOptions = {
+      dataLoader: this.dl,
+      cardArea: document.getElementById("altContainer")!,
+      scrollingParent: document.getElementById("altPane")!,
+      allowEdit: false,
+      actionHandler: (action: string, cardId: string) => {
+        return action + cardId;
+      },
+    };
+
+    this.cardRenderers = [
+      new CardRendererGrid(this.searchOptions),
+      new CardRendererCompactList(this.searchOptions),
+      new CardRendererCompactDetails(this.searchOptions),
+      new CardRendererCompactGrid(this.searchOptions),
+    ];
 
     this.altPaneRenderArea = new CardRenderArea(
       this.dl,
