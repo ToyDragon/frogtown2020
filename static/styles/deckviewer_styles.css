@@ -98,6 +98,17 @@ body.frogtown {
   cursor: pointer;
 }
 
+#backgroundChanger {
+  display: inline-block;
+  width: 160px;
+  height: 50px;
+  text-align: center;
+  margin-left: 50px;
+  border-style: solid;
+  border-radius: 2px;
+  border-width: 4px;
+}
+
 .filterBox {
   margin-top: 12px;
   margin-left: 12px;
