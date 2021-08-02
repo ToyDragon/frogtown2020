@@ -117,7 +117,13 @@ test("Downloads card images, resizes, and stores them.", async () => {
   });
 
   // Wait for the image update to finish.
-  await timeout(2000);
+  for (let i = 0; i < 20; ++i) {
+    const infos = await getAllImageInfos(services);
+    if (infos && infos.countByType[ImageInfo.NONE] === 0) {
+      break;
+    }
+    await timeout(100);
+  }
 
   // Verify the images were converted and stored.
   await checkImage(storage, "fq", "1.jpg", "", 202690);
