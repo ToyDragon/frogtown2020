@@ -108,9 +108,11 @@ test("Downloads card images, resizes, and stores them.", async () => {
   expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
   expect(new Date(infos.lastUpdateDate)).toEqual(clock.now());
+  setLogLevel(Level.INFO);
 });
 
 test("Atetmpts to clear a specific CardID from the database", async () => {
+  setLogLevel(Level.NONE);
   const config = new Config();
   config.storage.externalRoot = "https://www.infinitestorage.fake";
   config.storage.awsS3DataMapBucket = "bucket_name";
@@ -127,6 +129,7 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
   jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({});
   jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({});
+  jsonFiles[`${blobPrefix}SetCodeToCardID.json`]        = JSON.stringify({});
   /* eslint-enable prettier/prettier */
 
   const clock: Clock = {
@@ -167,4 +170,5 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
   expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
   expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
+  setLogLevel(Level.INFO);
 });
