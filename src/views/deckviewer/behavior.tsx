@@ -296,9 +296,11 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      (document.querySelector(
+      (document.querySelectorAll(
         "#filterSelection > div > ul > li[data-active=true]"
-      ) as HTMLElement | null)?.click();
+      ) as NodeListOf<HTMLElement> | null)?.forEach((element) => {
+        element.click();
+      });
       (document.querySelector(
         "#filterSelection > div > ul > li[data-filtertype=misc]"
       ) as HTMLElement | null)?.click();

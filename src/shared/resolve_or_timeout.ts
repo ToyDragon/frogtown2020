@@ -8,7 +8,7 @@ interface TimeoutOrPromise<Type> {
   promise?: Promise<Type>;
 }
 
-// Determines if a specific promise resolves before a given timer expires.
+// Resolves after the card image is loaded into the element.
 export async function resolveOrTimeout<Type>(
   promise: Promise<Type>,
   timeoutMillis: number

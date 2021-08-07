@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { Clock } from "../clock";
 
 interface ObjectInfo {
-  contents: string;
+  contents: string | Buffer;
   acl: string; // TODO: Remove this if it's not needed.
   lastChange: Date;
 }
@@ -17,6 +17,18 @@ export default class MemoryStoragePortal implements StoragePortal {
     this.clock = clock;
   }
 
+  // Can retrieve an object stored as a Buffer, that was stored using a stream.
+  public async getObjectRaw(
+    bucket: string,
+    objectKey: string
+  ): Promise<Buffer | string> {
+    try {
+      return this.buckets[bucket][objectKey].contents;
+    } catch {
+      return "";
+    }
+  }
+
   public async canWriteToBucket(_bucket: string): Promise<boolean> {
     return true;
   }
@@ -27,20 +39,17 @@ export default class MemoryStoragePortal implements StoragePortal {
     filepath: string
   ): Promise<boolean> {
     try {
-      this.buckets[bucket] = this.buckets[bucket] || {};
-      this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
-      this.buckets[bucket][objectKey].contents = await new Promise(
-        (resolve) => {
-          fs.readFile(filepath, (err, data) => {
-            if (err) {
-              throw new Error();
-            }
-            resolve(data.toString());
-          });
-        }
-      );
-      this.buckets[bucket][objectKey].acl = "public-read";
-      this.buckets[bucket][objectKey].lastChange = this.clock.now();
+      const objectEntry = this.initializeAndRetrieveEntry(bucket, objectKey);
+      objectEntry.acl = "public-read";
+      objectEntry.lastChange = this.clock.now();
+      objectEntry.contents = await new Promise((resolve) => {
+        fs.readFile(filepath, (err, data) => {
+          if (err) {
+            throw new Error();
+          }
+          resolve(data);
+        });
+      });
 
       return true;
     } catch {
@@ -63,11 +72,7 @@ export default class MemoryStoragePortal implements StoragePortal {
     bucket: string,
     objectKey: string
   ): Promise<string> {
-    try {
-      return this.buckets[bucket][objectKey].contents;
-    } catch {
-      return "";
-    }
+    return (await this.getObjectRaw(bucket, objectKey)).toString();
   }
 
   public async uploadStringToBucket(
@@ -85,11 +90,10 @@ export default class MemoryStoragePortal implements StoragePortal {
     acl: string
   ): Promise<boolean> {
     try {
-      this.buckets[bucket] = this.buckets[bucket] || {};
-      this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
-      this.buckets[bucket][objectKey].contents = data;
-      this.buckets[bucket][objectKey].acl = acl;
-      this.buckets[bucket][objectKey].lastChange = this.clock.now();
+      const objectEntry = this.initializeAndRetrieveEntry(bucket, objectKey);
+      objectEntry.acl = acl;
+      objectEntry.lastChange = this.clock.now();
+      objectEntry.contents = data;
       return true;
     } catch {
       return false;
@@ -116,11 +120,14 @@ export default class MemoryStoragePortal implements StoragePortal {
   ): stream.PassThrough {
     const passthrough = new stream.PassThrough();
     passthrough.on("data", (chunk) => {
-      this.buckets[bucket] = this.buckets[bucket] || {};
-      this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
-      this.buckets[bucket][objectKey].contents += chunk;
-      this.buckets[bucket][objectKey].acl = "public-read";
-      this.buckets[bucket][objectKey].lastChange = this.clock.now();
+      const objectEntry = this.initializeAndRetrieveEntry(bucket, objectKey);
+      objectEntry.acl = "public-read";
+      objectEntry.lastChange = this.clock.now();
+      if (!objectEntry.contents) {
+        objectEntry.contents = chunk;
+      } else {
+        objectEntry.contents = Buffer.concat([objectEntry.contents, chunk]);
+      }
     });
     return passthrough;
   }
@@ -132,5 +139,14 @@ export default class MemoryStoragePortal implements StoragePortal {
     this.buckets[bucket] = this.buckets[bucket] || {};
     delete this.buckets[bucket][objectKey];
     return true;
+  }
+
+  private initializeAndRetrieveEntry(
+    bucket: string,
+    objectKey: string
+  ): ObjectInfo {
+    this.buckets[bucket] = this.buckets[bucket] || {};
+    this.buckets[bucket][objectKey] = this.buckets[bucket][objectKey] || {};
+    return this.buckets[bucket][objectKey];
   }
 }

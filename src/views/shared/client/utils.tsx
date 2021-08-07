@@ -87,7 +87,7 @@ export function ReplaceNewlines(text: string): string {
     .join("");
 }
 
-// Resolves after the card image is loaded into the element
+// Resolves after the card image is loaded into the element.
 export async function LoadCardImageIntoElement(
   cardId: string,
   dataDetails: DataDetailsResponse,

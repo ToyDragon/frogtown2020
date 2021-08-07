@@ -11,6 +11,7 @@ import SettingsChangeUserTest from "./tests/settings_change_user_test";
 import SettingsQualityTest from "./tests/settings_quality_test";
 import CreateAndDeleteDeckTest from "./tests/create_and_delete_deck_test";
 import DeckEditorImportDisplayAndGroupTest from "./tests/deck_editor_import_display_and_group_test";
+import Config from "../server/services/config/config";
 
 interface CommandLineArgs {
   server: string;
@@ -50,6 +51,82 @@ function getCommandLineArgs(): CommandLineArgs {
   };
 }
 
+async function runTestWithRetry(
+  config: Config,
+  browser: puppeteer.Browser,
+  domain: string,
+  port: number,
+  test: IntegrationTest
+): Promise<boolean> {
+  const authCookies = [
+    {
+      // This user has nothing special about them, we just need a user to test with.
+      domain: domain,
+      value: "4rsvvuw12bm4o1p7bo81bvbp",
+      name: "publicId",
+    },
+    {
+      domain: domain,
+      value: "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh",
+      name: "privateId",
+    },
+  ];
+  const pages: puppeteer.Page[] = [];
+  const retries = 5;
+  for (let attempt = 0; attempt < retries; ++attempt) {
+    try {
+      await test.run({
+        authCookies: authCookies,
+        serverUrl: domain,
+        port: port,
+        config: config,
+        newPage: async () => {
+          const page = await browser.newPage();
+          await page.setViewport({
+            width: 1920,
+            height: 1080,
+          });
+          await page.setCookie(...authCookies);
+          pages.push(page);
+          return page;
+        },
+      });
+      console.log(`Test ${test.name()} passed!`);
+      return true;
+    } catch (e) {
+      // If there was an error in the test, save screenshots of all the open pages, and add a message to the log with the paths.
+      let pageScreenshots: string[] = [];
+      for (let i = 0; i < pages.length; ++i) {
+        if (!pages[i].isClosed()) {
+          pageScreenshots.push(
+            await saveScreenshot(pages[i], test.name() + "_page_" + i)
+          );
+          await pages[i].close();
+        }
+      }
+      let screenshotMessage = "";
+      if (pageScreenshots.length > 0) {
+        screenshotMessage =
+          "Saved screenshots of pages: " + pageScreenshots.join(", ") + ".";
+        pageScreenshots = [];
+      }
+      const errs = [
+        `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
+        `  ${screenshotMessage}\n`,
+      ];
+
+      // Only show the error stack on the final try, otherwise the stack will completely fill the output and make it difficult to read.
+      if (attempt < retries - 1) {
+        errs.push(`  ${(e as Error).message}`);
+      } else {
+        errs.push(e);
+      }
+      console.error(...errs);
+    }
+  }
+  return false;
+}
+
 (async () => {
   const args = getCommandLineArgs();
   const config = await LoadConfigFromFile(args.config);
@@ -60,27 +137,6 @@ function getCommandLineArgs(): CommandLineArgs {
     args.server = config.hostname;
   }
   const browser = await puppeteer.launch();
-
-  // Construct an object with the parameters required to run a test.
-  const runParams = {
-    authCookies: [
-      {
-        // This user has nothing special about them, we just need a user to test with.
-        domain: args.server,
-        value: "4rsvvuw12bm4o1p7bo81bvbp",
-        name: "publicId",
-      },
-      {
-        domain: args.server,
-        value:
-          "u0bsducmqxljditro9tqcn0syvutr2960ia1uk3ivpzezkljcxudnifox0rie7nh",
-        name: "privateId",
-      },
-    ],
-    serverUrl: args.server,
-    port: args.port,
-    config: config,
-  };
 
   // Disable logging in the integration tests. All logging done for tests should directly use console.log
   setLogLevel(Level.NONE);
@@ -105,67 +161,37 @@ function getCommandLineArgs(): CommandLineArgs {
       new DeckEditorImportDisplayAndGroupTest(),
     ],
   ];
+
+  const concurrentTestLimit = 2;
   let failed = false;
   for (const set of testSets) {
-    // Loop over all tests that should run in parallel, and put their promises in the promise array.
-    const testRunPromises: Promise<void>[] = [];
+    const activeTests: Record<string, Promise<boolean>> = {};
     for (const test of set) {
-      testRunPromises.push(
-        (async () => {
-          const pages: puppeteer.Page[] = [];
-          for (let attempt = 0; attempt < 5; ++attempt) {
-            try {
-              await test.run({
-                ...runParams,
-                newPage: async () => {
-                  const page = await browser.newPage();
-                  await page.setViewport({
-                    width: 1920,
-                    height: 1080,
-                  });
-                  await page.setCookie(...runParams.authCookies);
-                  pages.push(page);
-                  return page;
-                },
-              });
-              console.log(`Test ${test.name()} passed!`);
-              break;
-            } catch (e) {
-              let pageScreenshots: string[] = [];
-              for (let i = 0; i < pages.length; ++i) {
-                if (!pages[i].isClosed()) {
-                  pageScreenshots.push(
-                    await saveScreenshot(pages[i], test.name() + "_page_" + i)
-                  );
-                  await pages[i].close();
-                }
-              }
-              let screenshotMessage = "";
-              if (pageScreenshots.length > 0) {
-                screenshotMessage =
-                  "Saved screenshots of pages: " +
-                  pageScreenshots.join(", ") +
-                  ".";
-                pageScreenshots = [];
-              }
-              const errs = [
-                `Test ${test.name()} failed attempt ${attempt + 1}!\n`,
-                `  ${screenshotMessage}\n`,
-              ];
-              if (attempt < 4) {
-                errs.push(`  ${(e as Error).message}`);
-              } else {
-                errs.push(e);
-                failed = true;
-              }
-              console.error(...errs);
-            }
-          }
-        })()
+      // Kick off the next test.
+      activeTests[test.name()] = runTestWithRetry(
+        config,
+        browser,
+        args.server,
+        args.port,
+        test
       );
+
+      // When the test is done, clear its entry in activeTests.
+      activeTests[test.name()].then((passed) => {
+        if (!passed) {
+          failed = true;
+        }
+        delete activeTests[test.name()];
+      });
+
+      // If we're at the limit of conccurent tests, wait for one to finish before moving on.
+      if (Object.values(activeTests).length < concurrentTestLimit) {
+        await Promise.race(Object.values(activeTests));
+      }
     }
+
     // Wait for all tests in this batch to complete before moving on to the next batch.
-    await Promise.all(testRunPromises);
+    await Promise.all(Object.values(activeTests));
   }
 
   // Now that the tests are done, clean up the browser.

@@ -17,7 +17,7 @@ declare module "imagemagick-stream" {
     public annotate(args: string): ImageMagick;
     public append(args: string): ImageMagick;
     public set(args: string): ImageMagick;
-    public op(args: string): ImageMagick;
+    public op(key: string, val: string): ImageMagick;
     public from(args: string): ImageMagick;
     public to(args: string): fs.WriteStream;
     public spawn(): void;
