@@ -2,7 +2,6 @@ import {
   getAllCardIDs,
   stringArrayToRecord,
   dateToMySQL,
-  httpsGet,
 } from "../../shared/utils";
 import Services from "../../server/services";
 import {
@@ -206,11 +205,13 @@ export async function clearImageInfo(
     connection.release();
     return;
   }
-  const SetCodeToCardID = await httpsGet<Record<string, string>>(
+  const SetCodeToCardID = await services.net.httpsGetJson<
+    Record<string, string>
+  >(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
-      "/SetCodeToID.json"
+      "/SetCodeToCardID.json"
   );
 
   if (!SetCodeToCardID) {
@@ -221,15 +222,23 @@ export async function clearImageInfo(
   }
 
   let cardCount = 0;
-  for (const set of clearInfoRequest.sets) {
-    if (SetCodeToCardID[set]) {
-      for (const cardId of SetCodeToCardID[set]) {
-        cardCount++;
-        await connection.query("DELETE FROM card_images WHERE card_id=?;", [
-          cardId,
-        ]);
-      }
+  const cardsToBeCleared: string[] = [];
+  if (clearInfoRequest.sets !== undefined) {
+    for (const set of clearInfoRequest.sets) {
+      cardsToBeCleared.push(...SetCodeToCardID[set]);
     }
+  }
+
+  if (clearInfoRequest.cardIDs !== undefined) {
+    cardsToBeCleared.push(...clearInfoRequest.cardIDs);
+  }
+
+  for (const cardID of cardsToBeCleared) {
+    cardCount++;
+    cardID;
+    await connection.query("DELETE FROM card_images WHERE card_id=?;", [
+      cardID,
+    ]);
   }
 
   logInfo(`Cleared images for ${cardCount} cards.`);

@@ -9,8 +9,12 @@ import { PerformanceMonitor } from "../../server/services/performance_monitor/pe
 import MemoryScryfallManager from "../../server/services/scryfall_manager/memory_scryfall_manager";
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/services/storage_portal/storage_portal_memory";
-import { timeout } from "../../shared/utils";
-import { getAllImageInfos, startUpdatingImages } from "./image_management";
+import { dateToMySQL, timeout } from "../../shared/utils";
+import {
+  clearImageInfo,
+  getAllImageInfos,
+  startUpdatingImages,
+} from "./image_management";
 import { ImageInfo } from "./types";
 import { spawn } from "child_process";
 import { Level, setLogLevel } from "../../server/log";
@@ -160,4 +164,67 @@ test("Downloads card images, resizes, and stores them.", async () => {
   expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
   expect(new Date(infos.lastUpdateDate)).toEqual(clock.now());
+  setLogLevel(Level.INFO);
+});
+
+test("Atetmpts to clear a specific CardID from the database", async () => {
+  setLogLevel(Level.NONE);
+  const config = new Config();
+  config.storage.externalRoot = "https://www.infinitestorage.fake";
+  config.storage.awsS3DataMapBucket = "bucket_name";
+  config.storage.awsS3FullQualityImageBucket = "fq";
+  config.storage.awsS3HighQualityImageBucket = "hq";
+  config.storage.awsS3CompressedImageBucket = "lq";
+  const blobPrefix = `${config.storage.externalRoot}/${config.storage.awsS3DataMapBucket}/`;
+  const jsonFiles: Record<string, string> = {};
+
+  /* eslint-disable prettier/prettier */
+  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "www.scryfly.fake/Images/1.jpg" });
+  jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({});
+  jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
+  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({});
+  jsonFiles[`${blobPrefix}SetCodeToCardID.json`]        = JSON.stringify({});
+  /* eslint-enable prettier/prettier */
+
+  const clock: Clock = {
+    now: () => {
+      return new Date("2021-01-01T05:00:00");
+    },
+  };
+  const services: Services = {
+    config: config,
+    dbManager: new MemoryDatabaseManager(),
+    file: new MemoryLocalStorage({}),
+    perfMon: new PerformanceMonitor(),
+    storagePortal: new MemoryStoragePortal(clock),
+    scryfallManager: new MemoryScryfallManager({}, {}),
+    clock: clock,
+    net: new MemoryNetworkManager(jsonFiles),
+  };
+  await initializeDatabase(services.dbManager, config);
+
+  const connection = await services.dbManager.getConnection();
+  await connection!.query(
+    "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
+    ["1", dateToMySQL(services.clock.now()), ImageInfo.HQ]
+  );
+
+  // Verify that the reported info matches what we expect.
+  let infos = await getAllImageInfos(services);
+  expect(infos).not.toBeNull();
+  if (!infos) {
+    return;
+  }
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
+  expect(infos.countByType[ImageInfo.HQ]).toBe(1);
+  expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
+  await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
+  infos = await getAllImageInfos(services);
+
+  expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
+  expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
+  expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
+  setLogLevel(Level.INFO);
 });
