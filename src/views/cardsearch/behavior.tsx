@@ -78,7 +78,11 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       // Intentionally blank
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      $("#filterSelection > div > ul > li[data-active=true]").trigger("click");
+      (document.querySelectorAll(
+        "#filterSelection > div > ul > li[data-active=true]"
+      ) as NodeListOf<HTMLElement> | null)?.forEach((element) => {
+        element.click();
+      });
       $("#filterSelection > div > ul > li[data-filtertype=misc]").trigger(
         "click"
       );
