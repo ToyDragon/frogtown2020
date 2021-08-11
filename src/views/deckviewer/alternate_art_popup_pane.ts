@@ -1,6 +1,6 @@
+import { BlobStorageDataLoader } from "../shared/client/blob_storage_data_loader";
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
-import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
-import { DataLoader } from "../shared/client/data_loader";
+import { FilterText } from "../shared/client/cardfilters/filter_text";
 import {
   BaseCardRenderer,
   CardRendererOptions,
@@ -10,42 +10,53 @@ import { CardRendererCompactGrid } from "../shared/client/renderers/card_rendere
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
 import { CardRenderArea } from "../shared/client/renderers/card_render_area";
+import { DeckViewerViewBehavior } from "./behavior";
 
 export class AlternateArtPane {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dl: DataLoader;
-  altPaneRenderArea!: CardRenderArea;
-  searchOptions!: CardRendererOptions;
-  cardRenderers: BaseCardRenderer[] = [];
-  cardSearchUtil: CardSearchBehavior;
+  private dl: BlobStorageDataLoader;
+  private altPaneRenderArea!: CardRenderArea;
+  private searchOptions!: CardRendererOptions;
+  private cardRenderers: BaseCardRenderer[] = [];
+  private deckTools: DeckViewerViewBehavior;
+  private nameFilter: FilterText;
 
-  constructor(dl: DataLoader) {
+  constructor(dl: BlobStorageDataLoader, behavior: DeckViewerViewBehavior) {
+    this.deckTools = behavior;
     this.dl = dl;
-    this.cardSearchUtil = new CardSearchBehavior(
-      this.dl,
-      (cardIds: string[], _miscOptions: MiscOptions) => {
-        this.altPaneRenderArea.UpdateCardList(cardIds);
-      }
-    );
+    this.nameFilter = new FilterText(this.dl, "name", () => {}, {
+      dataMapName: "",
+      idMapName: "IDToName",
+      dynamicOptions: false,
+      excludedOptions: {},
+      filterClass: "",
+    });
   }
 
-  defaultSearchOptions: MiscOptions = {
+  altPaneSearchOptions: MiscOptions = {
     "Action Add": true,
-    "Action Similar": true,
+    "Show Duplicates": true,
   };
+
+  updateCards(): void {
+    this.altPaneRenderArea.UpdateDisplayedCards();
+  }
 
   ready(): void {
     document.getElementById("exitIcon")?.addEventListener("click", () => {
       document.getElementById("altPane")!.style.visibility = "hidden";
     });
+    document.getElementById("altDim")?.addEventListener("click", () => {
+      document.getElementById("altPane")!.style.visibility = "hidden";
+    });
 
     this.searchOptions = {
       dataLoader: this.dl,
-      cardArea: document.getElementById("altContainer")!,
-      scrollingParent: document.getElementById("altPane")!,
-      allowEdit: false,
-      actionHandler: (action: string, cardId: string) => {
-        return action + cardId;
+      cardArea: document.getElementById("altPaneCardArea")!,
+      scrollingParent: document.getElementById("altPaneSearch")!,
+      allowEdit: true,
+      actionHandler: (action: string, cardID: string) => {
+        this.deckTools.onSearchAction(action, cardID);
       },
     };
 
@@ -60,32 +71,37 @@ export class AlternateArtPane {
       this.dl,
       this.cardRenderers,
       "",
-      "carddisplay",
-      this.defaultSearchOptions,
-      this.cardSearchUtil,
+      "",
+      this.altPaneSearchOptions,
+      null,
       ""
     );
   }
 
-  updateCards(): void {
-    this.altPaneRenderArea.UpdateDisplayedCards();
-  }
+  public async open(name: string): Promise<void> {
+    document.getElementById("altPaneSearch")!.scrollTop = 0;
+    const cardIds: string[] = [];
+    this.nameFilter.setValue(name);
+    this.nameFilter.apply(cardIds, true, {
+      "Strict Matching": true,
+    });
 
-  open(cardID: string): void {
+    if (
+      this.dl.isDoneLoading("SetCodeToRelease") &&
+      this.dl.isDoneLoading("IDToSetCode")
+    ) {
+      const setCodeToRelease = this.dl.getMapData("SetCodeToRelease");
+      const idToSetCode = this.dl.getMapData("IDToSetCode");
+      if (setCodeToRelease && idToSetCode) {
+        cardIds.sort((a: string, b: string) => {
+          return setCodeToRelease[idToSetCode[a]] <
+            setCodeToRelease[idToSetCode[b]]
+            ? 1
+            : -1;
+        });
+      }
+    }
+    this.altPaneRenderArea.UpdateCardList(cardIds);
     document.getElementById("altPane")!.style.visibility = "visible";
-    this.updateCards();
-    this.renderAltArts(cardID);
-  }
-
-  applyFilters(): void {
-    console.log("Applying filters");
-  }
-
-  renderAltArts(cardID: string): void {
-    console.log("Rendering alternate artwork for cardID: " + cardID);
-  }
-
-  replaceAll(cardID: string): void {
-    console.log("Replacing all artworks for cardID: " + cardID);
   }
 }

@@ -1,7 +1,7 @@
 import AuthSession from "./authentication";
 import ToolbarController from "./toolbar_controller";
-import { DataLoader } from "./data_loader";
 import { Deck } from "../deck_types";
+import { BlobStorageDataLoader } from "./blob_storage_data_loader";
 
 declare let includedData: unknown;
 
@@ -20,10 +20,10 @@ interface DefaultData {
 export default class ViewBehavior<K> {
   public authSession: AuthSession;
   public tbController: ToolbarController;
-  public dl: DataLoader;
+  public dl: BlobStorageDataLoader;
 
   public constructor() {
-    this.dl = new DataLoader(null);
+    this.dl = new BlobStorageDataLoader(null);
     this.authSession = new AuthSession();
     this.tbController = new ToolbarController();
     this.dl.init().then(async () => {

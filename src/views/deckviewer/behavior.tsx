@@ -29,7 +29,9 @@ import setupSearchArrow from "./search_arrow";
 import { GetImageUrl } from "../shared/client/utils";
 import { AlternateArtPane } from "./alternate_art_popup_pane";
 
-class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
+export class DeckViewerViewBehavior extends ViewBehavior<
+  DeckViewerIncludedData
+> {
   private cardSearchUtil: CardSearchBehavior | null = null;
 
   private mainboardArea!: HTMLElement;
@@ -44,7 +46,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardScrollingParent!: HTMLElement;
   private saveDebouncer = new Debouncer(500);
   private tableTopSimulator!: TableTopSimulator;
-  private altPane = new AlternateArtPane(this.dl);
+  private altPane = new AlternateArtPane(this.dl, this);
 
   public async ready(): Promise<void> {
     if (!this.getIncludedData()?.deckDetails?.id) {
@@ -65,6 +67,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     ) as HTMLElement;
 
     const viewOthersBtn = document.querySelector("#actionViewOtherDecks");
+
+    this.altPane.ready();
 
     // Edit permissions
     const allowEdit =
@@ -111,6 +115,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     // Card search
     this.cardSearchUtil = new CardSearchBehavior(
       this.dl,
+      "filterArea",
       (cardIds: string[], _miscOptions: MiscOptions) => {
         this.searchRenderArea.UpdateCardList(cardIds);
       }
@@ -269,16 +274,16 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     });
 
     this.updateKeyCardDisplay();
-    // Alternate art pane initialization
   }
 
   private updateCardDivs(): void {
     this.searchRenderArea.UpdateDisplayedCards();
     this.mainboardRenderArea.UpdateDisplayedCards();
     this.sideboardRenderArea.UpdateDisplayedCards();
+    this.altPane.updateCards();
   }
 
-  private onSearchAction(action: string, cardId: string): void {
+  public onSearchAction(action: string, cardId: string): void {
     const deckDetails = this.getIncludedData().deckDetails;
     if (action === "add") {
       deckDetails.mainboard.push(cardId);
@@ -299,20 +304,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      (document.querySelector(
-        "#filterSelection > div > ul > li[data-active=true]"
-      ) as HTMLElement | null)?.click();
-      (document.querySelector(
-        "#filterSelection > div > ul > li[data-filtertype=misc]"
-      ) as HTMLElement | null)?.click();
-
-      this.cardSearchUtil!.GetNameFilter().setValue(
-        this.dl.getMapData("IDToName")![cardId]
-      );
-      this.cardSearchUtil!.GetMiscFilter().setValue(["Show Duplicates"]);
-      this.cardSearchUtil!.ApplyFilter();
-      this.altPane.open(cardId);
-      this.altPane.applyFilters();
+      this.altPane.open(this.dl.getMapData("IDToName")![cardId]);
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);

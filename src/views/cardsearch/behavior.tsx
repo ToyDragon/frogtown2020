@@ -11,11 +11,9 @@ import { CardRenderArea } from "../shared/client/renderers/card_render_area";
 import { CardRendererText } from "../shared/client/renderers/card_renderer_text";
 import { CardRendererTextIDs } from "../shared/client/renderers/card_renderer_text_ids";
 import { MiscOptions } from "../shared/client/cardfilters/filter_misc_options";
-import { AlternateArtPane } from "../deckviewer/alternate_art_popup_pane";
 
 class CardSearchViewBehavior extends ViewBehavior<unknown> {
   private cardSearchUtil: CardSearchBehavior | null = null;
-  private altPane = new AlternateArtPane(this.dl); // Initialize in constructor instead of separate method.
 
   public async ready(): Promise<void> {
     this.dl.startLoading(["IDToName", "IDToText"]);
@@ -46,6 +44,7 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
 
     this.cardSearchUtil = new CardSearchBehavior(
       this.dl,
+      "filterArea",
       (cardIds, _miscOptions) => {
         deckRenderArea.UpdateCardList(cardIds);
       }
@@ -79,17 +78,17 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       // Intentionally blank
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      $("#filterSelection > div > ul > li[data-active=true]").trigger("click");
-      $("#filterSelection > div > ul > li[data-filtertype=misc]").trigger(
-        "click"
-      );
+      $(
+        "#filterArea > .filterSelection > div > ul > li[data-active=true]"
+      ).trigger("click");
+      $(
+        "#filterArea > .filterSelection > div > ul > li[data-filtertype=misc]"
+      ).trigger("click");
 
       const idToName = this.dl.getMapData("IDToName");
       if (!idToName) {
         return;
       }
-      this.altPane.open(cardId);
-      this.altPane.applyFilters();
       this.cardSearchUtil.GetNameFilter().setValue(idToName[cardId]);
       this.cardSearchUtil.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil.ApplyFilter();

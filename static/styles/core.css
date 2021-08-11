@@ -146,6 +146,7 @@ button[disabled] {
   width: 172px;
   height: 155px;
   position: relative;
+  margin-top: 10px;
 }
 
 .horizontalCardStack > .cardSprite:nth-child(1) {
@@ -165,6 +166,10 @@ button[disabled] {
   left: 60px;
   top: 10px;
   transform: rotate(15deg);
+}
+
+.horizontalCardStack > .cardSprite {
+  border-radius: 5px;
 }
 
 #deckDropdown {
