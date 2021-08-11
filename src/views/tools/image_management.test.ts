@@ -16,34 +16,8 @@ import {
   startUpdatingImages,
 } from "./image_management";
 import { ImageInfo } from "./types";
-import { spawn } from "child_process";
 import { Level, setLogLevel } from "../../server/log";
-
-// Helper to save a jpeg buffer to a file, and run imagemagick's identify tool on it.
-function identify(jpgData: Buffer): Promise<string> {
-  return new Promise((resolve) => {
-    // TODO: Remove dependency on the filesystem, see if there's a way to send the data
-    // through a stdin stream or something.
-    const tmpFile =
-      "/tmp/imagemanagement_img_" + Math.floor(Math.random() * 100) + ".jpg";
-    fs.writeFile(tmpFile, jpgData, () => {
-      const childProc = spawn("identify", [tmpFile]);
-      let data: Buffer | null = null;
-      childProc.stdout.on("data", (chunk: Buffer) => {
-        if (!data) {
-          data = chunk;
-        } else {
-          data = Buffer.concat([data, chunk]);
-        }
-      });
-      childProc.on("exit", () => {
-        fs.unlink(tmpFile, () => {
-          resolve(data?.toString() || "");
-        });
-      });
-    });
-  });
-}
+import identify from "./identify";
 
 // Verifies the size and color space of a jpg in a storage portal.
 async function checkImage(
