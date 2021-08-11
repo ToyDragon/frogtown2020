@@ -12,6 +12,7 @@ export interface MiscOptions {
   "Action Star"?: boolean;
   "Sort By Release"?: boolean;
   "Group Map"?: keyof MapData;
+  "Strict Matching"?: boolean;
 }
 
 export class FilterMiscOptions extends FilterDropdown {

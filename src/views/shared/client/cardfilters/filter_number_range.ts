@@ -5,7 +5,7 @@ export class FilterNumberRange extends BaseFilter {
   private highInput!: HTMLInputElement;
 
   protected async setup(): Promise<void> {
-    const inputGroup = this.container.querySelector(
+    const inputGroup = this.container!.querySelector(
       ".btn-group > .input-group"
     );
     this.lowInput = inputGroup?.querySelector("input.min") as HTMLInputElement;

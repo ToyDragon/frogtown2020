@@ -1,18 +1,26 @@
 import { BaseFilter } from "./base_filter";
+import { MiscOptions } from "./filter_misc_options";
 
 export class FilterText extends BaseFilter {
-  private input!: HTMLInputElement | null;
+  private input?: HTMLInputElement | null;
   private currentTimeout!: NodeJS.Timer | null;
   private lastChange!: Date;
+  private domlessInput = "";
 
   protected setup(): void {
-    this.lastChange = new Date();
-    this.input = this.container.querySelector(".input-group > input");
-    this.input?.setAttribute("disabled", "true");
-    this.input?.addEventListener("keyup", () => {
+    if (this.container) {
       this.lastChange = new Date();
-      this.waitForMoreChanges();
-    });
+      this.input = this.container.querySelector<HTMLInputElement>(
+        ".input-group > input"
+      )!;
+      this.input.setAttribute("disabled", "true");
+      this.input.addEventListener("keyup", () => {
+        this.lastChange = new Date();
+        this.waitForMoreChanges();
+      });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.ready = this.dl.isDoneLoading(this.idMapName as any);
     this.active = true;
     this.dl.onLoaded(this.idMapName).then(() => {
       this.input?.removeAttribute("disabled");
@@ -24,7 +32,13 @@ export class FilterText extends BaseFilter {
     if (this.input) {
       this.input.value = "";
       this.valueChanged();
+    } else {
+      this.domlessInput = "";
     }
+  }
+
+  requiresDom(): boolean {
+    return false;
   }
 
   private waitForMoreChanges(): void {
@@ -46,21 +60,27 @@ export class FilterText extends BaseFilter {
 
   protected applyPrimaryFilterAnd(
     cardIds: string[],
-    requiredValues: string[]
+    requiredValues: string[],
+    miscOptions: MiscOptions
   ): void {
     const firstValue = (requiredValues.splice(0, 1)[0] + "").toLowerCase();
     const idMap = this.dl.getAnyMapData(this.idMapName);
     const exactMatches = [];
     for (const id in idMap) {
       const text = (idMap[id] as string).toLowerCase();
-      if (text.includes(firstValue)) {
-        cardIds.push(id);
+      if (miscOptions["Strict Matching"]) {
         if (text === firstValue) {
-          exactMatches.push(cardIds.length - 1);
+          cardIds.push(id);
+        }
+      } else {
+        if (text.includes(firstValue)) {
+          cardIds.push(id);
+          if (text === firstValue) {
+            exactMatches.push(cardIds.length - 1);
+          }
         }
       }
     }
-
     for (let index = 0; index < exactMatches.length; index++) {
       const nextExact = exactMatches[index];
       if (index === nextExact) {
@@ -95,8 +115,12 @@ export class FilterText extends BaseFilter {
   }
 
   public getValues(): string[] {
-    if (this.input && this.input.value) {
-      return [this.input.value];
+    if (this.input) {
+      if (this.input.value) {
+        return [this.input.value];
+      }
+    } else if (this.domlessInput) {
+      return [this.domlessInput];
     }
     return [];
   }
@@ -104,6 +128,8 @@ export class FilterText extends BaseFilter {
   public setValue(value: unknown): void {
     if (this.input) {
       this.input.value = value + "";
+    } else {
+      this.domlessInput = value + "";
     }
   }
 }
