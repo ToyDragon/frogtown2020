@@ -7,6 +7,7 @@ export interface MiscOptions {
   "Action Add"?: boolean;
   "Action Remove"?: boolean;
   "Action Similar"?: boolean;
+  "Action ReplaceAll"?: boolean;
   "Action To Sideboard"?: boolean;
   "Action To Mainboard"?: boolean;
   "Action Star"?: boolean;

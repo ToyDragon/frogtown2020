@@ -73,6 +73,7 @@ export interface ActionList {
   tomainboard: boolean;
   tosideboard: boolean;
   star: boolean;
+  replaceall: boolean;
 }
 
 export type ActionHandler = (action: keyof ActionList, cardId: string) => void;
@@ -126,6 +127,7 @@ export abstract class BaseCardRenderer {
       tomainboard: !!miscOptions["Action To Mainboard"] && this.allowEdit,
       tosideboard: !!miscOptions["Action To Sideboard"] && this.allowEdit,
       star: !!miscOptions["Action Star"] && this.allowEdit,
+      replaceall: !!miscOptions["Action ReplaceAll"] && this.allowEdit,
     };
     return actions;
   }
@@ -233,6 +235,24 @@ export abstract class BaseCardRenderer {
             key="actionStar"
             data-action="star"
             title="Mark as the key card to this deck"
+            ref={ref}
+          >
+            <a href="#"></a>
+          </div>
+        ),
+      });
+    }
+    if (actions.replaceall) {
+      const ref = React.createRef<HTMLDivElement>();
+      data.push({
+        key: "replaceall",
+        ref: ref,
+        element: (
+          <div
+            className="action replaceAll"
+            key="actionReplaceAll"
+            data-action="replaceall"
+            title="Replace all current versions of the card in your deck with this new version"
             ref={ref}
           >
             <a href="#"></a>

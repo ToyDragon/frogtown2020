@@ -301,6 +301,10 @@
     background-image: url("/Icons/add card32.png");
 }
 
+.cardDisplay .action.replaceall{
+    background-image: url("/Icons/replace all32.png");
+}
+
 .cardDisplay .action.star{
     background-image: url("/Icons/star card32.png");
 }

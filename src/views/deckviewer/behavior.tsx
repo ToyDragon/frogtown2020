@@ -311,6 +311,32 @@ export class DeckViewerViewBehavior extends ViewBehavior<
       this.saveDeckChange();
     } else if (action === "star") {
       this.updateKeyCard(cardId);
+    } else if (action === "replaceall") {
+      const replaceables = this.dl.getMapData("NameToID")![
+        this.dl.getMapData("IDToName")![cardId]
+      ];
+      const toBeReplaced: Record<string, number> = {};
+      let prevCard = "";
+      for (const card of deckDetails.mainboard) {
+        if (replaceables.indexOf(card) > -1 && card !== cardId) {
+          if (prevCard === card) {
+            toBeReplaced[card]++;
+          } else {
+            toBeReplaced[card] = 1;
+          }
+          prevCard = card;
+        }
+      }
+      for (const cardName in toBeReplaced) {
+        for (let i = 0; i < toBeReplaced[cardName]; i++) {
+          this.onSearchAction("remove", cardName);
+          deckDetails.mainboard.push(cardId);
+        }
+      }
+      deckDetails.mainboard = deckDetails.mainboard.sort();
+      this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
+      console.log(`replacing identically named cards with ${cardId}`);
+      this.saveDeckChange();
     }
     this.updateTitle();
   }

@@ -35,6 +35,7 @@ export class AlternateArtPane {
 
   altPaneSearchOptions: MiscOptions = {
     "Action Add": true,
+    "Action ReplaceAll": true,
     "Show Duplicates": true,
   };
 
