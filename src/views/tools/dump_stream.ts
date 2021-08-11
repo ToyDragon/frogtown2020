@@ -1,3 +1,7 @@
+// Helper to dump a readable stream to a buffer.
+// TODO: This is kind of redundant with the dump_stream in server/, so resolve that.
+// Either combine them, or make it more obvious that they operate on different
+// types of streams.
 export default function dumpStream(
   s: NodeJS.ReadableStream
 ): Promise<Buffer | null> {
