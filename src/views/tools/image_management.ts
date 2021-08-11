@@ -411,7 +411,6 @@ function loadOneImage(
       loadNextImage(services, imageMap, connection);
       return;
     }
-    console.log(`Uploading hq ${cardDetails.cardId} with id ${idString}`);
     await services.storagePortal.uploadStringToBucket(
       services.config.storage.awsS3HighQualityImageBucket,
       cardDetails.cardId + ".jpg",
@@ -419,7 +418,7 @@ function loadOneImage(
       (hqBuffer as any) as string
     );
 
-    const lqBuffer = await magickConvert(fqBuffer, "672x936", 40);
+    const lqBuffer = await magickConvert(fqBuffer, "672x936", 20);
     if (!lqBuffer) {
       logCritical(`Failed to convert ${cardDetails.cardId} to lq.`);
       loadNextImage(services, imageMap, connection);
@@ -433,7 +432,6 @@ function loadOneImage(
       loadNextImage(services, imageMap, connection);
       return;
     }
-    console.log(`Uploading lq ${cardDetails.cardId} with id ${idString}`);
     await services.storagePortal.uploadStringToBucket(
       services.config.storage.awsS3CompressedImageBucket,
       cardDetails.cardId + ".jpg",
