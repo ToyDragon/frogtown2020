@@ -1,7 +1,9 @@
-import { DataLoader, CardIDMap, MapData } from "../data_loader";
+import { DataLoader } from "../data_loader";
 import { MiscOptions } from "../cardfilters/filter_misc_options";
 import * as React from "react";
 import { requestRaw } from "../request";
+// eslint-disable-next-line prettier/prettier
+import { BlobStorageDataLoader, CardIDMap, MapData } from "../blob_storage_data_loader";
 
 export class Group {
   public title = "";
@@ -82,7 +84,7 @@ export interface ActionDetail {
 }
 
 export interface CardRendererOptions {
-  dataLoader: DataLoader;
+  dataLoader: BlobStorageDataLoader;
   cardArea: HTMLElement;
   scrollingParent: HTMLElement;
   allowEdit: boolean;
@@ -92,7 +94,7 @@ export interface CardRendererOptions {
 export abstract class BaseCardRenderer {
   protected cardArea: HTMLElement;
   protected scrollingParent: HTMLElement;
-  protected dl: DataLoader;
+  protected dl: BlobStorageDataLoader;
   protected actionHandler: ActionHandler;
 
   private pendingSetSVGs: {
