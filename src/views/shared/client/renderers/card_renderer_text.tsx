@@ -4,7 +4,7 @@ import {
   Group,
   CardRendererOptions,
 } from "./base_card_renderer";
-import { MapData } from "../data_loader";
+import { MapData } from "../blob_storage_data_loader";
 
 export class CardRendererText extends BaseCardRenderer {
   public groups: Group[];

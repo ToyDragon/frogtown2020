@@ -1,5 +1,5 @@
 import { MiscOptions } from "../cardfilters/filter_misc_options";
-import { MapData } from "../data_loader";
+import { MapData } from "../blob_storage_data_loader";
 import { CardRendererText } from "./card_renderer_text";
 
 export class CardRendererTextIDs extends CardRendererText {

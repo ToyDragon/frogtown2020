@@ -9,7 +9,7 @@ import {
   CardRendererOptions,
 } from "./base_card_renderer";
 import { LoadCardImageIntoElement } from "../utils";
-import { MapData } from "../data_loader";
+import { MapData } from "../blob_storage_data_loader";
 
 export class CardRendererGrid extends BaseCardRenderer {
   public groups: Group[];

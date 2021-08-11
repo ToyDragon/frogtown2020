@@ -1,5 +1,4 @@
-import { DataLoader } from "../data_loader";
-
+import { BlobStorageDataLoader } from "../blob_storage_data_loader";
 import { CardSearchBehavior } from "../cardsearch_behavior";
 import { FilterDisplayOptions } from "../cardfilters/filter_display_options";
 import { FilterText } from "../cardfilters/filter_text";
@@ -31,7 +30,7 @@ export class CardRenderArea {
   public activeRenderer: BaseCardRenderer;
 
   public constructor(
-    dl: DataLoader,
+    dl: BlobStorageDataLoader,
     availableRenderers: BaseCardRenderer[],
     grouperKey: string,
     displayKey: string,
