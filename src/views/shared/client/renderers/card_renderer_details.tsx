@@ -249,7 +249,7 @@ export class CardRendererDetails extends BaseCardRenderer {
         }
         Utils.LoadCardImageIntoElement(
           cardDiv.getAttribute("data-id") || "",
-          this.dl.dataDetails!,
+          this.dl.getDataDetails()!,
           cardDiv
         );
       }

@@ -253,7 +253,7 @@ export class CardRendererList extends BaseCardRenderer {
         this.hoverCard.setAttribute("data-lastFailedId", "");
         this.hoverCard.setAttribute(
           "src",
-          Utils.GetImageUrl(cardId, this.dl.dataDetails!)
+          Utils.GetImageUrl(cardId, this.dl.getDataDetails()!)
         );
         this.hoverCard.classList.remove("nodisp");
         this.UpdateHoverPosition(event.pageX, event.pageY);

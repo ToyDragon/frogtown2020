@@ -39,7 +39,7 @@ test("Ensures that the regular name filter is properly applied", () => {
   expect(cardIds).toStrictEqual(["1", "2", "3", "4"]);
 });
 
-test("Returns an empty array when passed no parameters", () => {
+test("Returns an empty array when no required value is specified", () => {
   const nameFilter = new FilterText(dl, "name", () => {}, {
     dataMapName: "",
     idMapName: "IDToName",

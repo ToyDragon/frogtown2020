@@ -116,7 +116,7 @@ export default class TableTopSimulator {
       processOneCard(tokenCardIds[i], tokenboard);
     }
 
-    const imageVersion = this.dl.dataDetails!.imageVersion;
+    const imageVersion = this.dl.getDataDetails()!.imageVersion;
     const rootURL = window.location.href.split("/").slice(0, 3).join("/");
     const compiledDeck = this.exporter.Export(
       {

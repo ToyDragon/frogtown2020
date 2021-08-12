@@ -1,7 +1,7 @@
 // eslint-disable-next-line node/no-unpublished-import
 import puppeteer from "puppeteer";
 import Assert from "../../assertions";
-import { click } from "../../integration_test";
+import { click, clickUntil, type } from "../../integration_test";
 import { deckEditorGridGetCardGroups } from "./deck_editor_grid_get_card_groups";
 import DeckEditorInfo from "./deck_editor_info";
 import verifyGroupContainersMatch from "./verify_group_containers_match";
@@ -44,60 +44,6 @@ export default async function verifyDeckEditorGridActions(
     false
   );
 
-  // Test similar.
-  // TODO: After fixing the bug, select some filters here to verify they are deselected.
-  await page.hover(
-    `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}']`
-  );
-  await click(
-    page,
-    `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}'] + * + * + .action.similar`
-  );
-
-  // Verify only the misc filter is enabled.
-  await Assert.equals(
-    await page.evaluate(() => {
-      const result: string[] = [];
-      const eles = document.querySelectorAll(
-        "#filterSelection > div > ul > li[data-active=true]"
-      );
-      for (const ele of eles) {
-        result.push(ele.getAttribute("data-filtertype")!);
-      }
-      return result.join(", ");
-    }),
-    "misc"
-  );
-
-  // Verify only the show duplicates filter is enabled.
-  await Assert.equals(
-    await page.evaluate(() => {
-      const result: string[] = [];
-      const eles = document.querySelectorAll(
-        "div[data-filtertype=misc] li[data-active=true]"
-      );
-      for (const ele of eles) {
-        result.push(ele.getAttribute("data-value")!);
-      }
-      return result.join(", ");
-    }),
-    "Show Duplicates"
-  );
-
-  // Verify that the cards that show up in the card search all have the same name.
-  const data = await deckEditorGridGetCardGroups(page, "#cardArea", false);
-  Assert.greaterThan(data.length, 0);
-  for (const group of data) {
-    for (const cardSet of group.contents) {
-      for (const cardName in cardSet) {
-        await Assert.contains(
-          cardName.toLowerCase(),
-          deck.mainboard[0].name.toLowerCase()
-        );
-      }
-    }
-  }
-
   // Test move to sideboard.
   await page.hover(
     `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}']`
@@ -117,6 +63,86 @@ export default async function verifyDeckEditorGridActions(
     await deckEditorGridGetCardGroups(page, "#deckArea", false),
     deck,
     false
+  );
+
+  // Sets name filter to verify that 'show similar' doesn't change it.
+  await type(page, "#inputName", "Cruel Ultimatum");
+
+  // Test similar.
+  await page.hover(
+    `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}']`
+  );
+
+  // Verify that the altPane popup opens when show similar button is clicked.
+  await clickUntil(
+    page,
+    `#mainboard .cardContainer > div[data-id='${deck.mainboard[0].id}'] + * + * + .action.similar`,
+    async () => {
+      return await Assert.noError(Assert.visible(page, "#altPane"));
+    }
+  );
+
+  // Verify that the cards that show up in the card search all have the same name.
+  const data = await deckEditorGridGetCardGroups(
+    page,
+    "#altPaneCardArea",
+    false
+  );
+  Assert.greaterThan(data.length, 0);
+  for (const group of data) {
+    for (const cardSet of group.contents) {
+      for (const cardName in cardSet) {
+        await Assert.equals(
+          cardName.toLowerCase(),
+          deck.mainboard[0].name.toLowerCase()
+        );
+      }
+    }
+  }
+
+  // Adds 3 copies of an alternate artwork of one card.
+  const altId = await page.$eval(
+    `#altPaneCardArea .card:not([data-id='${deck.mainboard[0].id}'])`,
+    (element) => {
+      return element.getAttribute("data-id");
+    }
+  );
+  await Assert.notEquals(altId, null);
+  await page.hover(`#altPaneCardArea .card[data-id='${altId}']`);
+  await page.click(`#altPaneCardArea .card[data-id='${altId}'] + .action.add`);
+  await page.click(`#altPaneCardArea .card[data-id='${altId}'] + .action.add`);
+  await page.click(`#altPaneCardArea .card[data-id='${altId}'] + .action.add`);
+  await page.click(
+    `#altPaneCardArea .card[data-id='${altId}'] + .action + .action.replaceAll`
+  );
+  /*await page.$eval("#altPaneSearch", (element) => {
+    element.scrollTop = 0;
+  });
+
+  // Verify that the altPane popup closes when replaceAll is clicked.
+  await page.hover(`#altPaneCardArea .card[data-id='${altId}']`);
+  await clickUntil(
+    page,
+    `#altPaneCardArea .card[data-id='${altId}'] + .action + .action.replaceAll`,
+    async () => {
+      return await Assert.noError(Assert.notVisible(page, "#altPane"));
+    }
+  );*/
+
+  // Asserts that the alternate art was added properly.
+  deck.mainboard[0].id = altId!;
+  deck.sideboard[deck.sideboard.length - 1].id = altId!;
+  deck.mainboard[0].count += 3;
+  await verifyGroupContainersMatch(
+    await deckEditorGridGetCardGroups(page, "#deckArea", false),
+    deck,
+    false
+  );
+
+  // Verifies that the name filter remained unchanged by 'show similar'.
+  await Assert.equals(
+    await Assert.existsAndGetValue(page, "#inputName", "value"),
+    "Cruel Ultimatum"
   );
 
   // Test move to mainboard.

@@ -10,19 +10,20 @@ import { CardRendererCompactGrid } from "../shared/client/renderers/card_rendere
 import { CardRendererCompactList } from "../shared/client/renderers/card_renderer_compact_list";
 import { CardRendererGrid } from "../shared/client/renderers/card_renderer_grid";
 import { CardRenderArea } from "../shared/client/renderers/card_render_area";
-import { DeckViewerViewBehavior } from "./behavior";
 
 export class AlternateArtPane {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private dl: BlobStorageDataLoader;
   private altPaneRenderArea!: CardRenderArea;
   private searchOptions!: CardRendererOptions;
   private cardRenderers: BaseCardRenderer[] = [];
-  private deckTools: DeckViewerViewBehavior;
+  private actionHandler: (action: string, cardId: string) => void;
   private nameFilter: FilterText;
 
-  constructor(dl: BlobStorageDataLoader, behavior: DeckViewerViewBehavior) {
-    this.deckTools = behavior;
+  constructor(
+    dl: BlobStorageDataLoader,
+    actionHandler: (action: string, cardId: string) => void
+  ) {
+    this.actionHandler = actionHandler;
     this.dl = dl;
     this.nameFilter = new FilterText(this.dl, "name", () => {}, {
       dataMapName: "",
@@ -45,10 +46,10 @@ export class AlternateArtPane {
 
   ready(): void {
     document.getElementById("exitIcon")?.addEventListener("click", () => {
-      document.getElementById("altPane")!.style.visibility = "hidden";
+      this.close();
     });
     document.getElementById("altDim")?.addEventListener("click", () => {
-      document.getElementById("altPane")!.style.visibility = "hidden";
+      this.close();
     });
 
     this.searchOptions = {
@@ -56,9 +57,7 @@ export class AlternateArtPane {
       cardArea: document.getElementById("altPaneCardArea")!,
       scrollingParent: document.getElementById("altPaneSearch")!,
       allowEdit: true,
-      actionHandler: (action: string, cardID: string) => {
-        this.deckTools.onSearchAction(action, cardID);
-      },
+      actionHandler: this.actionHandler,
     };
 
     this.cardRenderers = [
@@ -104,5 +103,9 @@ export class AlternateArtPane {
     }
     this.altPaneRenderArea.UpdateCardList(cardIds);
     document.getElementById("altPane")!.style.visibility = "visible";
+  }
+
+  public async close(): Promise<void> {
+    document.getElementById("altPane")!.style.visibility = "hidden";
   }
 }

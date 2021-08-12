@@ -177,7 +177,7 @@ export class CardRendererGrid extends BaseCardRenderer {
         failedCards = 0;
         LoadCardImageIntoElement(
           cardDiv.getAttribute("data-id") || "",
-          this.dl.dataDetails!,
+          this.dl.getDataDetails()!,
           cardDiv
         );
       }

@@ -2,8 +2,11 @@ import { DataLoader } from "../data_loader";
 import { MiscOptions } from "../cardfilters/filter_misc_options";
 import * as React from "react";
 import { requestRaw } from "../request";
-// eslint-disable-next-line prettier/prettier
-import { BlobStorageDataLoader, CardIDMap, MapData } from "../blob_storage_data_loader";
+import {
+  BlobStorageDataLoader,
+  CardIDMap,
+  MapData,
+} from "../blob_storage_data_loader";
 
 export class Group {
   public title = "";
@@ -355,11 +358,13 @@ export abstract class BaseCardRenderer {
     if (this.svgBySet[setCode]) {
       svg.innerHTML = this.svgBySet[setCode];
     } else {
-      if (!this.dl.dataDetails) {
+      if (!this.dl.getDataDetails()) {
         console.log("Trying to show set svg before details loaded.");
         return;
       }
-      const svgURL = `${this.dl.dataDetails.baseURL}/${this.dl.dataDetails.awsS3SetSVGBucket}/${setCode}.svg`;
+      const svgURL = `${this.dl.getDataDetails()!.baseURL}/${
+        this.dl.getDataDetails()!.awsS3SetSVGBucket
+      }/${setCode}.svg`;
       if (this.pendingSetSVGs[setCode]) {
         this.pendingSetSVGs[setCode].push(svg);
       } else {

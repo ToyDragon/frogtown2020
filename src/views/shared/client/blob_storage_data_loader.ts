@@ -101,9 +101,9 @@ export class MapData {
   public TokenStringToTokenID: CardIDMap<string> = {};
   public TokenIDToTokenString: CardIDMap<string> = {};
 }
-
+//TODO: Discuss visibiltiy of functions & variables.
 export class BlobStorageDataLoader implements DataLoader {
-  public dataDetails: DataDetailsResponse | null = null;
+  private dataDetails: DataDetailsResponse | null = null;
   private mapData: MapData = new MapData();
   private includedData: MapData | null = null;
 
@@ -119,6 +119,10 @@ export class BlobStorageDataLoader implements DataLoader {
       "/data/details",
       {}
     );
+  }
+
+  public getDataDetails(): DataDetailsResponse | null {
+    return this.dataDetails;
   }
 
   public getAnyMapData(mapName: string): Record<string, unknown> | null {

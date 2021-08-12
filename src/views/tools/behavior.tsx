@@ -215,7 +215,7 @@ class ToolsBehavior extends ViewBehavior<unknown> {
 
   private async updateImageVersionInfo(): Promise<void> {
     const ele = document.querySelector("#divCardImageVersionInfo");
-    if (!this.dl.dataDetails) {
+    if (!this.dl.getDataDetails()) {
       ReactDom.render(<span>Unable to load database details.</span>, ele);
       return;
     }
@@ -223,11 +223,13 @@ class ToolsBehavior extends ViewBehavior<unknown> {
       <span>
         Card image version{" "}
         <span className="inlinedata">
-          {this.dl.dataDetails.imageVersion.version}
+          {this.dl.getDataDetails()!.imageVersion.version}
         </span>
         , last updated{" "}
         <span className="inlinedata">
-          {new Date(this.dl.dataDetails.imageVersion.change).toLocaleString()}
+          {new Date(
+            this.dl.getDataDetails()!.imageVersion.change
+          ).toLocaleString()}
         </span>
         .
       </span>,

@@ -44,7 +44,6 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
 
     this.cardSearchUtil = new CardSearchBehavior(
       this.dl,
-      "filterArea",
       (cardIds, _miscOptions) => {
         deckRenderArea.UpdateCardList(cardIds);
       }

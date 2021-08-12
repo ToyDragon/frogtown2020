@@ -30,7 +30,7 @@ export default class ViewBehavior<K> {
       await this.authSession.ensureValidUser(
         this.getIncludedData().userDetails.error
       );
-      this.tbController.documentReady(this.dl.dataDetails!);
+      this.tbController.documentReady(this.dl.getDataDetails()!);
       this.ready();
     });
   }

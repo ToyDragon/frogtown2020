@@ -20,7 +20,6 @@ export class CardSearchBehavior {
 
   public constructor(
     dl: BlobStorageDataLoader,
-    parentID: string,
     cardChangeCB: (cards: string[], options: MiscOptions) => void
   ) {
     this.cardChangeCB = cardChangeCB;
@@ -87,7 +86,7 @@ export class CardSearchBehavior {
     ];
 
     document
-      .querySelectorAll(`#${parentID} > .filterSelection > div > ul > li`)
+      .querySelectorAll("#filterSelection > div > ul > li")
       .forEach((ele) => {
         ele.addEventListener("click", (e) => {
           const item = e.currentTarget as HTMLElement;
@@ -95,7 +94,7 @@ export class CardSearchBehavior {
           if (type === "clearall") {
             document
               .querySelectorAll(
-                `#${parentID} > .filterSelection > div > ul > li[data-active=true]`
+                "#filterSelection > div > ul > li[data-active=true]"
               )
               .forEach((ele) => {
                 (ele as HTMLElement).click();
@@ -103,7 +102,7 @@ export class CardSearchBehavior {
           } else if (type === "showall") {
             document
               .querySelectorAll(
-                `#${parentID} > .filterSelection > div > ul > li[data-active=false]:not(data-control)`
+                "#filterSelection > div > ul > li[data-active=false]:not(data-control)"
               )
               .forEach((ele) => {
                 (ele as HTMLElement).click();
