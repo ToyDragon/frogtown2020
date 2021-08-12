@@ -11,13 +11,13 @@ import {
   CardImageUpdateStartRequest,
   CardImageClearInfoRequest,
 } from "./types";
-import { logInfo, logError, logWarning } from "../../server/log";
+import { logInfo, logError, logWarning, logCritical } from "../../server/log";
 import { DatabaseConnection } from "../../server/services/database/db_connection";
-import * as stream from "stream";
-import imagemagick from "imagemagick-stream";
 import { CardImagesRow } from "../../server/services/database/dbinfos/db_info_card_images";
 import { trySetBatchInProgress, endBatch } from "./batch_status";
 import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_batch_status";
+import identify from "./identify";
+import magickConvert from "./magick_convert";
 
 async function getIDToHQMap(
   services: Services
@@ -214,7 +214,7 @@ export async function clearImageInfo(
       "/SetCodeToCardID.json"
   );
 
-  if (!SetCodeToCardID) {
+  if (!SetCodeToCardID && clearInfoRequest.sets !== undefined) {
     logError("Unable to load data map from S3.");
     await endBatch(connection);
     connection.release();
@@ -223,7 +223,7 @@ export async function clearImageInfo(
 
   let cardCount = 0;
   const cardsToBeCleared: string[] = [];
-  if (clearInfoRequest.sets !== undefined) {
+  if (SetCodeToCardID && clearInfoRequest.sets !== undefined) {
     for (const set of clearInfoRequest.sets) {
       cardsToBeCleared.push(...SetCodeToCardID[set]);
     }
@@ -372,51 +372,82 @@ function loadOneImage(
     cardDetails.cardId + ".jpg"
   );
 
-  const awsHighQualityStream = services.storagePortal.uploadStreamToBucket(
-    services.config.storage.awsS3HighQualityImageBucket,
-    cardDetails.cardId + ".jpg"
-  );
-
-  const awsLowQualityStream = services.storagePortal.uploadStreamToBucket(
-    services.config.storage.awsS3CompressedImageBucket,
-    cardDetails.cardId + ".jpg"
-  );
-
-  services.scryfallManager.requestStream(url).then((inStream) => {
+  services.scryfallManager.requestStream(url).then(async (inStream) => {
     if (!inStream) {
       logError("Failed to get S3 upstream for image.");
       return;
     }
 
     inStream.pipe(awsFullQualityStream);
-    inStream
-      .pipe(
-        (imagemagick()
-          .op("colorspace", "RGB")
-          .resize("672x936")
-          .quality(40) as unknown) as stream.Writable
-      )
-      .pipe(awsHighQualityStream);
-    inStream
-      .pipe(
-        (imagemagick()
-          .op("colorspace", "RGB")
-          .resize("672x936")
-          .quality(20) as unknown) as stream.Writable
-      )
-      .pipe(awsLowQualityStream);
-
-    inStream.on("end", async () => {
-      logInfo("Done loading image " + imgToLoad);
-      await connection.query(
-        "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
-        [
-          cardDetails.cardId,
-          dateToMySQL(services.clock.now()),
-          cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
-        ]
+    const fqBuffer = await new Promise<Buffer | null>((resolve) => {
+      let data: Buffer | null = null;
+      inStream.on("data", (chunk) => {
+        if (!data) {
+          data = chunk;
+        } else {
+          data = Buffer.concat([data, chunk]);
+        }
+      });
+      inStream.on("end", () => {
+        resolve(data);
+      });
+    });
+    if (!fqBuffer) {
+      logCritical(`Failed to get fq buffer for ${cardDetails.cardId}.`);
+      loadNextImage(services, imageMap, connection);
+      return;
+    }
+    const hqBuffer = await magickConvert(fqBuffer, "672x936", 40);
+    if (!hqBuffer) {
+      logCritical(`Failed to convert ${cardDetails.cardId} to hq.`);
+      loadNextImage(services, imageMap, connection);
+      return;
+    }
+    let idString = await identify(hqBuffer);
+    if (idString.indexOf("sRGB") === -1) {
+      logCritical(
+        `Failed to convert ${cardDetails.cardId} hq to sRGB. ${idString}`
       );
       loadNextImage(services, imageMap, connection);
-    });
+      return;
+    }
+    await services.storagePortal.uploadStringToBucket(
+      services.config.storage.awsS3HighQualityImageBucket,
+      cardDetails.cardId + ".jpg",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (hqBuffer as any) as string
+    );
+
+    const lqBuffer = await magickConvert(fqBuffer, "672x936", 20);
+    if (!lqBuffer) {
+      logCritical(`Failed to convert ${cardDetails.cardId} to lq.`);
+      loadNextImage(services, imageMap, connection);
+      return;
+    }
+    idString = await identify(lqBuffer);
+    if (idString.indexOf("sRGB") === -1) {
+      logCritical(
+        `Failed to convert ${cardDetails.cardId} lq to sRGB. ${idString}`
+      );
+      loadNextImage(services, imageMap, connection);
+      return;
+    }
+    await services.storagePortal.uploadStringToBucket(
+      services.config.storage.awsS3CompressedImageBucket,
+      cardDetails.cardId + ".jpg",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (lqBuffer as any) as string
+    );
+
+    logInfo("Done loading image " + imgToLoad);
+    await connection.query(
+      "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
+      [
+        cardDetails.cardId,
+        dateToMySQL(services.clock.now()),
+        cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
+      ]
+    );
+    loadNextImage(services, imageMap, connection);
   });
 }
