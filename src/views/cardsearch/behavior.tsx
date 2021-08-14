@@ -77,12 +77,14 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       // Intentionally blank
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      $(
-        "#filterArea > .filterSelection > div > ul > li[data-active=true]"
-      ).trigger("click");
-      $(
-        "#filterArea > .filterSelection > div > ul > li[data-filtertype=misc]"
-      ).trigger("click");
+      (document.querySelectorAll(
+        "#filterSelection > div > ul > li[data-active=true]"
+      ) as NodeListOf<HTMLElement> | null)?.forEach((element) => {
+        element.click();
+      });
+      $("#filterSelection > div > ul > li[data-filtertype=misc]").trigger(
+        "click"
+      );
 
       const idToName = this.dl.getMapData("IDToName");
       if (!idToName) {

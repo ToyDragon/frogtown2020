@@ -4,20 +4,45 @@ import Config from "../../server/services/config/config";
 import initializeDatabase from "../../server/services/database/initialize_database";
 import MemoryDatabaseManager from "../../server/services/database/memory_db_manager";
 import MemoryLocalStorage from "../../server/services/local_storage/memory_local_storage";
-import { Level, setLogLevel } from "../../server/log";
 import MemoryNetworkManager from "../../server/services/network_manager/memory_network_manager";
 import { PerformanceMonitor } from "../../server/services/performance_monitor/performance_monitor";
 import MemoryScryfallManager from "../../server/services/scryfall_manager/memory_scryfall_manager";
 import Services from "../../server/services";
 import MemoryStoragePortal from "../../server/services/storage_portal/storage_portal_memory";
-import { timeout } from "../../shared/utils";
-import { getAllImageInfos, startUpdatingImages } from "./image_management";
+import { dateToMySQL, timeout } from "../../shared/utils";
+import {
+  clearImageInfo,
+  getAllImageInfos,
+  startUpdatingImages,
+} from "./image_management";
 import { ImageInfo } from "./types";
+import { Level, setLogLevel } from "../../server/log";
+import identify from "./identify";
 
-// TODO: test CYMK file conversion.
-//
+// Verifies the size and color space of a jpg in a storage portal.
+async function checkImage(
+  portal: MemoryStoragePortal,
+  bucket: string,
+  key: string,
+  colorSpace: string,
+  expectedSize: number
+): Promise<void> {
+  if (colorSpace) {
+    expect(
+      await identify((await portal.getObjectRaw(bucket, key)) as Buffer)
+    ).toContain(colorSpace);
+  }
+  expect((await portal.getObjectAsString(bucket, key)).length).toBeGreaterThan(
+    expectedSize * 0.9
+  );
+  expect((await portal.getObjectAsString(bucket, key)).length).toBeLessThan(
+    expectedSize * 1.1
+  );
+}
+
 // This test verifies that Card images can be downloaded, resized, and stored in S3.
 test("Downloads card images, resizes, and stores them.", async () => {
+  jest.setTimeout(10000);
   setLogLevel(Level.NONE);
 
   const config = new Config();
@@ -43,19 +68,20 @@ test("Downloads card images, resizes, and stores them.", async () => {
       return new Date("2021-01-01T05:00:00");
     },
   };
+  const storage = new MemoryStoragePortal(clock);
   const services: Services = {
     config: config,
     dbManager: new MemoryDatabaseManager(),
     file: new MemoryLocalStorage({}),
     perfMon: new PerformanceMonitor(),
-    storagePortal: new MemoryStoragePortal(clock),
+    storagePortal: storage,
     scryfallManager: new MemoryScryfallManager(
       {},
       {
         /* eslint-disable prettier/prettier */
         "https://www.scryfly.fake/Images/1.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
         "https://www.scryfly.fake/Images/2.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
-        "https://www.scryfly.fake/Images/3.jpg": () => fs.createReadStream("./test_data_files/fireball.jpg"),
+        "https://www.scryfly.fake/Images/3.jpg": () => fs.createReadStream("./test_data_files/monk_class_cymk.jpg"),
         /* eslint-enable prettier/prettier */
       }
     ),
@@ -67,24 +93,32 @@ test("Downloads card images, resizes, and stores them.", async () => {
     allMissingCards: false,
     cardIds: ["1", "2", "3"],
   });
-  await timeout(1000);
+
+  // Wait for the image update to finish.
+  for (let i = 0; i < 20; ++i) {
+    const infos = await getAllImageInfos(services);
+    if (infos && infos.countByType[ImageInfo.NONE] === 0) {
+      break;
+    }
+    await timeout(100);
+  }
 
   // Verify the images were converted and stored.
-  /* eslint-disable prettier/prettier */
-  expect((await services.storagePortal.getObjectAsString("fq", "1.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("lq", "1.jpg")).length).toBe(52919);
+  await checkImage(storage, "fq", "1.jpg", "", 202690);
+  await checkImage(storage, "lq", "1.jpg", "sRGB", 52910);
 
-  expect((await services.storagePortal.getObjectAsString("fq", "2.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("hq", "2.jpg")).length).toBeGreaterThan(83970 * 0.95);
-  expect((await services.storagePortal.getObjectAsString("hq", "2.jpg")).length).toBeLessThan(83970 * 1.05);
+  await checkImage(storage, "fq", "2.jpg", "", 202690);
+  await checkImage(storage, "hq", "2.jpg", "sRGB", 83961);
+  await checkImage(storage, "lq", "2.jpg", "sRGB", 52910);
 
-  expect((await services.storagePortal.getObjectAsString("fq", "3.jpg")).length).toBe(202699);
-  expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeGreaterThan(83970 * 0.95);
-  expect((await services.storagePortal.getObjectAsString("hq", "3.jpg")).length).toBeLessThan(83970 * 1.05);
+  await checkImage(storage, "fq", "3.jpg", "", 72596);
+  await checkImage(storage, "hq", "3.jpg", "sRGB", 61655);
+  await checkImage(storage, "lq", "3.jpg", "sRGB", 49945);
 
   // Verify that card 4 didn't have it's image updated, because we didn't specify it in the call to startUpdatingImages.
-  expect(await services.storagePortal.getObjectAsString("lq", "4.jpg")).toBe("");
-  /* eslint-enable prettier/prettier */
+  expect(await services.storagePortal.getObjectAsString("lq", "4.jpg")).toBe(
+    ""
+  );
 
   // Verify that the reported info matches what we expect.
   const infos = await getAllImageInfos(services);
@@ -104,4 +138,67 @@ test("Downloads card images, resizes, and stores them.", async () => {
   expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
   expect(new Date(infos.lastUpdateDate)).toEqual(clock.now());
+  setLogLevel(Level.INFO);
+});
+
+test("Atetmpts to clear a specific CardID from the database", async () => {
+  setLogLevel(Level.NONE);
+  const config = new Config();
+  config.storage.externalRoot = "https://www.infinitestorage.fake";
+  config.storage.awsS3DataMapBucket = "bucket_name";
+  config.storage.awsS3FullQualityImageBucket = "fq";
+  config.storage.awsS3HighQualityImageBucket = "hq";
+  config.storage.awsS3CompressedImageBucket = "lq";
+  const blobPrefix = `${config.storage.externalRoot}/${config.storage.awsS3DataMapBucket}/`;
+  const jsonFiles: Record<string, string> = {};
+
+  /* eslint-disable prettier/prettier */
+  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "www.scryfly.fake/Images/1.jpg" });
+  jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({});
+  jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
+  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({});
+  jsonFiles[`${blobPrefix}SetCodeToCardID.json`]        = JSON.stringify({});
+  /* eslint-enable prettier/prettier */
+
+  const clock: Clock = {
+    now: () => {
+      return new Date("2021-01-01T05:00:00");
+    },
+  };
+  const services: Services = {
+    config: config,
+    dbManager: new MemoryDatabaseManager(),
+    file: new MemoryLocalStorage({}),
+    perfMon: new PerformanceMonitor(),
+    storagePortal: new MemoryStoragePortal(clock),
+    scryfallManager: new MemoryScryfallManager({}, {}),
+    clock: clock,
+    net: new MemoryNetworkManager(jsonFiles),
+  };
+  await initializeDatabase(services.dbManager, config);
+
+  const connection = await services.dbManager.getConnection();
+  await connection!.query(
+    "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
+    ["1", dateToMySQL(services.clock.now()), ImageInfo.HQ]
+  );
+
+  // Verify that the reported info matches what we expect.
+  let infos = await getAllImageInfos(services);
+  expect(infos).not.toBeNull();
+  if (!infos) {
+    return;
+  }
+  expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
+  expect(infos.countByType[ImageInfo.HQ]).toBe(1);
+  expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
+  await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
+  infos = await getAllImageInfos(services);
+
+  expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
+  expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
+  expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
+  setLogLevel(Level.INFO);
 });

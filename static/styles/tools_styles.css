@@ -23,6 +23,6 @@ textarea{
   width: 350px;
 }
 
-#btnClearSetImages{
+#btnClearSetImages, #btnClearCardIDImages{
   margin-top: 12px;
 }

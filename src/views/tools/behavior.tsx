@@ -29,6 +29,7 @@ class ToolsBehavior extends ViewBehavior<unknown> {
     this.updateCardImageInfo();
     this.updateImageVersionInfo();
     this.updateClearImageInfo();
+    this.updateClearIDImageInfo();
   }
 
   private async updateCardImageInfo(): Promise<void> {
@@ -209,7 +210,30 @@ class ToolsBehavior extends ViewBehavior<unknown> {
           sets: sets,
         }
       );
-      console.log("Done clearing image infos.");
+      console.log("Done clearing set image info.");
+    });
+  }
+
+  private async updateClearIDImageInfo(): Promise<void> {
+    const btnClearCardIDImages = document.querySelector<HTMLButtonElement>(
+      "#btnClearCardIDImages"
+    );
+    const textareaCardIDs = document.querySelector<HTMLTextAreaElement>(
+      "#textareaCardIDsToClear"
+    );
+    if (!textareaCardIDs || !btnClearCardIDImages) {
+      return;
+    }
+    btnClearCardIDImages.addEventListener("click", async () => {
+      const cardIDs = textareaCardIDs.value.split("\n");
+      textareaCardIDs.value = "";
+      await post<CardImageClearInfoRequest, unknown>(
+        "/tools/clear_image_info",
+        {
+          cardIDs: cardIDs,
+        }
+      );
+      console.log("Done clearing cardID image info.");
     });
   }
 
