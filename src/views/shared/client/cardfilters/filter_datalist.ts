@@ -4,7 +4,7 @@ export class FilterDatalist extends BaseFilter {
   private input!: HTMLInputElement;
 
   protected async setup(): Promise<void> {
-    const inputGroup = this.container.querySelector(
+    const inputGroup = this.container!.querySelector(
       ".input-group"
     ) as HTMLElement;
     this.input = inputGroup?.querySelector("input") as HTMLInputElement;

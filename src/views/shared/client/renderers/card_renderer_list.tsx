@@ -9,7 +9,7 @@ import {
   CardRendererOptions,
 } from "./base_card_renderer";
 import * as Utils from "../utils";
-import { MapData } from "../data_loader";
+import { MapData } from "../blob_storage_data_loader";
 
 export class CardRendererList extends BaseCardRenderer {
   public hoverCard!: HTMLElement;
@@ -253,7 +253,7 @@ export class CardRendererList extends BaseCardRenderer {
         this.hoverCard.setAttribute("data-lastFailedId", "");
         this.hoverCard.setAttribute(
           "src",
-          Utils.GetImageUrl(cardId, this.dl.dataDetails!)
+          Utils.GetImageUrl(cardId, this.dl.getDataDetails()!)
         );
         this.hoverCard.classList.remove("nodisp");
         this.UpdateHoverPosition(event.pageX, event.pageY);

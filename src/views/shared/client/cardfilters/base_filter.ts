@@ -1,28 +1,61 @@
 import { DataLoader } from "../data_loader";
+import { MiscOptions } from "./filter_misc_options";
+
+interface FilterDetails {
+  dataMapName: string;
+  idMapName: string;
+  dynamicOptions: boolean;
+  excludedOptions: Record<string, boolean>;
+  filterClass: string;
+}
 
 export class BaseFilter {
-  public container: HTMLElement;
-  public valueDisplay: HTMLElement;
-  public dataMapName: string;
-  public idMapName: string;
-  public dynamicOptions: boolean;
-  public excludeoptions: { [option: string]: boolean };
-  public filterclass: string;
+  public container?: HTMLElement;
+  public valueDisplay?: HTMLElement;
+  public dataMapName!: string;
+  public idMapName!: string;
+  public dynamicOptions!: boolean;
+  public excludeoptions!: { [option: string]: boolean };
+  public filterclass!: string;
   public updateHandler: () => void;
   public type: string;
-  public active: boolean;
+  public active!: boolean;
   public ready: boolean;
   public dl: DataLoader;
+  public miscOptions: MiscOptions;
 
   public constructor(
     dataLoader: DataLoader,
-    fitlertype: string,
-    updateHandler: () => void
+    filtertype: string,
+    updateHandler: () => void,
+    filterDetails?: FilterDetails
   ) {
-    this.type = fitlertype;
     this.dl = dataLoader;
+    this.type = filtertype;
+    this.miscOptions = {};
+    if (filterDetails === undefined) {
+      this.constructWithDomDetails();
+    } else {
+      if (this.requiresDom()) {
+        throw new Error(
+          "DOMless initialization not supported for this filter type."
+        );
+      }
+      this.dataMapName = filterDetails.dataMapName;
+      this.idMapName = filterDetails.idMapName;
+      this.dynamicOptions = filterDetails.dynamicOptions;
+      this.excludeoptions = filterDetails.excludedOptions;
+      this.filterclass = filterDetails.filterClass;
+      this.active = true;
+    }
+    this.ready = false;
+    this.updateHandler = updateHandler;
+    this.setup();
+  }
+
+  private constructWithDomDetails() {
     this.container = document.querySelector(
-      `div[data-filtertype=${fitlertype}]`
+      `div[data-filtertype=${this.type}]`
     ) as HTMLElement;
     this.dataMapName = this.container.getAttribute("data-datamapname") || "";
     this.idMapName = this.container.getAttribute("data-idmapname") || "";
@@ -42,19 +75,22 @@ export class BaseFilter {
       ".dropdownValue"
     ) as HTMLElement;
     this.active = !this.container.classList.contains("nodisp");
-    this.ready = false;
-    this.updateHandler = updateHandler;
-    this.setup();
+  }
+
+  public requiresDom(): boolean {
+    //Some filters require elements from HTML
+    //If you want to create a filter independent from the DOM, override this function manually.
+    return true;
   }
 
   public hide(): void {
     this.clear();
-    this.container.classList.add("nodisp");
+    this.container!.classList.add("nodisp");
     this.active = false;
   }
 
   public show(): void {
-    this.container.classList.remove("nodisp");
+    this.container!.classList.remove("nodisp");
     this.active = true;
   }
 
@@ -86,7 +122,8 @@ export class BaseFilter {
 
   protected applyPrimaryFilterAnd(
     cardIds: string[],
-    requiredValues: string[]
+    requiredValues: string[],
+    _miscOptions: MiscOptions
   ): void {
     const dataMap = this.dl.getAnyMapData(this.dataMapName) as Record<
       string,
@@ -100,7 +137,8 @@ export class BaseFilter {
 
   protected applyPrimaryFilterOr(
     cardIds: string[],
-    requiredValueMap: Record<string, boolean>
+    requiredValueMap: Record<string, boolean>,
+    _miscOptions: MiscOptions
   ): void {
     const dataMap = this.dl.getAnyMapData(this.dataMapName) as Record<
       string,
@@ -119,7 +157,8 @@ export class BaseFilter {
 
   protected applySecondaryFilterAnd(
     cardIds: string[],
-    requiredValues: string[]
+    requiredValues: string[],
+    _miscOptions: MiscOptions
   ): void {
     if (requiredValues.length > 0) {
       const idMap = this.dl.getAnyMapData(this.idMapName);
@@ -150,7 +189,8 @@ export class BaseFilter {
 
   protected applySecondaryFilterOr(
     cardIds: string[],
-    requiredValues: string[]
+    requiredValues: string[],
+    _miscOptions: MiscOptions
   ): void {
     if (requiredValues.length > 0) {
       const idMap = this.dl.getAnyMapData(this.idMapName);
@@ -184,7 +224,8 @@ export class BaseFilter {
 
   protected applyNoOthersFilter(
     cardIds: string[],
-    requiredValueMap: Record<string, boolean>
+    requiredValueMap: Record<string, boolean>,
+    _miscOptions: MiscOptions
   ): void {
     const idMap = this.dl.getAnyMapData(this.idMapName);
     if (!idMap) {
@@ -206,7 +247,12 @@ export class BaseFilter {
     }
   }
 
-  public apply(cardIds: string[], firstFilter: boolean): void {
+  public apply(
+    cardIds: string[],
+    firstFilter: boolean,
+    miscOptions: MiscOptions
+  ): void {
+    // TODO: Fix issues with altPane popup
     if (!this.ready) {
       return;
     }
@@ -214,11 +260,9 @@ export class BaseFilter {
     const requiredValues = this.getValues().filter((value) => {
       return value.length > 0;
     });
-
     if (requiredValues.length === 0) {
       return;
     }
-
     const reqAll = this.requireAllValues();
     const requiredValueMap: Record<string, boolean> = {};
     for (const value of requiredValues) {
@@ -227,21 +271,21 @@ export class BaseFilter {
 
     if (firstFilter) {
       if (reqAll) {
-        this.applyPrimaryFilterAnd(cardIds, requiredValues);
-        this.applySecondaryFilterAnd(cardIds, requiredValues);
+        this.applyPrimaryFilterAnd(cardIds, requiredValues, miscOptions);
+        this.applySecondaryFilterAnd(cardIds, requiredValues, miscOptions);
       } else {
-        this.applyPrimaryFilterOr(cardIds, requiredValueMap);
+        this.applyPrimaryFilterOr(cardIds, requiredValueMap, miscOptions);
       }
     } else {
       if (reqAll) {
-        this.applySecondaryFilterAnd(cardIds, requiredValues);
+        this.applySecondaryFilterAnd(cardIds, requiredValues, miscOptions);
       } else {
-        this.applySecondaryFilterOr(cardIds, requiredValues);
+        this.applySecondaryFilterOr(cardIds, requiredValues, miscOptions);
       }
     }
 
     if (this.noOtherValues()) {
-      this.applyNoOthersFilter(cardIds, requiredValueMap);
+      this.applyNoOthersFilter(cardIds, requiredValueMap, miscOptions);
     }
   }
 

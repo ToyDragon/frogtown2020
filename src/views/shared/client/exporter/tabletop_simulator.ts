@@ -1,14 +1,14 @@
 import * as TTSExport from "./exporter";
-import { DataLoader } from "../data_loader";
+import { BlobStorageDataLoader } from "../blob_storage_data_loader";
 import { Deck } from "../../deck_types";
 
 export default class TableTopSimulator {
   private exporter!: TTSExport.Exporter;
-  private dl!: DataLoader;
+  private dl!: BlobStorageDataLoader;
 
   public ready: Promise<void>;
 
-  public constructor(dl: DataLoader) {
+  public constructor(dl: BlobStorageDataLoader) {
     this.exporter = new TTSExport.Exporter();
     this.dl = dl;
     let resolver!: () => void;
@@ -116,7 +116,7 @@ export default class TableTopSimulator {
       processOneCard(tokenCardIds[i], tokenboard);
     }
 
-    const imageVersion = this.dl.dataDetails!.imageVersion;
+    const imageVersion = this.dl.getDataDetails()!.imageVersion;
     const rootURL = window.location.href.split("/").slice(0, 3).join("/");
     const compiledDeck = this.exporter.Export(
       {

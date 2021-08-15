@@ -1,4 +1,3 @@
-import { DataLoader } from "../client/data_loader";
 import { BaseFilter } from "./cardfilters/base_filter";
 import { FilterText } from "./cardfilters/filter_text";
 import {
@@ -8,10 +7,11 @@ import {
 import { FilterDatalist } from "./cardfilters/filter_datalist";
 import { FilterDropdown } from "./cardfilters/filter_dropdown";
 import { FilterNumberRange } from "./cardfilters/filter_number_range";
+import { BlobStorageDataLoader } from "./blob_storage_data_loader";
 
 export class CardSearchBehavior {
   public cardChangeCB: (cards: string[], options: MiscOptions) => void;
-  public dl: DataLoader;
+  public dl: BlobStorageDataLoader;
   private allFilters: BaseFilter[];
   public cardIds: string[] = [];
   private nameFilter: FilterText;
@@ -19,7 +19,7 @@ export class CardSearchBehavior {
   private bannedCards: { [cardId: string]: boolean } = {};
 
   public constructor(
-    dl: DataLoader,
+    dl: BlobStorageDataLoader,
     cardChangeCB: (cards: string[], options: MiscOptions) => void
   ) {
     this.cardChangeCB = cardChangeCB;
@@ -169,13 +169,17 @@ export class CardSearchBehavior {
       return;
     }
     this.cardIds = [];
-    sortedFilters[0].apply(this.cardIds, true);
+    sortedFilters[0].apply(this.cardIds, true, this.GetMiscOptions());
     for (
       let filterIndex = 1;
       filterIndex < sortedFilters.length;
       filterIndex++
     ) {
-      sortedFilters[filterIndex].apply(this.cardIds, false);
+      sortedFilters[filterIndex].apply(
+        this.cardIds,
+        false,
+        this.GetMiscOptions()
+      );
     }
 
     if (

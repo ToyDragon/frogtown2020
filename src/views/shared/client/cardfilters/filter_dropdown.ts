@@ -6,16 +6,18 @@ export class FilterDropdown extends BaseFilter {
   private noOthers!: boolean;
 
   protected async setup(): Promise<void> {
-    const alreadySetup = this.container.getAttribute("data-setup") === "true";
-    this.container.setAttribute("data-setup", "true");
+    const alreadySetup = this.container!.getAttribute("data-setup") === "true";
+    this.container!.setAttribute("data-setup", "true");
     this.requireAll = false;
     this.noOthers = false;
 
     if (this.dataMapName && this.idMapName && !alreadySetup) {
-      const button = this.container.querySelector(
+      const button = this.container!.querySelector(
         ".btn-group > button"
       ) as HTMLElement;
-      const list = this.container.querySelector("div > ul") as HTMLUListElement;
+      const list = this.container!.querySelector(
+        "div > ul"
+      ) as HTMLUListElement;
       const loadingElement = document.createElement("span");
       loadingElement.classList.add("glyphicon");
       loadingElement.classList.add("glyphicon-refresh");
@@ -61,7 +63,7 @@ export class FilterDropdown extends BaseFilter {
   }
 
   private setupDropdownExclusive(alreadySetup: boolean): void {
-    const menu = this.container.querySelector("ul.dropdown-menu");
+    const menu = this.container!.querySelector("ul.dropdown-menu");
     menu?.querySelectorAll("li").forEach((ele) => {
       ele.addEventListener("click", (e) => {
         const target = e.currentTarget as HTMLLIElement;
@@ -77,7 +79,7 @@ export class FilterDropdown extends BaseFilter {
             const display =
               target.getAttribute("data-display") ||
               target.getAttribute("data-value");
-            this.valueDisplay.innerText = display || "";
+            this.valueDisplay!.innerText = display || "";
             const allOtherOptions = menu.querySelectorAll(
               "li:not([data-value=" +
                 target.getAttribute("data-value")!.replace(/ /g, "\\ ") +
@@ -89,7 +91,7 @@ export class FilterDropdown extends BaseFilter {
               }
             }
           } else {
-            this.valueDisplay.innerText = "";
+            this.valueDisplay!.innerText = "";
           }
         }
         this.valueChanged();
@@ -98,7 +100,7 @@ export class FilterDropdown extends BaseFilter {
   }
 
   private setupDropdownMany(alreadySetup: boolean): void {
-    const menu = this.container.querySelector(
+    const menu = this.container!.querySelector(
       "ul.dropdown-menu"
     ) as HTMLElement;
     const isMiscOptions = menu.classList.contains("miscSelection");
@@ -146,7 +148,7 @@ export class FilterDropdown extends BaseFilter {
           const selected = menu.querySelectorAll(
             "li[data-active=true]:not([data-control=true])"
           );
-          this.valueDisplay.innerHTML = "";
+          this.valueDisplay!.innerHTML = "";
           if (selected.length > 0) {
             let suffix = "";
             if (
@@ -182,7 +184,7 @@ export class FilterDropdown extends BaseFilter {
               display.append(newNode);
             }
           }
-          this.valueDisplay.append(display);
+          this.valueDisplay!.append(display);
         }
         if (!this.isClearing) {
           this.valueChanged();
@@ -200,7 +202,7 @@ export class FilterDropdown extends BaseFilter {
   }
 
   public getValues(): string[] {
-    const activeItems = this.container.querySelectorAll(
+    const activeItems = this.container!.querySelectorAll(
       "ul.dropdown-menu > li[data-active=true]:not([data-control])"
     );
     const results: string[] = [];
@@ -211,7 +213,7 @@ export class FilterDropdown extends BaseFilter {
   }
 
   protected clear(): void {
-    const menu = this.container.querySelector("ul.dropdown-menu");
+    const menu = this.container!.querySelector("ul.dropdown-menu");
     this.isClearing = true;
     menu?.querySelectorAll("li[data-active=true]").forEach((ele) => {
       (ele as HTMLElement).click();
@@ -221,7 +223,7 @@ export class FilterDropdown extends BaseFilter {
   }
 
   public setValue(value: string[]): void {
-    const menu = this.container.querySelector("ul.dropdown-menu");
+    const menu = this.container!.querySelector("ul.dropdown-menu");
     this.isClearing = true;
     menu?.querySelectorAll("li[data-active=true]").forEach((ele) => {
       (ele as HTMLElement).click();

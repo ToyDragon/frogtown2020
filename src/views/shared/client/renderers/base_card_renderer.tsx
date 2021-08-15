@@ -1,7 +1,12 @@
-import { DataLoader, CardIDMap, MapData } from "../data_loader";
+import { DataLoader } from "../data_loader";
 import { MiscOptions } from "../cardfilters/filter_misc_options";
 import * as React from "react";
 import { requestRaw } from "../request";
+import {
+  BlobStorageDataLoader,
+  CardIDMap,
+  MapData,
+} from "../blob_storage_data_loader";
 
 export class Group {
   public title = "";
@@ -71,6 +76,7 @@ export interface ActionList {
   tomainboard: boolean;
   tosideboard: boolean;
   star: boolean;
+  replaceall: boolean;
 }
 
 export type ActionHandler = (action: keyof ActionList, cardId: string) => void;
@@ -82,7 +88,7 @@ export interface ActionDetail {
 }
 
 export interface CardRendererOptions {
-  dataLoader: DataLoader;
+  dataLoader: BlobStorageDataLoader;
   cardArea: HTMLElement;
   scrollingParent: HTMLElement;
   allowEdit: boolean;
@@ -92,7 +98,7 @@ export interface CardRendererOptions {
 export abstract class BaseCardRenderer {
   protected cardArea: HTMLElement;
   protected scrollingParent: HTMLElement;
-  protected dl: DataLoader;
+  protected dl: BlobStorageDataLoader;
   protected actionHandler: ActionHandler;
 
   private pendingSetSVGs: {
@@ -124,6 +130,7 @@ export abstract class BaseCardRenderer {
       tomainboard: !!miscOptions["Action To Mainboard"] && this.allowEdit,
       tosideboard: !!miscOptions["Action To Sideboard"] && this.allowEdit,
       star: !!miscOptions["Action Star"] && this.allowEdit,
+      replaceall: !!miscOptions["Action ReplaceAll"] && this.allowEdit,
     };
     return actions;
   }
@@ -238,6 +245,24 @@ export abstract class BaseCardRenderer {
         ),
       });
     }
+    if (actions.replaceall) {
+      const ref = React.createRef<HTMLDivElement>();
+      data.push({
+        key: "replaceall",
+        ref: ref,
+        element: (
+          <div
+            className="action replaceAll"
+            key="actionReplaceAll"
+            data-action="replaceall"
+            title="Replace all current versions of the card in your deck with this new version"
+            ref={ref}
+          >
+            <a href="#"></a>
+          </div>
+        ),
+      });
+    }
 
     return data;
   }
@@ -333,11 +358,13 @@ export abstract class BaseCardRenderer {
     if (this.svgBySet[setCode]) {
       svg.innerHTML = this.svgBySet[setCode];
     } else {
-      if (!this.dl.dataDetails) {
+      if (!this.dl.getDataDetails()) {
         console.log("Trying to show set svg before details loaded.");
         return;
       }
-      const svgURL = `${this.dl.dataDetails.baseURL}/${this.dl.dataDetails.awsS3SetSVGBucket}/${setCode}.svg`;
+      const svgURL = `${this.dl.getDataDetails()!.baseURL}/${
+        this.dl.getDataDetails()!.awsS3SetSVGBucket
+      }/${setCode}.svg`;
       if (this.pendingSetSVGs[setCode]) {
         this.pendingSetSVGs[setCode].push(svg);
       } else {

@@ -27,6 +27,7 @@ import setupDelete from "./action_delete";
 import setupEditName from "./action_editname";
 import setupSearchArrow from "./search_arrow";
 import { GetImageUrl } from "../shared/client/utils";
+import { AlternateArtPane } from "./alternate_art_popup_pane";
 
 class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardSearchUtil: CardSearchBehavior | null = null;
@@ -43,6 +44,12 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   private cardScrollingParent!: HTMLElement;
   private saveDebouncer = new Debouncer(500);
   private tableTopSimulator!: TableTopSimulator;
+  private altPane = new AlternateArtPane(
+    this.dl,
+    (action: string, cardIds: string) => {
+      this.onSearchAction(action, cardIds);
+    }
+  );
 
   public async ready(): Promise<void> {
     if (!this.getIncludedData()?.deckDetails?.id) {
@@ -63,6 +70,8 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     ) as HTMLElement;
 
     const viewOthersBtn = document.querySelector("#actionViewOtherDecks");
+
+    this.altPane.ready();
 
     // Edit permissions
     const allowEdit =
@@ -273,6 +282,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     this.searchRenderArea.UpdateDisplayedCards();
     this.mainboardRenderArea.UpdateDisplayedCards();
     this.sideboardRenderArea.UpdateDisplayedCards();
+    this.altPane.updateCards();
   }
 
   private onSearchAction(action: string, cardId: string): void {
@@ -284,40 +294,60 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       console.log(`adding card ${cardId} to mainboard`);
       this.saveDeckChange();
     } else if (action === "remove") {
-      for (let i = 0; i < deckDetails.mainboard.length; i++) {
-        const otherCardId = deckDetails.mainboard[i];
-        if (otherCardId === cardId) {
-          deckDetails.mainboard.splice(i, 1);
-          break;
-        }
-      }
+      this.removeCard(cardId, deckDetails.mainboard);
       this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
       console.log(`removing card ${cardId} from mainboard`);
       this.saveDeckChange();
     } else if (action === "similar") {
       console.log("looking for similar cards");
-      (document.querySelectorAll(
-        "#filterSelection > div > ul > li[data-active=true]"
-      ) as NodeListOf<HTMLElement> | null)?.forEach((element) => {
-        element.click();
-      });
-      (document.querySelector(
-        "#filterSelection > div > ul > li[data-filtertype=misc]"
-      ) as HTMLElement | null)?.click();
-
-      this.cardSearchUtil!.GetNameFilter().setValue(
-        this.dl.getMapData("IDToName")![cardId]
-      );
-      this.cardSearchUtil!.GetMiscFilter().setValue(["Show Duplicates"]);
-      this.cardSearchUtil!.ApplyFilter();
+      this.altPane.open(this.dl.getMapData("IDToName")![cardId]);
     } else if (action === "tosideboard") {
       this.onSideboardAction("add", cardId);
       this.onSearchAction("remove", cardId);
       this.saveDeckChange();
     } else if (action === "star") {
       this.updateKeyCard(cardId);
+    } else if (action === "replaceall") {
+      const allCardsWithSameName: Record<string, boolean> = {};
+      for (const undesiredArtId of this.dl.getMapData("NameToID")![
+        this.dl.getMapData("IDToName")![cardId]
+      ]) {
+        allCardsWithSameName[undesiredArtId] = true;
+      }
+      allCardsWithSameName[cardId] = false;
+      for (const board of [deckDetails.mainboard, deckDetails.sideboard]) {
+        const cardIDToCount: Record<string, number> = {};
+        for (const card of board) {
+          if (allCardsWithSameName[card]) {
+            cardIDToCount[card] = cardIDToCount[card] || 0;
+            cardIDToCount[card]++;
+          }
+        }
+        for (const oldCardId in cardIDToCount) {
+          for (let i = 0; i < cardIDToCount[oldCardId]; i++) {
+            this.removeCard(oldCardId, board);
+            board.push(cardId);
+          }
+        }
+        board.sort();
+      }
+      this.mainboardRenderArea.UpdateCardList(deckDetails.mainboard);
+      this.sideboardRenderArea.UpdateCardList(deckDetails.sideboard);
+      console.log(`replacing identically named cards with ${cardId}`);
+      this.saveDeckChange();
+      this.altPane.close();
     }
     this.updateTitle();
+  }
+
+  private removeCard(cardId: string, boardList: string[]) {
+    for (let i = 0; i < boardList.length; i++) {
+      const otherCardId = boardList[i];
+      if (otherCardId === cardId) {
+        boardList.splice(i, 1);
+        break;
+      }
+    }
   }
 
   private updateTitle(): void {
@@ -382,13 +412,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
       this.saveDeckChange();
       this.updateSideboardTitle();
     } else if (action === "remove") {
-      for (let i = 0; i < deckDetails.sideboard.length; i++) {
-        const otherCardId = deckDetails.sideboard[i];
-        if (otherCardId === cardId) {
-          deckDetails.sideboard.splice(i, 1);
-          break;
-        }
-      }
+      this.removeCard(cardId, deckDetails.sideboard);
       this.sideboardRenderArea.UpdateCardList(deckDetails.sideboard);
       this.saveDeckChange();
       this.updateSideboardTitle();
@@ -406,12 +430,15 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
   }
 
   private async updateKeyCardDisplay(): Promise<void> {
-    if (this.dl.dataDetails && this.getIncludedData().deckDetails.keyCard) {
+    if (
+      this.dl.getDataDetails() &&
+      this.getIncludedData().deckDetails.keyCard
+    ) {
       document.getElementById("favoriteCard")!.style.backgroundImage =
         "url(" +
         GetImageUrl(
           this.getIncludedData().deckDetails.keyCard,
-          this.dl.dataDetails
+          this.dl.getDataDetails()!
         ) +
         ")";
       this.tbController.setDeckKeyCard(

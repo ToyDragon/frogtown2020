@@ -61,7 +61,6 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       this.cardSearchUtil,
       ""
     );
-
     setInterval(() => {
       deckRenderArea.UpdateDisplayedCards();
     }, 250);
@@ -91,7 +90,6 @@ class CardSearchViewBehavior extends ViewBehavior<unknown> {
       if (!idToName) {
         return;
       }
-
       this.cardSearchUtil.GetNameFilter().setValue(idToName[cardId]);
       this.cardSearchUtil.GetMiscFilter().setValue(["Show Duplicates"]);
       this.cardSearchUtil.ApplyFilter();

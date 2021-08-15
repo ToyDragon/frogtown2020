@@ -9,7 +9,7 @@ import {
   CardRendererOptions,
 } from "./base_card_renderer";
 import * as Utils from "../utils";
-import { MapData } from "../data_loader";
+import { MapData } from "../blob_storage_data_loader";
 
 export class CardRendererDetails extends BaseCardRenderer {
   public groups: Group[];
@@ -249,7 +249,7 @@ export class CardRendererDetails extends BaseCardRenderer {
         }
         Utils.LoadCardImageIntoElement(
           cardDiv.getAttribute("data-id") || "",
-          this.dl.dataDetails!,
+          this.dl.getDataDetails()!,
           cardDiv
         );
       }

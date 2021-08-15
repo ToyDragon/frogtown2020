@@ -1,13 +1,32 @@
 <%- include("../partials/page_header") %>
 <div id="root">
   <div id="cardSearch">
+    <div id="cardArea" class="cardDisplay"></div>
     <div id="filterArea">
       <%- include("../partials/all_filters") -%>
     </div>
-    <div id="cardArea" class="cardDisplay"></div>
     <div id="searchWidget" class=""><svg id="searchSVG"></svg></div>
   </div>
   <div id="deckArea">
+    <div id="deckTitle">
+      <div class="horizontalCardStack">
+        <div class="cardSprite cardBack"></div>
+        <div class="cardSprite cardBack"></div>
+        <div class="cardSprite cardBack" id="favoriteCard"></div>
+      </div>
+      <span id="mainNameDisplay" class="deckName"></span><input type="text" id="nameEntry" class="nodisp"/><div id="divNameErr" class="error nodisp">Invalid Name</div>
+    </div>
+    <div class="boardTitle mainboard">Mainboard</div>
+    <div id="mainboard" class="cardDisplay"></div>
+    <div class="boardTitle sideboard nodisp">Sideboard</div>
+    <div id="sideboard" class="cardDisplay"></div>
+    <div id="deleteOverlay" class="overlaybackdrop nodisp">
+      <div class="popup">
+        <h1>Are you sure?</h1>
+        <button type="button" class="btn btn-info" id="btnCloseDeletePopup">Go Back</button>
+        <button type="button" class="btn btn-default" id="btnConfirmDelete">Delete</button>
+      </div>
+    </div>
     <div id="deckDetails">
       <div id="DeckActions" class="filterBox filterDropdown">
         <div class="dropdown">
@@ -41,25 +60,6 @@
         </div>
       </div>
     </div>
-    <div id="deckTitle">
-      <div class="horizontalCardStack">
-        <div class="cardSprite cardBack"></div>
-        <div class="cardSprite cardBack"></div>
-        <div class="cardSprite cardBack" id="favoriteCard"></div>
-      </div>
-      <span id="mainNameDisplay" class="deckName"></span><input type="text" id="nameEntry" class="nodisp"/><div id="divNameErr" class="error nodisp">Invalid Name</div>
-    </div>
-    <div class="boardTitle mainboard">Mainboard</div>
-    <div id="mainboard" class="cardDisplay"></div>
-    <div class="boardTitle sideboard nodisp">Sideboard</div>
-    <div id="sideboard" class="cardDisplay"></div>
-    <div id="deleteOverlay" class="overlaybackdrop nodisp">
-      <div class="popup">
-        <h1>Are you sure?</h1>
-        <button type="button" class="btn btn-info" id="btnCloseDeletePopup">Go Back</button>
-        <button type="button" class="btn btn-default" id="btnConfirmDelete">Delete</button>
-      </div>
-    </div>
     <div id="importOverlay" class="overlaybackdrop nodisp">
       <div class="popup">
         <h1>Card Names</h1>
@@ -71,6 +71,17 @@
           <button type="button" class="btn btn-info" id="btnConfirmImport">Import</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+<div id="altPane">
+  <div id="altDim"></div>
+  <div id="altContainer">
+    <div id="exitIcon" class="btn btn-primary">
+      Go Back
+    </div>
+    <div id="altPaneSearch">
+      <div id="altPaneCardArea" class="cardDisplay"></div>
     </div>
   </div>
 </div>
