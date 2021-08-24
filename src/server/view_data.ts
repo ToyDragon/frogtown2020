@@ -11,7 +11,6 @@ import ServerStatusRouteHandler from "../views/serverstatus/handler";
 import PerformanceMonitorRouteHandler from "../views/perfmon/handler";
 import HelpRouteHandler from "../views/help/handler";
 import PrivacyRouteHandler from "../views/privacy/handler";
-import InternshipRouteHandler from "../views/internship/handler";
 
 // Data required for a page to be displayed, and to be available in the header nav bar.
 export class PageData {
@@ -78,14 +77,6 @@ export function GetAllPages(services: Services): PageData[] {
       title: "Privacy",
       description: "",
       routeHandler: PrivacyRouteHandler(services),
-    },
-    {
-      routes: ["internship"],
-      view: "internship",
-      title: "Internship",
-      hidden: true,
-      description: "",
-      routeHandler: InternshipRouteHandler(services),
     },
     {
       routes: ["tools"],
