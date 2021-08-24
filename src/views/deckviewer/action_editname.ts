@@ -51,6 +51,7 @@ function saveNameChange(deck: Deck, afterChange: () => void): boolean {
       deckId: deck.id,
       name: deck.name,
       keyCard: null,
+      colors: null,
     });
     return true;
   } else {

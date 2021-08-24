@@ -271,6 +271,7 @@ export default class Converter {
             deckId: new_deck_id.deckId,
             name: deck.name,
             keyCard: null,
+            colors: null,
           },
           connection
         );

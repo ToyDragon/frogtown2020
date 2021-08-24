@@ -8,6 +8,7 @@ import {
   DeckViewerSaveDeck,
   DeckViewerChangeMetadata,
   DeckViewerDelete,
+  DeckViewerCloneDeck,
 } from "./types";
 import {
   ColorStringToArray,
@@ -15,6 +16,7 @@ import {
 } from "../../server/services/database/dbinfos/db_info_deck_keys";
 import { DeckCardsRow } from "../../server/services/database/dbinfos/db_info_deck_cards";
 import { DatabaseConnection } from "../../server/services/database/db_connection";
+import createNewDeck from "../shared/server/deck_creator";
 
 // Router that handles page specific request.
 export default function handler(services: Services): express.Router {
@@ -83,7 +85,81 @@ export default function handler(services: Services): express.Router {
     }
   );
 
+  addEndpointWithParams<DeckViewerCloneDeck, string>(
+    router,
+    "/cloneDeck",
+    async (user, params) => {
+      const connection = await services.dbManager.getConnection();
+      if (!connection) {
+        return "";
+      }
+
+      const id = await CloneDeck(user, params, services, connection);
+      connection.release();
+      return id;
+    }
+  );
+
   return router;
+}
+
+export async function CloneDeck(
+  user: UserDetails,
+  params: DeckViewerCloneDeck,
+  services: Services,
+  connection: DatabaseConnection
+): Promise<string> {
+  const result = await createNewDeck(user, services);
+  if (!result) {
+    logError("Failed to create deck");
+    return "";
+  }
+
+  const deckRow = await connection.query<DeckKeysRow[]>(
+    "SELECT * FROM deck_keys WHERE id=?;",
+    [params.deckId]
+  );
+  if (!deckRow || !deckRow.value || deckRow.value!.length <= 0) {
+    return "";
+  }
+  await SetDeckMetadata(
+    user,
+    {
+      deckId: result.deckId,
+      keyCard: deckRow.value[0].star_card_id,
+      name: deckRow.value[0].name,
+      colors: deckRow.value[0].colors,
+    },
+    connection
+  );
+
+  const cardRows = await connection.query<DeckCardsRow[]>(
+    "SELECT * FROM deck_cards WHERE deck_id=?;",
+    [params.deckId]
+  );
+  if (!cardRows || !cardRows.value) {
+    return "";
+  }
+
+  // Tell database about any changes that were made.
+  let command = "";
+  const args: unknown[] = [];
+  for (const row of cardRows.value!) {
+    command += command.length ? "\n" : "";
+    command +=
+      "REPLACE INTO deck_cards (deck_id, card_id, board, count) VALUES (?, ?, ?, ?);";
+    args.push(result!.deckId);
+    args.push(row.card_id);
+    args.push(row.board);
+    args.push(row.count);
+  }
+
+  const cardResult = await connection.query<void>(command, args);
+  if (cardResult.err) {
+    logInfo("Err: " + JSON.stringify(cardResult.err));
+  }
+
+  return result!.deckId;
 }
 
 export async function SetDeckMetadata(
@@ -111,6 +187,12 @@ export async function SetDeckMetadata(
     await connection.query<DeckKeysRow[]>(
       "UPDATE deck_keys SET star_card_id=? WHERE id=?;",
       [params.keyCard, params.deckId]
+    );
+  }
+  if (params.colors) {
+    await connection.query<DeckKeysRow[]>(
+      "UPDATE deck_keys SET colors=? WHERE id=?;",
+      [params.colors, params.deckId]
     );
   }
   return true;

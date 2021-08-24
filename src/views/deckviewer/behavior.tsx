@@ -3,6 +3,7 @@ import { CardSearchBehavior } from "../shared/client/cardsearch_behavior";
 import { post } from "../shared/client/request";
 import {
   DeckViewerChangeMetadata,
+  DeckViewerCloneDeck,
   DeckViewerIncludedData,
   DeckViewerSaveDeck,
 } from "./types";
@@ -88,9 +89,11 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
     document
       .querySelector("#actionClone")
       ?.addEventListener("click", async () => {
-        const data = await post(
-          "/deckViewer/cloneDeck/" + this.getIncludedData().deckDetails.id,
-          {}
+        const data = await post<DeckViewerCloneDeck, string>(
+          "/deckViewer/cloneDeck",
+          {
+            deckId: this.getIncludedData().deckDetails.id,
+          }
         );
         window.location.replace(`/deckViewer/${data}/edit.html`);
       });
@@ -430,6 +433,7 @@ class DeckViewerViewBehavior extends ViewBehavior<DeckViewerIncludedData> {
         deckId: this.getIncludedData().deckDetails.id,
         name: null,
         keyCard: cardId,
+        colors: null,
       }
     );
   }

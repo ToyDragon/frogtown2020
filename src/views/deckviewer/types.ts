@@ -16,8 +16,13 @@ export interface DeckViewerChangeMetadata {
   deckId: string;
   name: string | null;
   keyCard: string | null;
+  colors: string | null;
 }
 
 export interface DeckViewerDelete {
+  deckId: string;
+}
+
+export interface DeckViewerCloneDeck {
   deckId: string;
 }
