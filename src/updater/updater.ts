@@ -389,16 +389,10 @@ export default class Updater {
       if (result) {
         await startUpdatingImages(this.services, {
           allMissingCards: false,
-          cardIds: result.cardsMissingWithLQAvailable.concat(
-            result.cardsNotHQWithHQAvailable
-          ),
+          cardIds: result.cardsWithUpgradeAvailable,
         });
         if (await this.waitForBatchEnd(connection)) {
-          if (
-            result.cardsMissingWithLQAvailable.length +
-              result.cardsNotHQWithHQAvailable.length >
-            0
-          ) {
+          if (result.cardsWithUpgradeAvailable.length > 0) {
             const version = await getImageVersionDetails(this.services);
             Logs.logInfo("Setting image version to " + (version.version + 1));
             await setImageVersion(this.services, version.version + 1);

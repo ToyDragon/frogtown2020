@@ -24,6 +24,7 @@ export enum ImageInfo {
   NONE = 2,
   LQ = 3,
   HQ = 4,
+  PLACEHOLDER = 5,
 }
 
 export interface CardImageUpdateProgressResponse {
@@ -45,8 +46,7 @@ export interface CardImageInfoResponse {
   lastUpdateDate: string;
   imageTypeByID: Record<string, ImageInfo>;
   countByType: { [type: number]: number };
-  cardsNotHQWithHQAvailable: string[];
-  cardsMissingWithLQAvailable: string[];
+  cardsWithUpgradeAvailable: string[];
 }
 
 export interface MissingSetSVGsResponse {

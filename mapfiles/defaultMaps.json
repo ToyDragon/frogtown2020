@@ -213,10 +213,10 @@
           "value": "image_uris.large"
       },
       {
-          "name": "IDToHasHighRes",
+          "name": "IDToImageStatus",
           "duplicates": false,
           "key": "id",
-          "value": "highres_image"
+          "value": "image_status"
       },
       {
           "name": "IDToTokenStrings",
