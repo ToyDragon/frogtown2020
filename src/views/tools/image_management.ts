@@ -137,12 +137,7 @@ export async function getAllImageInfos(
     if (typeof allInfos[cardId] === "undefined") {
       allInfos[cardId] = ImageInfo.MISSING;
       if (IDToLargeImage[cardId]) {
-        if (
-          IDToImageStatus[cardId] !== "highres_scan" &&
-          IDToImageStatus[cardId] !== "lowres"
-        ) {
-          cardsWithUpgradeAvailable.push(cardId);
-        }
+        cardsWithUpgradeAvailable.push(cardId);
       }
     }
   }

@@ -182,7 +182,7 @@ test("Attempts to clear a specific CardID from the database", async () => {
   const connection = await services.dbManager.getConnection();
   await connection!.query(
     "REPLACE INTO card_images (card_id, update_time, quality) VALUES (?, ?, ?);",
-    ["1", dateToMySQL(services.clock.now()), ImageInfo.HQ]
+    ["1", dateToMySQL(services.clock.now()), ImageInfo.PLACEHOLDER]
   );
 
   // Verify that the reported info matches what we expect.
@@ -191,22 +191,25 @@ test("Attempts to clear a specific CardID from the database", async () => {
   if (!infos) {
     return;
   }
-  expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
-  expect(infos.imageTypeByID["2"]).toBe(ImageInfo.PLACEHOLDER);
-  const expected: Record<number, number> = {};
-  expected[ImageInfo.MISSING] = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let expected: Record<any, number> = {};
+  expected["1"] = ImageInfo.PLACEHOLDER;
+  expected["2"] = ImageInfo.MISSING;
+  expect(infos.imageTypeByID).toEqual(expected);
+  expected = {};
+  expected[ImageInfo.MISSING] = 1;
   expected[ImageInfo.NONE] = 0;
   expected[ImageInfo.LQ] = 0;
-  expected[ImageInfo.HQ] = 1;
+  expected[ImageInfo.HQ] = 0;
   expected[ImageInfo.PLACEHOLDER] = 1;
   expect(infos.countByType).toEqual(expected);
   await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
   infos = await getAllImageInfos(services);
 
-  expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
-  expect(infos!.countByType[ImageInfo.PLACEHOLDER]).toBe(1);
+  expect(infos!.countByType[ImageInfo.MISSING]).toBe(2);
+  expect(infos!.countByType[ImageInfo.PLACEHOLDER]).toBe(0);
   expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
   expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
-  expect(infos!.imageTypeByID["2"]).toBe(ImageInfo.PLACEHOLDER);
+  expect(infos!.imageTypeByID["2"]).toBe(ImageInfo.MISSING);
   setLogLevel(Level.INFO);
 });
