@@ -191,11 +191,15 @@ test("Attempts to clear a specific CardID from the database", async () => {
   if (!infos) {
     return;
   }
-  expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
-  expect(infos.countByType[ImageInfo.PLACEHOLDER]).toBe(1);
-  expect(infos.countByType[ImageInfo.HQ]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
   expect(infos.imageTypeByID["2"]).toBe(ImageInfo.PLACEHOLDER);
+  const expected: Record<number, number> = {};
+  expected[ImageInfo.MISSING] = 0;
+  expected[ImageInfo.NONE] = 0;
+  expected[ImageInfo.LQ] = 0;
+  expected[ImageInfo.HQ] = 1;
+  expected[ImageInfo.PLACEHOLDER] = 1;
+  expect(infos.countByType).toEqual(expected);
   await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
   infos = await getAllImageInfos(services);
 
