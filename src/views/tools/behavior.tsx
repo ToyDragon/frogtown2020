@@ -39,24 +39,11 @@ class ToolsBehavior extends ViewBehavior<unknown> {
       {}
     );
     if (result && ele) {
-      this.cardIdsToDownloadImagesFor = result.cardsNotHQWithHQAvailable
+      this.cardIdsToDownloadImagesFor = result.cardsWithUpgradeAvailable
         .filter((a) => {
           return !this.cardIdsAlreadyDownloadedImagesFor[a];
         })
         .slice(0, 1000);
-      if (
-        this.cardIdsToDownloadImagesFor.length < 1000 &&
-        result.cardsMissingWithLQAvailable
-      ) {
-        const lqCards = result.cardsMissingWithLQAvailable
-          .filter((a) => {
-            return !this.cardIdsAlreadyDownloadedImagesFor[a];
-          })
-          .slice(0, 1000 - this.cardIdsToDownloadImagesFor.length);
-        for (const cardId of lqCards) {
-          this.cardIdsToDownloadImagesFor.push(cardId);
-        }
-      }
       console.log("Cards to update: ");
       console.log(this.cardIdsToDownloadImagesFor);
       const btnDownloadSomeCards = document.querySelector(
@@ -93,15 +80,15 @@ class ToolsBehavior extends ViewBehavior<unknown> {
           <span className="inlinedata">
             {result.countByType[ImageInfo.HQ]} High Quality
           </span>
+          , and{" "}
+          <span className="inlinedata">
+            {result.countByType[ImageInfo.PLACEHOLDER]} Placeholder
+          </span>
           . There are{" "}
           <span className="inlinedata">
-            {result.cardsNotHQWithHQAvailable.length} HQ available
+            {result.cardsWithUpgradeAvailable.length} upgradable
           </span>{" "}
-          cards, and{" "}
-          <span className="inlinedata">
-            {result.cardsMissingWithLQAvailable.length} LQ available
-          </span>{" "}
-          cards .
+          cards.
         </span>,
         ele
       );

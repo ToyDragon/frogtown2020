@@ -37,10 +37,10 @@
           "value": "tokenstring"
       },
       {
-          "name": "TokenIDToHasHighRes",
+          "name": "TokenIDToImageStatus",
           "duplicates": false,
           "key": "id",
-          "value": "highres_image"
+          "value": "image_status"
       }
   ]
 }

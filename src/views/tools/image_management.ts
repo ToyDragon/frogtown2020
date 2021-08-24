@@ -19,16 +19,18 @@ import { BatchStatusRow } from "../../server/services/database/dbinfos/db_info_b
 import identify from "./identify";
 import magickConvert from "./magick_convert";
 
-async function getIDToHQMap(
+type ImageStatus = "highres_scan" | "lowres" | "placeholder" | "missing";
+
+async function getIDToStatusMap(
   services: Services
-): Promise<Record<string, boolean>> {
-  const result: Record<string, boolean> = {};
+): Promise<Record<string, ImageStatus>> {
+  const result: Record<string, ImageStatus> = {};
   for (const mapName of [
-    "IDToHasHighRes",
-    "TokenIDToHasHighRes",
-    "BackIDToHasHighRes",
+    "IDToImageStatus",
+    "TokenIDToImageStatus",
+    "BackIDToImageStatus",
   ]) {
-    const submap = await services.net.httpsGetJson<Record<string, boolean>>(
+    const submap = await services.net.httpsGetJson<Record<string, ImageStatus>>(
       `${services.config.storage.externalRoot}/${services.config.storage.awsS3DataMapBucket}/${mapName}.json`
     );
     if (!submap) {
@@ -63,6 +65,26 @@ async function getIDToImageURIMap(
   return result;
 }
 
+function isUpgrade(quality: ImageInfo, statusAvailable: string): boolean {
+  if (quality !== ImageInfo.HQ && statusAvailable === "highres_scan") {
+    return true;
+  } else if (
+    quality !== ImageInfo.HQ &&
+    quality !== ImageInfo.LQ &&
+    statusAvailable === "lowres"
+  ) {
+    return true;
+  } else if (
+    quality !== ImageInfo.HQ &&
+    quality !== ImageInfo.LQ &&
+    quality !== ImageInfo.PLACEHOLDER &&
+    statusAvailable === "placeholder"
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export async function getAllImageInfos(
   services: Services
 ): Promise<CardImageInfoResponse | null> {
@@ -74,13 +96,12 @@ export async function getAllImageInfos(
   }
   const allInfos: Record<string, ImageInfo> = {};
   let lastUpdateDate: Date | null = null;
-  const cardsNotHQWithHQAvailable: string[] = [];
-  const cardsMissingWithLQAvailable: string[] = [];
+  const cardsWithUpgradeAvailable: string[] = [];
   const allKnownIds = stringArrayToRecord(await getAllCardIDs(services));
-  let IDToHighResAvail!: Record<string, boolean>;
+  let IDToImageStatus!: Record<string, ImageStatus>;
   let IDToLargeImage!: Record<string, string>;
   try {
-    IDToHighResAvail = await getIDToHQMap(services);
+    IDToImageStatus = await getIDToStatusMap(services);
     IDToLargeImage = await getIDToImageURIMap(services);
   } catch (e) {
     logError(e);
@@ -99,17 +120,11 @@ export async function getAllImageInfos(
     for (const info of allImageInfos.value) {
       allInfos[info.card_id] = info.quality;
       const thisDate = new Date(info.update_time + " UTC");
-      const highResAvailable = IDToHighResAvail[info.card_id];
-      if (info.quality !== ImageInfo.HQ && highResAvailable) {
-        cardsNotHQWithHQAvailable.push(info.card_id);
-      }
-      const imageAvailable = IDToLargeImage[info.card_id];
-      if (
-        (info.quality === ImageInfo.NONE ||
-          info.quality === ImageInfo.MISSING) &&
-        imageAvailable
-      ) {
-        cardsMissingWithLQAvailable.push(info.card_id);
+      const statusAvailable = IDToLargeImage[info.card_id]
+        ? IDToImageStatus[info.card_id]
+        : "";
+      if (isUpgrade(info.quality, statusAvailable)) {
+        cardsWithUpgradeAvailable.push(info.card_id);
       }
       if (thisDate && (!lastUpdateDate || lastUpdateDate < thisDate)) {
         lastUpdateDate = thisDate;
@@ -122,10 +137,11 @@ export async function getAllImageInfos(
     if (typeof allInfos[cardId] === "undefined") {
       allInfos[cardId] = ImageInfo.MISSING;
       if (IDToLargeImage[cardId]) {
-        if (IDToHighResAvail[cardId]) {
-          cardsNotHQWithHQAvailable.push(cardId);
-        } else {
-          cardsMissingWithLQAvailable.push(cardId);
+        if (
+          IDToImageStatus[cardId] !== "highres_scan" &&
+          IDToImageStatus[cardId] !== "lowres"
+        ) {
+          cardsWithUpgradeAvailable.push(cardId);
         }
       }
     }
@@ -136,6 +152,7 @@ export async function getAllImageInfos(
   counts[ImageInfo.NONE] = 0;
   counts[ImageInfo.LQ] = 0;
   counts[ImageInfo.HQ] = 0;
+  counts[ImageInfo.PLACEHOLDER] = 0;
 
   for (const cardId in allInfos) {
     counts[allInfos[cardId]] = counts[allInfos[cardId]] || 0;
@@ -146,13 +163,12 @@ export async function getAllImageInfos(
     imageTypeByID: allInfos,
     countByType: counts,
     lastUpdateDate: lastUpdateDate ? dateToMySQL(lastUpdateDate) + " UTC" : "",
-    cardsNotHQWithHQAvailable: cardsNotHQWithHQAvailable,
-    cardsMissingWithLQAvailable: cardsMissingWithLQAvailable,
+    cardsWithUpgradeAvailable: cardsWithUpgradeAvailable,
   };
 }
 interface PendingImageDetails {
   cardId: string;
-  isHighRes: boolean;
+  imageStatus: ImageStatus;
 }
 let imagesBeingUpdated: PendingImageDetails[] | null = null;
 let imageUpdateIndex = 0;
@@ -211,7 +227,7 @@ export async function clearImageInfo(
     services.config.storage.externalRoot +
       "/" +
       services.config.storage.awsS3DataMapBucket +
-      "/SetCodeToCardID.json"
+      "/SetCodeToID.json"
   );
 
   if (!SetCodeToCardID && clearInfoRequest.sets !== undefined) {
@@ -264,10 +280,10 @@ export async function startUpdatingImages(
     return;
   }
 
-  let IDToHighResAvail!: Record<string, boolean>;
+  let IDToImageStatus!: Record<string, ImageStatus>;
   let IDToLargeImage!: Record<string, string>;
   try {
-    IDToHighResAvail = await getIDToHQMap(services);
+    IDToImageStatus = await getIDToStatusMap(services);
     IDToLargeImage = await getIDToImageURIMap(services);
   } catch (e) {
     logError("Error getting HQ/URI maps.");
@@ -283,7 +299,7 @@ export async function startUpdatingImages(
     for (const cardId of updateImageRequest.cardIds) {
       imagesBeingUpdated.push({
         cardId: cardId,
-        isHighRes: IDToHighResAvail[cardId],
+        imageStatus: IDToImageStatus[cardId],
       });
     }
     logInfo(
@@ -445,7 +461,11 @@ function loadOneImage(
       [
         cardDetails.cardId,
         dateToMySQL(services.clock.now()),
-        cardDetails.isHighRes ? ImageInfo.HQ : ImageInfo.LQ,
+        cardDetails.imageStatus === "highres_scan"
+          ? ImageInfo.HQ
+          : cardDetails.imageStatus === "placeholder"
+          ? ImageInfo.PLACEHOLDER
+          : ImageInfo.LQ,
       ]
     );
     loadNextImage(services, imageMap, connection);

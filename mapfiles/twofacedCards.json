@@ -25,10 +25,10 @@
           "value": "card_faces.1.illustration_id"
       },
       {
-          "name": "BackIDToHasHighRes",
+          "name": "BackIDToImageStatus",
           "duplicates": false,
           "key": "id",
-          "value": "highres_image"
+          "value": "image_status"
       }
   ]
 }

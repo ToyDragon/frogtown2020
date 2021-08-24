@@ -58,9 +58,9 @@ test("Downloads card images, resizes, and stores them.", async () => {
   jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "https://www.scryfly.fake/Images/1.jpg" });
   jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({ "2": "https://www.scryfly.fake/Images/2.jpg" });
   jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({ "3": "https://www.scryfly.fake/Images/3.jpg", "4": "https://neverused" });
-  jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": false });
-  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({ "2": true });
-  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({ "3": true, "4": false });
+  jsonFiles[`${blobPrefix}IDToImageStatus.json`]         = JSON.stringify({ "1": "lowres" });
+  jsonFiles[`${blobPrefix}TokenIDToImageStatus.json`]    = JSON.stringify({ "2": "highres_scan" });
+  jsonFiles[`${blobPrefix}BackIDToImageStatus.json`]     = JSON.stringify({ "3": "placeholder", "4": "lowres" });
   /* eslint-enable prettier/prettier */
 
   const clock: Clock = {
@@ -127,21 +127,21 @@ test("Downloads card images, resizes, and stores them.", async () => {
     return;
   }
 
-  expect(infos.cardsMissingWithLQAvailable).toEqual(["4"]);
-  expect(infos.cardsNotHQWithHQAvailable).toEqual([]);
+  expect(infos.cardsWithUpgradeAvailable).toEqual(["4"]);
   expect(infos.countByType[ImageInfo.MISSING]).toBe(1);
   expect(infos.countByType[ImageInfo.NONE]).toBe(0);
   expect(infos.countByType[ImageInfo.LQ]).toBe(1);
-  expect(infos.countByType[ImageInfo.HQ]).toBe(2);
+  expect(infos.countByType[ImageInfo.HQ]).toBe(1);
+  expect(infos.countByType[ImageInfo.PLACEHOLDER]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.LQ);
   expect(infos.imageTypeByID["2"]).toBe(ImageInfo.HQ);
-  expect(infos.imageTypeByID["3"]).toBe(ImageInfo.HQ);
+  expect(infos.imageTypeByID["3"]).toBe(ImageInfo.PLACEHOLDER);
   expect(infos.imageTypeByID["4"]).toBe(ImageInfo.MISSING);
   expect(new Date(infos.lastUpdateDate)).toEqual(clock.now());
   setLogLevel(Level.INFO);
 });
 
-test("Atetmpts to clear a specific CardID from the database", async () => {
+test("Attempts to clear a specific CardID from the database", async () => {
   setLogLevel(Level.NONE);
   const config = new Config();
   config.storage.externalRoot = "https://www.infinitestorage.fake";
@@ -153,12 +153,12 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
   const jsonFiles: Record<string, string> = {};
 
   /* eslint-disable prettier/prettier */
-  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "www.scryfly.fake/Images/1.jpg" });
+  jsonFiles[`${blobPrefix}IDToLargeImageURI.json`]      = JSON.stringify({ "1": "s.fake/1.jpg", "2": "s.fake/1.jpg" });
   jsonFiles[`${blobPrefix}TokenIDToLargeImageURI.json`] = JSON.stringify({});
   jsonFiles[`${blobPrefix}BackIDToLargeImageURI.json`]  = JSON.stringify({});
-  jsonFiles[`${blobPrefix}IDToHasHighRes.json`]         = JSON.stringify({ "1": true });
-  jsonFiles[`${blobPrefix}TokenIDToHasHighRes.json`]    = JSON.stringify({});
-  jsonFiles[`${blobPrefix}BackIDToHasHighRes.json`]     = JSON.stringify({});
+  jsonFiles[`${blobPrefix}IDToImageStatus.json`]         = JSON.stringify({ "1": "highres_scan", "2": "placeholder" });
+  jsonFiles[`${blobPrefix}TokenIDToImageStatus.json`]    = JSON.stringify({});
+  jsonFiles[`${blobPrefix}BackIDToImageStatus.json`]     = JSON.stringify({});
   jsonFiles[`${blobPrefix}SetCodeToCardID.json`]        = JSON.stringify({});
   /* eslint-enable prettier/prettier */
 
@@ -192,13 +192,17 @@ test("Atetmpts to clear a specific CardID from the database", async () => {
     return;
   }
   expect(infos.countByType[ImageInfo.MISSING]).toBe(0);
+  expect(infos.countByType[ImageInfo.PLACEHOLDER]).toBe(1);
   expect(infos.countByType[ImageInfo.HQ]).toBe(1);
   expect(infos.imageTypeByID["1"]).toBe(ImageInfo.HQ);
+  expect(infos.imageTypeByID["2"]).toBe(ImageInfo.PLACEHOLDER);
   await clearImageInfo(services, { cardIDs: ["1"] }); // Remove card from database
   infos = await getAllImageInfos(services);
 
   expect(infos!.countByType[ImageInfo.MISSING]).toBe(1);
+  expect(infos!.countByType[ImageInfo.PLACEHOLDER]).toBe(1);
   expect(infos!.countByType[ImageInfo.HQ]).toBe(0);
   expect(infos!.imageTypeByID["1"]).toBe(ImageInfo.MISSING);
+  expect(infos!.imageTypeByID["2"]).toBe(ImageInfo.PLACEHOLDER);
   setLogLevel(Level.INFO);
 });
