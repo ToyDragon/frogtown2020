@@ -132,6 +132,10 @@ export async function CloneDeck(
     },
     connection
   );
+  await connection.query("UPDATE deck_keys SET card_count=? WHERE id=?;", [
+    deckRow.value[0].card_count,
+    result!.deckId,
+  ]);
 
   const cardRows = await connection.query<DeckCardsRow[]>(
     "SELECT * FROM deck_cards WHERE deck_id=?;",
