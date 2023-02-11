@@ -24,7 +24,7 @@
     "cookie-parser": "^1.4.5",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "gts": "^2.0.2",
+    "gts": "^3.1.1",
     "https-browserify": "^1.0.0",
     "mongodb": "^3.6.9",
     "mysql": "^2.18.1",
